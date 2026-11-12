@@ -66,11 +66,10 @@ jobs:
           GH_TOKEN: ${{ secrets.CLAUDE_PAT }}
         run: bash .claude/scripts/board.sh set-status "${{ github.event.issue.number }}" "In progress"
 
-      # Optional: set up your toolchain so Claude can run tests, e.g.
-      # - uses: actions/setup-node@v4
-      #   with:
-      #     node-version: 22
-      #     cache: npm
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
 
       - uses: anthropics/claude-code-action@v1
         with:
@@ -79,8 +78,7 @@ jobs:
           claude_args: >-
             --model ${{ steps.pick.outputs.model }}
             --max-turns ${{ steps.pick.outputs.turns }}
-          # To let Claude run your build and tests, add to claude_args, e.g.:
-          #   --allowedTools "Bash(npm ci),Bash(npm test:*),Bash(npm run lint)"
+            --allowedTools "Bash(npm ci),Bash(npm test:*),Bash(npm run lint),Bash(node --test:*)"
 
       - name: Board → In review
         if: success() && env.IS_NEW_TASK == 'true'

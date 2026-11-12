@@ -3,3 +3,4 @@ export * from './env.ts';
 export * from './money.ts';
 export * from './orders.ts';
 export * from './client.ts';
+export * from './theme/index.ts';

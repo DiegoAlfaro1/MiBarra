@@ -1,0 +1,22 @@
+node_modules/
+dist/
+web-build/
+.expo/
+expo-env.d.ts
+*.tsbuildinfo
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Supabase local
+supabase/.branches/
+supabase/.temp/
+
+# Cloudflare
+.wrangler/
+
+# OS / editors
+.DS_Store
+*.log

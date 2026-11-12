@@ -1,0 +1,32 @@
+{
+  "name": "mibarra",
+  "private": true,
+  "description": "Coffee shop app to order drinks and loyalty rewards",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "test": "node --test \"packages/*/src/**/*.test.ts\" \"supabase/functions/**/*.test.ts\"",
+    "lint": "eslint .",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "mobile": "npm run start -w @mibarra/mobile",
+    "dashboard": "npm run start -w @mibarra/dashboard",
+    "db:start": "supabase start",
+    "db:stop": "supabase stop",
+    "db:reset": "supabase db reset",
+    "functions:serve": "supabase functions serve",
+    "deploy:mobile": "npm run deploy -w @mibarra/mobile",
+    "deploy:dashboard": "npm run deploy -w @mibarra/dashboard"
+  },
+  "devDependencies": {
+    "eslint": "^9.25.0",
+    "eslint-config-expo": "~10.0.0",
+    "supabase": "^2.40.0",
+    "typescript": "~5.9.2",
+    "wrangler": "^4.40.0"
+  }
+}

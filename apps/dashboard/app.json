@@ -1,0 +1,17 @@
+{
+  "expo": {
+    "name": "MiBarra Dashboard",
+    "slug": "mibarra-dashboard",
+    "scheme": "mibarra-dashboard",
+    "version": "0.1.0",
+    "platforms": ["web"],
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    },
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

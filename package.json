@@ -13,6 +13,8 @@
     "test": "node --test \"packages/*/src/**/*.test.ts\" \"supabase/functions/**/*.test.ts\"",
     "lint": "eslint .",
     "typecheck": "npm run typecheck --workspaces --if-present",
+    "dev": "supabase start && node scripts/write-local-env.mjs && concurrently -k -n functions,mobile,dashboard -c magenta,cyan,yellow \"supabase functions serve\" \"npm run web -w @mibarra/mobile\" \"npm run dashboard\"",
+    "dev:stop": "supabase stop",
     "mobile": "npm run start -w @mibarra/mobile",
     "dashboard": "npm run start -w @mibarra/dashboard",
     "db:start": "supabase start",
@@ -23,6 +25,7 @@
     "deploy:dashboard": "npm run deploy -w @mibarra/dashboard"
   },
   "devDependencies": {
+    "concurrently": "^9.2.5",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
     "supabase": "^2.40.0",

@@ -16,24 +16,31 @@ npm workspaces tie everything together. UI screens are placeholders; the real UI
 
 ## Getting started
 
-Requirements: Node 22.18+ (see `.nvmrc`), Docker (for local Supabase).
+Requirements: Node 22.18+ (see `.nvmrc`), Docker Desktop running (for local Supabase). No Supabase or Cloudflare account needed.
 
 ```sh
-npm install                 # first time; creates package-lock.json. Afterwards use `npm ci`
-(cd apps/mobile && npx expo install --fix)      # align Expo package versions with the installed SDK
-(cd apps/dashboard && npx expo install --fix)
-npm run db:start            # local Supabase; prints the API URL and anon key
-cp apps/mobile/.env.example apps/mobile/.env        # paste the URL + anon key
-cp apps/dashboard/.env.example apps/dashboard/.env
-npm run functions:serve     # edge functions on http://127.0.0.1:54321/functions/v1
-npm run mobile              # customer app (Expo dev server, port 8081)
-npm run dashboard           # shop dashboard (web, port 8082)
+npm ci        # once
+npm run dev   # every time; Ctrl+C stops the apps
 ```
+
+`npm run dev` starts local Supabase (migrations and seed are applied on first start), writes each app's `.env.development.local` with the local URL and anon key, then runs the edge functions and both web apps in one terminal:
+
+| What | URL |
+| --- | --- |
+| Customer app (web; Expo Go QR code in the terminal) | http://localhost:8081 |
+| Shop dashboard | http://localhost:8082 |
+| Supabase Studio (database admin) | http://localhost:54323 |
+| Edge functions | http://127.0.0.1:54321/functions/v1 |
+
+Test logins (password `password123`): `customer@mibarra.test` (customer) and `owner@mibarra.test` (owner of the demo shop).
+
+`npm run dev:stop` shuts down Supabase's Docker containers.
 
 ## Scripts
 
 | Command | What it does |
 | --- | --- |
+| `npm run dev` / `dev:stop` | Start / stop everything locally (see above) |
 | `npm test` | Unit tests (Node's built-in test runner, runs TypeScript directly) |
 | `npm run lint` | ESLint (`eslint-config-expo`) |
 | `npm run typecheck` | `tsc` in every workspace |

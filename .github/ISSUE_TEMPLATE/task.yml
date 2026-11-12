@@ -1,7 +1,7 @@
 name: User story (for Claude)
 description: A feature written as a user story, with the project-wide acceptance
   criteria prefilled
-title: '[Story] '
+title: "[Story] "
 labels:
   - user-story
 body:
@@ -10,6 +10,7 @@ body:
     attributes:
       label: User story
       value: |
+        **Module** <what module it belongs to>
         **As a** <customer | barista | owner>,
         **I want** <what>,
         **so that** <why / benefit>.

@@ -31,11 +31,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          sparse-checkout: .github/scripts
+          sparse-checkout: .claude/scripts
 
       - name: Start Claude on Ready issues
         run: |
-          READY="$(bash .github/scripts/board.sh list "Ready")"
+          READY="$(bash .claude/scripts/board.sh list "Ready")"
           if [ -z "$READY" ]; then echo "Nothing in Ready."; exit 0; fi
 
           for N in $READY; do
@@ -44,7 +44,7 @@ jobs:
 
             echo "Starting #$N"
             # Move first so the next dispatcher run doesn't pick it up again
-            bash .github/scripts/board.sh set-status "$N" "In progress"
+            bash .claude/scripts/board.sh set-status "$N" "In progress"
             # Remove and re-add the label so moving a card back to Ready retries it
             gh issue edit "$N" --remove-label "claude" >/dev/null 2>&1 || true
             gh issue edit "$N" --add-label "claude"

@@ -27,7 +27,7 @@ gh variable set CLAUDE_AUTOSTART      --body "$AUTOSTART"
 
 echo
 echo "Checking the board columns..."
-PROJECT_OWNER="$OWNER" PROJECT_NUMBER="$NUMBER" bash "$(dirname "$0")/.github/scripts/board.sh" check
+PROJECT_OWNER="$OWNER" PROJECT_NUMBER="$NUMBER" bash "$(dirname "$0")/scripts/board.sh" check
 
 echo
 echo "Done: labels, CLAUDE_PROJECT_OWNER=$OWNER, CLAUDE_PROJECT_NUMBER=$NUMBER, CLAUDE_AUTOSTART=$AUTOSTART."

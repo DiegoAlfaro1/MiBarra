@@ -24,7 +24,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          sparse-checkout: .github/scripts
+          sparse-checkout: .claude/scripts
 
       - name: Check for a model label you already chose
         id: existing
@@ -110,11 +110,11 @@ jobs:
             MSG="$MSG"$'\n\n'"The \`claude\` label was set when the issue was opened, so work has already started."
           elif [ "$AUTOSTART" = "true" ]; then
             sleep 3  # make sure the model label is in place before the work run reads labels
-            bash .github/scripts/board.sh set-status "$NUMBER" "In progress"
+            bash .claude/scripts/board.sh set-status "$NUMBER" "In progress"
             gh issue edit "$NUMBER" --add-label "claude"
             MSG="$MSG"$'\n\n'"Auto-start is on, so Claude is starting work now."
           else
-            bash .github/scripts/board.sh set-status "$NUMBER" "Backlog"
+            bash .claude/scripts/board.sh set-status "$NUMBER" "Backlog"
             MSG="$MSG"$'\n\n'"Move this card to **Ready** on the board when you want Claude to start."
           fi
 

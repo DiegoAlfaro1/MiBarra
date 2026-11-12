@@ -64,7 +64,7 @@ jobs:
         continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.CLAUDE_PAT }}
-        run: bash .github/scripts/board.sh set-status "${{ github.event.issue.number }}" "In progress"
+        run: bash .claude/scripts/board.sh set-status "${{ github.event.issue.number }}" "In progress"
 
       # Optional: set up your toolchain so Claude can run tests, e.g.
       # - uses: actions/setup-node@v4
@@ -87,7 +87,7 @@ jobs:
         continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.CLAUDE_PAT }}
-        run: bash .github/scripts/board.sh set-status "${{ github.event.issue.number }}" "In review"
+        run: bash .claude/scripts/board.sh set-status "${{ github.event.issue.number }}" "In review"
 
       - name: Board → Backlog (run failed)
         if: failure() && env.IS_NEW_TASK == 'true'
@@ -95,6 +95,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.CLAUDE_PAT }}
         run: |
-          bash .github/scripts/board.sh set-status "${{ github.event.issue.number }}" "Backlog"
+          bash .claude/scripts/board.sh set-status "${{ github.event.issue.number }}" "Backlog"
           gh issue comment "${{ github.event.issue.number }}" --body \
             "⚠️ Claude's run failed ([logs]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID)). Moved back to Backlog. Fix the issue description or model label, then move it to **Ready** to retry."

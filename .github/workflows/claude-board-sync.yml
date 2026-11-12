@@ -22,7 +22,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          sparse-checkout: .github/scripts
+          sparse-checkout: .claude/scripts
 
       - name: PR opened → linked issues to In review
         if: github.event_name == 'pull_request'
@@ -37,13 +37,13 @@ jobs:
             | grep -oE '[0-9]+' || true)"
           FROM_BRANCH="$(printf '%s' "$BRANCH" | grep -oE 'issue-[0-9]+' | grep -oE '[0-9]+' || true)"
           for N in $(printf '%s\n%s\n' "$ISSUES" "$FROM_BRANCH" | grep -E '^[0-9]+$' | sort -u); do
-            bash .github/scripts/board.sh set-status "$N" "In review" || echo "Could not move #$N"
+            bash .claude/scripts/board.sh set-status "$N" "In review" || echo "Could not move #$N"
           done
 
       - name: Issue closed → Done
         if: github.event_name == 'issues' && github.event.action == 'closed'
-        run: bash .github/scripts/board.sh set-status "${{ github.event.issue.number }}" "Done"
+        run: bash .claude/scripts/board.sh set-status "${{ github.event.issue.number }}" "Done"
 
       - name: Issue reopened → Backlog
         if: github.event_name == 'issues' && github.event.action == 'reopened'
-        run: bash .github/scripts/board.sh set-status "${{ github.event.issue.number }}" "Backlog"
+        run: bash .claude/scripts/board.sh set-status "${{ github.event.issue.number }}" "Backlog"

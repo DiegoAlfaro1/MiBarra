@@ -1,0 +1,30 @@
+name: Task for Claude
+description: A task written so Claude (and the triage step) can understand it
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: What should be done?
+      description: Describe the change or the bug in a few sentences.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: How will you know it's done? A short checklist works best.
+      placeholder: |
+        - [ ] ...
+        - [ ] Tests pass
+    validations:
+      required: true
+  - type: textarea
+    id: files
+    attributes:
+      label: Relevant files or areas (optional)
+      description: Pointing to files saves Claude time and usage.
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes (optional)
+      description: Constraints, examples, links, things to avoid.

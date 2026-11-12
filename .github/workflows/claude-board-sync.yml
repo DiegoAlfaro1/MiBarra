@@ -1,0 +1,49 @@
+# Board sync: moves cards when PRs are opened and issues are closed or reopened.
+name: Claude board sync
+
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review]
+  issues:
+    types: [closed, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      GH_TOKEN: ${{ secrets.CLAUDE_PAT }}
+      GH_REPO: ${{ github.repository }}
+      PROJECT_OWNER: ${{ vars.CLAUDE_PROJECT_OWNER }}
+      PROJECT_NUMBER: ${{ vars.CLAUDE_PROJECT_NUMBER }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/scripts
+
+      - name: PR opened → linked issues to In review
+        if: github.event_name == 'pull_request'
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+        run: |
+          # Issues linked with "Closes #12", "Fixes #12", "Resolves #12", or a branch like claude/issue-12-...
+          ISSUES="$(printf '%s\n%s\n' "$PR_TITLE" "$PR_BODY" \
+            | grep -oiE '(close[sd]?|fix(e[sd])?|resolve[sd]?)[[:space:]]*:?[[:space:]]*#[0-9]+' \
+            | grep -oE '[0-9]+' || true)"
+          FROM_BRANCH="$(printf '%s' "$BRANCH" | grep -oE 'issue-[0-9]+' | grep -oE '[0-9]+' || true)"
+          for N in $(printf '%s\n%s\n' "$ISSUES" "$FROM_BRANCH" | grep -E '^[0-9]+$' | sort -u); do
+            bash .github/scripts/board.sh set-status "$N" "In review" || echo "Could not move #$N"
+          done
+
+      - name: Issue closed → Done
+        if: github.event_name == 'issues' && github.event.action == 'closed'
+        run: bash .github/scripts/board.sh set-status "${{ github.event.issue.number }}" "Done"
+
+      - name: Issue reopened → Backlog
+        if: github.event_name == 'issues' && github.event.action == 'reopened'
+        run: bash .github/scripts/board.sh set-status "${{ github.event.issue.number }}" "Backlog"

@@ -1,0 +1,100 @@
+# Implement: runs Claude Code on an issue when the "claude" label is added
+# (by the dispatcher when you move a card to Ready), or when someone with repo
+# access mentions @claude in a comment.
+# The model comes from the issue's model:haiku / model:sonnet / model:opus label.
+name: Claude
+
+on:
+  issues:
+    types: [labeled]
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+
+concurrency:
+  group: claude-${{ github.event.issue.number || github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  claude:
+    if: |
+      (github.event_name == 'issues' && github.event.label.name == 'claude') ||
+      (github.event_name != 'issues' &&
+        contains(github.event.comment.body, '@claude') &&
+        contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association))
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+      actions: read
+    env:
+      GH_REPO: ${{ github.repository }}
+      PROJECT_OWNER: ${{ vars.CLAUDE_PROJECT_OWNER }}
+      PROJECT_NUMBER: ${{ vars.CLAUDE_PROJECT_NUMBER }}
+      IS_NEW_TASK: ${{ github.event_name == 'issues' }}
+    steps:
+      - name: Pick model from labels
+        id: pick
+        env:
+          ISSUE_LABELS: ${{ toJson(github.event.issue.labels.*.name) }}
+          PR_LABELS: ${{ toJson(github.event.pull_request.labels.*.name) }}
+        run: |
+          LABELS="$ISSUE_LABELS $PR_LABELS"
+          if printf '%s' "$LABELS" | grep -q '"model:opus"'; then
+            MODEL=opus;   TURNS=60
+          elif printf '%s' "$LABELS" | grep -q '"model:haiku"'; then
+            MODEL=haiku;  TURNS=20
+          else
+            MODEL=sonnet; TURNS=40
+          fi
+          echo "model=$MODEL" >> "$GITHUB_OUTPUT"
+          echo "turns=$TURNS" >> "$GITHUB_OUTPUT"
+          echo "Using $MODEL with max $TURNS turns"
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Board → In progress
+        if: env.IS_NEW_TASK == 'true'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.CLAUDE_PAT }}
+        run: bash .github/scripts/board.sh set-status "${{ github.event.issue.number }}" "In progress"
+
+      # Optional: set up your toolchain so Claude can run tests, e.g.
+      # - uses: actions/setup-node@v4
+      #   with:
+      #     node-version: 22
+      #     cache: npm
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          label_trigger: "claude"
+          claude_args: >-
+            --model ${{ steps.pick.outputs.model }}
+            --max-turns ${{ steps.pick.outputs.turns }}
+          # To let Claude run your build and tests, add to claude_args, e.g.:
+          #   --allowedTools "Bash(npm ci),Bash(npm test:*),Bash(npm run lint)"
+
+      - name: Board → In review
+        if: success() && env.IS_NEW_TASK == 'true'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.CLAUDE_PAT }}
+        run: bash .github/scripts/board.sh set-status "${{ github.event.issue.number }}" "In review"
+
+      - name: Board → Backlog (run failed)
+        if: failure() && env.IS_NEW_TASK == 'true'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.CLAUDE_PAT }}
+        run: |
+          bash .github/scripts/board.sh set-status "${{ github.event.issue.number }}" "Backlog"
+          gh issue comment "${{ github.event.issue.number }}" --body \
+            "⚠️ Claude's run failed ([logs]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID)). Moved back to Backlog. Fix the issue description or model label, then move it to **Ready** to retry."

@@ -78,7 +78,7 @@ jobs:
           claude_args: >-
             --model ${{ steps.pick.outputs.model }}
             --max-turns ${{ steps.pick.outputs.turns }}
-            --allowedTools "Bash(npm ci),Bash(npm test:*),Bash(npm run lint),Bash(node --test:*)"
+            --allowedTools "Bash(npm ci),Bash(npm test:*),Bash(npm run lint),Bash(npm run typecheck),Bash(node --test:*)"
 
       - name: Board → In review
         if: success() && env.IS_NEW_TASK == 'true'

@@ -12,6 +12,7 @@
 - Use the `explorer` subagent to search and read code before editing.
 - The PR description must include `Closes #<issue number>` and a short summary of what changed.
 - If the issue is unclear or too large, comment on the issue asking for clarification instead of guessing.
+- Issues are user stories (`.github/ISSUE_TEMPLATE/task.yml`). Treat every item under "Common acceptance criteria" as required for the PR, plus the story-specific criteria. If one can't be met, say so in the PR instead of ticking it.
 
 ## Project structure
 <!-- Briefly describe the main folders, e.g. -->

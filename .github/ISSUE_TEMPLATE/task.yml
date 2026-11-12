@@ -1,30 +1,49 @@
-name: Task for Claude
-description: A task written so Claude (and the triage step) can understand it
+name: User story (for Claude)
+description: A feature written as a user story, with the project-wide acceptance
+  criteria prefilled
+title: '[Story] '
+labels:
+  - user-story
 body:
   - type: textarea
-    id: summary
+    id: story
     attributes:
-      label: What should be done?
-      description: Describe the change or the bug in a few sentences.
+      label: User story
+      value: |
+        **As a** <customer | barista | owner>,
+        **I want** <what>,
+        **so that** <why / benefit>.
     validations:
       required: true
   - type: textarea
-    id: acceptance
+    id: specific
     attributes:
-      label: Acceptance criteria
-      description: How will you know it's done? A short checklist works best.
-      placeholder: |
-        - [ ] ...
-        - [ ] Tests pass
+      label: Story-specific acceptance criteria
+      description: Given/When/Then, one per behaviour.
+      value: |
+        - [ ] **Given** <context> **when** <action> **then** <result>
+        - [ ] **Given** <context> **when** <action> **then** <result>
     validations:
       required: true
   - type: textarea
-    id: files
+    id: common
     attributes:
-      label: Relevant files or areas (optional)
-      description: Pointing to files saves Claude time and usage.
+      label: Common acceptance criteria (project-wide, keep all)
+      value: |
+        - [ ] Story behaviour works end to end, including empty, loading and error states
+        - [ ] Invalid input is rejected with a clear user-facing message; no crash
+        - [ ] Orders, payments and loyalty points are never lost, duplicated or miscounted (idempotent on retry)
+        - [ ] Only the owner of the data (or staff where intended) can read or change it
+        - [ ] Works on small phone screens; interactive elements usable by touch and screen reader (labels, contrast)
+        - [ ] User-facing text is clear and consistent with existing copy
+        - [ ] New logic has automated tests; `npm test` passes
+        - [ ] `npm run lint` passes
+        - [ ] No unrelated changes; no secrets or debug code committed
+        - [ ] PR description includes `Closes #<issue>` and a short summary
+    validations:
+      required: true
   - type: textarea
     id: notes
     attributes:
       label: Notes (optional)
-      description: Constraints, examples, links, things to avoid.
+      description: Designs, links, constraints, out of scope.

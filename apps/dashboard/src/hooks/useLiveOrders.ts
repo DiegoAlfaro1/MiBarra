@@ -13,11 +13,16 @@ export type LiveOrdersState =
  * RLS ensures only staff of that shop receive rows.
  */
 export function useLiveOrders(shopId: string): LiveOrdersState {
-  const [state, setState] = useState<LiveOrdersState>({ status: 'loading' });
+  // Tagged with its shop so switching shops shows `loading`, not the previous shop's orders.
+  const [result, setResult] = useState<{ shopId: string; state: LiveOrdersState } | null>(null);
 
   useEffect(() => {
     let active = true;
-    setState({ status: 'loading' });
+    const setState = (update: (prev: LiveOrdersState) => LiveOrdersState) =>
+      setResult((prev) => ({
+        shopId,
+        state: update(prev?.shopId === shopId ? prev.state : { status: 'loading' }),
+      }));
 
     // Changes that arrive before the initial load finishes are buffered, not dropped.
     let loaded = false;
@@ -57,11 +62,11 @@ export function useLiveOrders(shopId: string): LiveOrdersState {
       .then(({ data, error }) => {
         if (!active) return;
         if (error) {
-          setState({ status: 'error', message: 'Could not load orders. Check your connection and try again.' });
+          setState(() => ({ status: 'error', message: 'Could not load orders. Check your connection and try again.' }));
           return;
         }
         loaded = true;
-        setState({ status: 'ready', orders: merge((data ?? []) as Order[], buffered) });
+        setState(() => ({ status: 'ready', orders: merge((data ?? []) as Order[], buffered) }));
       });
 
     return () => {
@@ -70,5 +75,5 @@ export function useLiveOrders(shopId: string): LiveOrdersState {
     };
   }, [shopId]);
 
-  return state;
+  return result?.shopId === shopId ? result.state : { status: 'loading' };
 }

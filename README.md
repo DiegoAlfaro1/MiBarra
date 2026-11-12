@@ -19,15 +19,18 @@ npm workspaces tie everything together. UI screens are placeholders; the real UI
 Requirements: Node 22.18+ (see `.nvmrc`), Docker Desktop running (for local Supabase). No Supabase or Cloudflare account needed.
 
 ```sh
-npm ci        # once
-npm run dev   # every time; Ctrl+C stops the apps
+npm ci           # once
+npm run dev      # terminal 1: Supabase, edge functions, dashboard (Ctrl+C stops them)
+npm run mobile   # terminal 2: customer app; scan the QR code with Expo Go, or press w for web
 ```
 
-`npm run dev` starts local Supabase (migrations and seed are applied on first start), writes each app's `.env.development.local` with the local URL and anon key, then runs the edge functions and both web apps in one terminal:
+`npm run dev` starts local Supabase (migrations and seed are applied on first start), writes each app's `.env.development.local` with the Supabase URL and anon key, then runs the edge functions and the dashboard. The Supabase URL uses your PC's network IP so a phone can reach it; if it picks the wrong network adapter, run `DEV_HOST=<your-ip> npm run dev`.
+
+To use the app on a phone, the phone must be on the same Wi-Fi, and Windows Firewall must allow Node and Docker on private networks (ports 8081 and 54321).
 
 | What | URL |
 | --- | --- |
-| Customer app (web; Expo Go QR code in the terminal) | http://localhost:8081 |
+| Customer app (web) | http://localhost:8081 |
 | Shop dashboard | http://localhost:8082 |
 | Supabase Studio (database admin) | http://localhost:54323 |
 | Edge functions | http://127.0.0.1:54321/functions/v1 |

@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Menú — Café Lempa</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F7F5F2; color: #1C1917; font-family: Inter, system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden; position: relative">
+  <div style="background: {{accent}}; color: #FFFFFF; padding: 52px 20px 22px; display: flex; flex-direction: column; gap: 16px">
+    <div style="display: flex; justify-content: space-between; align-items: center">
+      <a href="Main.dc.html" aria-label="Volver" style="width: 44px; height: 44px; border-radius: 22px; background: rgba(255,255,255,0.18); display: flex; align-items: center; justify-content: center">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>
+      </a>
+      <button type="button" aria-label="Información de la cafetería" style="width: 44px; height: 44px; border-radius: 22px; border: 0; background: rgba(255,255,255,0.18); display: flex; align-items: center; justify-content: center; cursor: pointer">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5M12 8h.01"></path></svg>
+      </button>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 30px; font-weight: 700; letter-spacing: -0.02em">Café Lempa</h1>
+      <span style="font-size: 14px; color: #FFFFFF">Col. Palmira · Abierto hasta 7:00 p. m.</span>
+    </div>
+    <div style="display: flex; gap: 8px">
+      <span style="padding: 6px 10px; border-radius: 999px; background: rgba(255,255,255,0.18); font-size: 12px; font-weight: 600">Listo en ~10 min</span>
+      <span style="padding: 6px 10px; border-radius: 999px; background: rgba(255,255,255,0.18); font-size: 12px; font-weight: 600">6/8 sellos</span>
+    </div>
+  </div>
+
+  <div role="tablist" aria-label="Categorías" style="display: flex; gap: 8px; padding: 16px 20px 8px; overflow: hidden">
+    <sc-for list="{{cats}}" as="c" hint-placeholder-count="4">
+      <button type="button" role="tab" aria-selected="{{c.selected}}" onClick="{{c.pick}}" style="{{c.style}}">{{c.label}}</button>
+    </sc-for>
+  </div>
+
+  <div style="flex: 1; display: flex; flex-direction: column; gap: 10px; padding: 8px 20px 110px; overflow: hidden">
+    <sc-for list="{{items}}" as="it" hint-placeholder-count="5">
+      <sc-if value="{{it.available}}" hint-placeholder-val="{{ true }}">
+        <a href="Item.dc.html" style="display: flex; gap: 14px; align-items: center; padding: 12px; background: #FFFFFF; border: 1px solid #E7E5E4; border-radius: 18px">
+          <div style="width: 72px; height: 72px; flex-shrink: 0; border-radius: 14px; background: #F8E6DC; display: flex; align-items: center; justify-content: center">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#7C2D12" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"></path><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17"></path><path d="M8 3v3M12 3v3"></path></svg>
+          </div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0">
+            <span style="font-weight: 600; font-size: 16px">{{it.name}}</span>
+            <span style="font-size: 13px; color: #57534E; line-height: 1.35">{{it.desc}}</span>
+            <span style="font-weight: 700; font-size: 15px">{{it.price}}</span>
+          </div>
+          <span aria-hidden="true" style="width: 36px; height: 36px; flex-shrink: 0; border-radius: 18px; background: #1C1917; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 500">+</span>
+        </a>
+      </sc-if>
+      <sc-if value="{{it.soldOut}}" hint-placeholder-val="{{ false }}">
+        <div aria-disabled="true" style="display: flex; gap: 14px; align-items: center; padding: 12px; background: #F1EFEC; border: 1px dashed #D6D3D1; border-radius: 18px">
+          <div style="width: 72px; height: 72px; flex-shrink: 0; border-radius: 14px; background: #E7E5E4; display: flex; align-items: center; justify-content: center">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#78716C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"></path><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17"></path></svg>
+          </div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0">
+            <span style="font-weight: 600; font-size: 16px; color: #57534E">{{it.name}}</span>
+            <span style="font-size: 13px; color: #57534E">{{it.desc}}</span>
+            <span style="align-self: flex-start; padding: 3px 8px; border-radius: 6px; background: #1C1917; color: #FFFFFF; font-size: 11px; font-weight: 700; letter-spacing: 0.04em">AGOTADO HOY</span>
+          </div>
+        </div>
+      </sc-if>
+    </sc-for>
+  </div>
+
+  <a href="Cart.dc.html" style="position: absolute; left: 20px; right: 20px; bottom: 28px; height: 60px; border-radius: 18px; background: #1C1917; color: #FFFFFF; display: flex; align-items: center; justify-content: space-between; padding: 0 18px; box-shadow: 0 8px 24px rgba(28,25,23,0.25)">
+    <span style="display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 15px">
+      <span style="width: 28px; height: 28px; border-radius: 14px; background: {{accent}}; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700">2</span>
+      Ver carrito
+    </span>
+    <span style="font-weight: 700; font-size: 16px">L 135.00</span>
+  </a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#B4441B","options":["#B4441B","#1D4ED8","#3F6212","#7C2D12"]},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { cat: 'cafe' }; }
+  renderVals() {
+    const accent = this.props.accent ?? '#B4441B';
+    const menu = {
+      cafe: [
+        { name: 'Capuchino', desc: 'Espresso doble, leche vaporizada y espuma', price: 'L 70.00' },
+        { name: 'Latte', desc: 'Espresso con leche, suave y cremoso', price: 'L 75.00' },
+        { name: 'Americano', desc: 'Espresso alargado con agua caliente', price: 'L 50.00' },
+        { name: 'Moca', desc: 'Espresso, chocolate y leche', price: 'L 80.00', soldOut: true },
+        { name: 'Cold brew', desc: 'Infusión en frío por 18 horas', price: 'L 85.00' }
+      ],
+      te: [
+        { name: 'Chai latte', desc: 'Té negro especiado con leche', price: 'L 70.00' },
+        { name: 'Té de manzanilla', desc: 'Infusión caliente', price: 'L 40.00' }
+      ],
+      comida: [
+        { name: 'Baleada sencilla', desc: 'Frijoles, queso y mantequilla', price: 'L 35.00' },
+        { name: 'Sándwich de pavo', desc: 'Pan artesanal, queso y vegetales', price: 'L 95.00' }
+      ],
+      reposteria: [
+        { name: 'Croissant', desc: 'Horneado esta mañana', price: 'L 45.00' },
+        { name: 'Pan de banano', desc: 'Rebanada con nueces', price: 'L 50.00', soldOut: true }
+      ]
+    };
+    const labels = [['cafe', 'Café'], ['te', 'Té'], ['comida', 'Comida'], ['reposteria', 'Repostería']];
+    const cats = labels.map(([id, label]) => {
+      const on = this.state.cat === id;
+      return {
+        label, selected: on ? 'true' : 'false',
+        pick: () => this.setState({ cat: id }),
+        style: 'height: 40px; padding: 0 16px; border-radius: 999px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; ' +
+          (on ? 'background: #1C1917; color: #FFFFFF; border: 1px solid #1C1917' : 'background: #FFFFFF; color: #1C1917; border: 1px solid #E7E5E4')
+      };
+    });
+    const items = menu[this.state.cat].map(i => ({ ...i, available: !i.soldOut, soldOut: !!i.soldOut }));
+    return { accent, cats, items };
+  }
+}
+</script>
+</body>
+</html>

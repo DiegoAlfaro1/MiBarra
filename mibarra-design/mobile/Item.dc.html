@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Personalizar — Capuchino</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #FFFFFF; color: #1C1917; font-family: Inter, system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden; position: relative">
+  <div style="height: 230px; flex-shrink: 0; background: #F8E6DC; position: relative; display: flex; align-items: center; justify-content: center">
+    <svg width="96" height="96" viewBox="0 0 24 24" fill="none" stroke="#7C2D12" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Foto del producto"><path d="M4 9h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"></path><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17"></path><path d="M8 3v3M12 3v3"></path></svg>
+    <a href="Menu.dc.html" aria-label="Cerrar" style="position: absolute; top: 52px; left: 20px; width: 44px; height: 44px; border-radius: 22px; background: #FFFFFF; display: flex; align-items: center; justify-content: center">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1C1917" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+    </a>
+  </div>
+
+  <div style="flex: 1; display: flex; flex-direction: column; gap: 20px; padding: 20px 20px 120px; overflow: hidden">
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 28px; font-weight: 700; letter-spacing: -0.02em">Capuchino</h1>
+      <p style="margin: 0; font-size: 14px; color: #57534E; line-height: 1.45">Espresso doble, leche vaporizada y espuma. Desde L 70.00</p>
+    </div>
+
+    <fieldset style="border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px">
+      <legend style="padding: 0; margin-bottom: 10px; font-weight: 700; font-size: 15px">Tamaño</legend>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+        <sc-for list="{{sizes}}" as="s" hint-placeholder-count="3">
+          <button type="button" aria-pressed="{{s.pressed}}" onClick="{{s.pick}}" style="{{s.style}}">
+            <span style="font-weight: 600; font-size: 14px">{{s.label}}</span>
+            <span style="font-size: 12px">{{s.sub}}</span>
+          </button>
+        </sc-for>
+      </div>
+    </fieldset>
+
+    <fieldset style="border: 0; margin: 0; padding: 0; display: flex; flex-direction: column">
+      <legend style="padding: 0; margin-bottom: 10px; font-weight: 700; font-size: 15px">Leche</legend>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px">
+        <sc-for list="{{milks}}" as="m" hint-placeholder-count="4">
+          <button type="button" aria-pressed="{{m.pressed}}" onClick="{{m.pick}}" style="{{m.style}}">{{m.label}}</button>
+        </sc-for>
+      </div>
+    </fieldset>
+
+    <fieldset style="border: 0; margin: 0; padding: 0; display: flex; flex-direction: column">
+      <legend style="padding: 0; margin-bottom: 4px; font-weight: 700; font-size: 15px">Extras</legend>
+      <sc-for list="{{extras}}" as="e" hint-placeholder-count="3">
+        <label style="display: flex; align-items: center; gap: 12px; min-height: 48px; border-bottom: 1px solid #F1EFEC; cursor: pointer">
+          <input type="checkbox" checked="{{e.on}}" onChange="{{e.toggle}}" style="width: 20px; height: 20px; accent-color: #1C1917; margin: 0">
+          <span style="flex: 1; font-size: 15px">{{e.label}}</span>
+          <span style="font-size: 14px; color: #57534E">{{e.price}}</span>
+        </label>
+      </sc-for>
+    </fieldset>
+  </div>
+
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; padding: 14px 20px 28px; background: #FFFFFF; border-top: 1px solid #E7E5E4; display: flex; gap: 12px; align-items: center">
+    <div style="display: flex; align-items: center; gap: 4px; height: 56px; padding: 0 6px; border-radius: 16px; background: #F1EFEC">
+      <button type="button" aria-label="Quitar uno" onClick="{{dec}}" style="width: 44px; height: 44px; border: 0; border-radius: 12px; background: transparent; font-size: 22px; cursor: pointer; color: #1C1917">−</button>
+      <span aria-live="polite" style="min-width: 20px; text-align: center; font-weight: 700; font-size: 16px">{{qty}}</span>
+      <button type="button" aria-label="Agregar uno" onClick="{{inc}}" style="width: 44px; height: 44px; border: 0; border-radius: 12px; background: transparent; font-size: 22px; cursor: pointer; color: #1C1917">+</button>
+    </div>
+    <a href="Cart.dc.html" style="flex: 1; height: 56px; border-radius: 16px; background: {{accent}}; color: #FFFFFF; display: flex; align-items: center; justify-content: space-between; padding: 0 18px; font-weight: 600; font-size: 15px">
+      <span>Agregar</span>
+      <span style="font-weight: 700">{{total}}</span>
+    </a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#B4441B","options":["#B4441B","#1D4ED8","#3F6212","#7C2D12"]},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { size: 1, milk: 0, extras: { shot: false, vainilla: true, caramelo: false }, qty: 1 }; }
+  renderVals() {
+    const accent = this.props.accent ?? '#B4441B';
+    const base = 70;
+    const sizeList = [['Pequeño', '12 oz', 0], ['Mediano', '16 oz · +L 10', 10], ['Grande', '20 oz · +L 20', 20]];
+    const milkList = [['Entera', 0], ['Deslactosada', 0], ['Almendra +L 15', 15], ['Avena +L 15', 15]];
+    const extraList = [['shot', 'Shot extra de espresso', 15], ['vainilla', 'Sirope de vainilla', 10], ['caramelo', 'Sirope de caramelo', 10]];
+    const pill = (on) => on ? 'background: #1C1917; color: #FFFFFF; border: 1.5px solid #1C1917' : 'background: #FFFFFF; color: #1C1917; border: 1.5px solid #E7E5E4';
+    const sizes = sizeList.map(([label, sub], i) => ({ label, sub, pressed: String(this.state.size === i), pick: () => this.setState({ size: i }),
+      style: 'min-height: 64px; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font: inherit; cursor: pointer; ' + pill(this.state.size === i) }));
+    const milks = milkList.map(([label], i) => ({ label, pressed: String(this.state.milk === i), pick: () => this.setState({ milk: i }),
+      style: 'height: 44px; padding: 0 14px; border-radius: 999px; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; ' + pill(this.state.milk === i) }));
+    const extras = extraList.map(([id, label, p]) => ({ label, price: '+L ' + p, on: this.state.extras[id],
+      toggle: () => this.setState({ extras: { ...this.state.extras, [id]: !this.state.extras[id] } }) }));
+    let unit = base + sizeList[this.state.size][2] + milkList[this.state.milk][1];
+    extraList.forEach(([id, , p]) => { if (this.state.extras[id]) unit += p; });
+    const total = 'L ' + (unit * this.state.qty).toFixed(2);
+    return { accent, sizes, milks, extras, qty: this.state.qty, total,
+      inc: () => this.setState({ qty: Math.min(9, this.state.qty + 1) }),
+      dec: () => this.setState({ qty: Math.max(1, this.state.qty - 1) }) };
+  }
+}
+</script>
+</body>
+</html>

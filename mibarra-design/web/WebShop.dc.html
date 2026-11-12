@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>MiBarra web — Menú Café Lempa</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit;opacity:0.85}
+</style>
+</helmet>
+<div style="width: 100%; min-height: 100vh; box-sizing: border-box; background: #F7F5F2; color: #1C1917; font-family: Inter, system-ui, sans-serif; position: relative">
+  <header style="background: #FFFFFF; border-bottom: 1px solid #E7E5E4">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 0 24px; min-height: 72px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px">
+      <a href="WebHome.dc.html" style="display: flex; align-items: center; gap: 10px">
+        <span style="width: 36px; height: 36px; border-radius: 10px; background: {{accent}}; display: flex; align-items: center; justify-content: center">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"></path><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17"></path></svg>
+        </span>
+        <span style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 22px; font-weight: 700; letter-spacing: -0.02em">MiBarra</span>
+      </a>
+      <nav aria-label="Principal" style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+        <a href="WebHome.dc.html" style="padding: 10px 14px; border-radius: 10px; font-size: 15px; font-weight: 600; background: #F1EFEC">Explorar</a>
+        <a href="WebAccount.dc.html" style="padding: 10px 14px; border-radius: 10px; font-size: 15px; font-weight: 500">Mis pedidos</a>
+        <a href="WebAccount.dc.html" style="padding: 10px 14px; border-radius: 10px; font-size: 15px; font-weight: 500">Mis sellos</a>
+        <a href="WebAccount.dc.html" style="margin-left: 8px; display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 14px 0 6px; border-radius: 22px; border: 1px solid #E7E5E4; font-size: 14px; font-weight: 600">
+          <span style="width: 32px; height: 32px; border-radius: 16px; background: #1C1917; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 13px">D</span>Diego</a>
+      </nav>
+    </div>
+  </header>
+
+  <div style="background: {{accent}}; color: #FFFFFF">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 32px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px">
+      <div style="display: flex; align-items: center; gap: 18px">
+        <span style="width: 72px; height: 72px; border-radius: 20px; background: #FFFFFF; color: {{accent}}; display: flex; align-items: center; justify-content: center; font-family: 'Bricolage Grotesque', sans-serif; font-size: 26px; font-weight: 700">CL</span>
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 36px; font-weight: 700; letter-spacing: -0.02em">Café Lempa</h1>
+          <span style="font-size: 15px">Col. Palmira · Abierto hasta 7:00 p. m. · Listo en ~10 min</span>
+        </div>
+      </div>
+      <span style="padding: 8px 14px; border-radius: 999px; background: rgba(255,255,255,0.18); font-size: 14px; font-weight: 600">Tienes 6/8 sellos aquí</span>
+    </div>
+  </div>
+
+  <div style="max-width: 1200px; margin: 0 auto; padding: 28px 24px 64px; display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+    <nav aria-label="Categorías" style="flex: 1 1 180px; max-width: 220px; display: flex; flex-direction: column; gap: 4px">
+      <sc-for list="{{cats}}" as="c" hint-placeholder-count="4">
+        <button type="button" aria-current="{{c.current}}" onClick="{{c.pick}}" style="{{c.style}}">{{c.label}}</button>
+      </sc-for>
+    </nav>
+
+    <section style="flex: 999 1 460px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+      <h2 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 26px; font-weight: 700">{{catTitle}}</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px">
+        <sc-for list="{{items}}" as="it" hint-placeholder-count="5">
+          <sc-if value="{{it.available}}" hint-placeholder-val="{{ true }}">
+            <button type="button" onClick="{{it.open}}" style="display: flex; flex-direction: column; text-align: left; padding: 0; background: #FFFFFF; border: 1px solid #E7E5E4; border-radius: 20px; overflow: hidden; font: inherit; color: #1C1917; cursor: pointer">
+              <span style="height: 120px; align-self: stretch; background: #F8E6DC; display: flex; align-items: center; justify-content: center">
+                <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#7C2D12" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"></path><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17"></path><path d="M8 3v3M12 3v3"></path></svg>
+              </span>
+              <span style="display: flex; flex-direction: column; gap: 6px; padding: 14px 16px 16px">
+                <span style="font-weight: 700; font-size: 16px">{{it.name}}</span>
+                <span style="font-size: 14px; color: #57534E; line-height: 1.4">{{it.desc}}</span>
+                <span style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px">
+                  <span style="font-weight: 700; font-size: 16px">{{it.priceText}}</span>
+                  <span aria-hidden="true" style="width: 36px; height: 36px; border-radius: 18px; background: #1C1917; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 20px">+</span>
+                </span>
+              </span>
+            </button>
+          </sc-if>
+          <sc-if value="{{it.soldOut}}" hint-placeholder-val="{{ false }}">
+            <div aria-disabled="true" style="display: flex; flex-direction: column; background: #F1EFEC; border: 1px dashed #D6D3D1; border-radius: 20px; overflow: hidden">
+              <span style="height: 120px; background: #E7E5E4"></span>
+              <span style="display: flex; flex-direction: column; gap: 6px; padding: 14px 16px 16px">
+                <span style="font-weight: 700; font-size: 16px; color: #57534E">{{it.name}}</span>
+                <span style="font-size: 14px; color: #57534E">{{it.desc}}</span>
+                <span style="align-self: flex-start; margin-top: 4px; padding: 3px 8px; border-radius: 6px; background: #1C1917; color: #FFFFFF; font-size: 11px; font-weight: 700; letter-spacing: 0.04em">AGOTADO HOY</span>
+              </span>
+            </div>
+          </sc-if>
+        </sc-for>
+      </div>
+    </section>
+
+    <aside aria-label="Tu pedido" style="flex: 1 1 300px; max-width: 360px; display: flex; flex-direction: column; gap: 14px; padding: 20px; background: #FFFFFF; border: 1px solid #E7E5E4; border-radius: 22px">
+      <h2 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 22px; font-weight: 700">Tu pedido</h2>
+      <sc-if value="{{empty}}" hint-placeholder-val="{{ false }}">
+        <p style="margin: 0; font-size: 15px; color: #57534E">Aún no has agregado nada.</p>
+      </sc-if>
+      <sc-for list="{{lines}}" as="l" hint-placeholder-count="2">
+        <div style="display: flex; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid #F1EFEC">
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 3px; min-width: 0">
+            <span style="font-weight: 600; font-size: 15px">{{l.qty}} × {{l.name}}</span>
+            <span style="font-size: 13px; color: #57534E; line-height: 1.4">{{l.opts}}</span>
+            <button type="button" onClick="{{l.remove}}" style="align-self: flex-start; min-height: 32px; border: 0; background: none; padding: 0; font: inherit; font-size: 13px; font-weight: 600; color: #B91C1C; text-decoration: underline; cursor: pointer">Quitar</button>
+          </div>
+          <span style="font-weight: 700; font-size: 15px">{{l.price}}</span>
+        </div>
+      </sc-for>
+      <label style="display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 14px; font-weight: 600">Nota para la cafetería</span>
+        <textarea rows="2" placeholder="Ej.: sin tapa, extra caliente" style="font: inherit; font-size: 14px; padding: 10px 12px; border-radius: 12px; border: 1px solid #D6D3D1; resize: none; color: #1C1917"></textarea>
+      </label>
+      <div style="display: flex; justify-content: space-between; align-items: baseline">
+        <span style="font-weight: 600">Total</span>
+        <span style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 24px; font-weight: 700">{{total}}</span>
+      </div>
+      <a href="WebCheckout.dc.html" style="height: 52px; border-radius: 14px; background: {{accent}}; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 16px">Continuar al pago</a>
+      <span style="font-size: 13px; color: #57534E; text-align: center">Este pedido suma 1 sello</span>
+    </aside>
+  </div>
+
+  <sc-if value="{{modalOpen}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; background: rgba(28,25,23,0.55); display: flex; align-items: flex-start; justify-content: center; padding: 96px 16px">
+      <div role="dialog" aria-modal="true" aria-label="Personalizar" style="width: 100%; max-width: 520px; background: #FFFFFF; border-radius: 24px; overflow: hidden; display: flex; flex-direction: column">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 24px 24px 8px">
+          <div style="display: flex; flex-direction: column; gap: 4px">
+            <h2 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 28px; font-weight: 700">{{active.name}}</h2>
+            <span style="font-size: 15px; color: #57534E">{{active.desc}}</span>
+          </div>
+          <button type="button" aria-label="Cerrar" onClick="{{close}}" style="width: 44px; height: 44px; border: 0; border-radius: 22px; background: #F1EFEC; cursor: pointer; display: flex; align-items: center; justify-content: center">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1C1917" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+          </button>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 18px; padding: 16px 24px 24px">
+          <fieldset style="border: 0; margin: 0; padding: 0">
+            <legend style="padding: 0; margin-bottom: 10px; font-weight: 700; font-size: 15px">Tamaño</legend>
+            <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+              <sc-for list="{{sizes}}" as="s" hint-placeholder-count="3">
+                <button type="button" aria-pressed="{{s.pressed}}" onClick="{{s.pick}}" style="{{s.style}}">{{s.label}}</button>
+              </sc-for>
+            </div>
+          </fieldset>
+          <fieldset style="border: 0; margin: 0; padding: 0">
+            <legend style="padding: 0; margin-bottom: 10px; font-weight: 700; font-size: 15px">Leche</legend>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px">
+              <sc-for list="{{milks}}" as="m" hint-placeholder-count="4">
+                <button type="button" aria-pressed="{{m.pressed}}" onClick="{{m.pick}}" style="{{m.style}}">{{m.label}}</button>
+              </sc-for>
+            </div>
+          </fieldset>
+          <button type="button" onClick="{{add}}" style="height: 56px; border: 0; border-radius: 16px; background: {{accent}}; color: #FFFFFF; font: inherit; font-size: 16px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: space-between; padding: 0 20px">
+            <span>Agregar al pedido</span><span>{{modalPrice}}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#B4441B","options":["#B4441B","#1D4ED8","#3F6212","#7C2D12"]},"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { cat: 'cafe', modal: null, size: 1, milk: 0,
+      lines: [{ name: 'Capuchino', opts: 'Mediano · Leche entera · Vainilla', unit: 90, qty: 1 }, { name: 'Croissant', opts: 'Horneado esta mañana', unit: 45, qty: 1 }] };
+  }
+  renderVals() {
+    const accent = this.props.accent ?? '#B4441B';
+    const s = this.state;
+    const menu = {
+      cafe: [
+        { name: 'Capuchino', desc: 'Espresso doble, leche vaporizada y espuma', price: 70 },
+        { name: 'Latte', desc: 'Espresso con leche, suave y cremoso', price: 75 },
+        { name: 'Americano', desc: 'Espresso alargado con agua caliente', price: 50 },
+        { name: 'Moca', desc: 'Espresso, chocolate y leche', price: 80, soldOut: true },
+        { name: 'Cold brew', desc: 'Infusión en frío por 18 horas', price: 85 }
+      ],
+      te: [{ name: 'Chai latte', desc: 'Té negro especiado con leche', price: 70 }, { name: 'Té de manzanilla', desc: 'Infusión caliente', price: 40 }],
+      comida: [{ name: 'Baleada sencilla', desc: 'Frijoles, queso y mantequilla', price: 35 }, { name: 'Sándwich de pavo', desc: 'Pan artesanal, queso y vegetales', price: 95 }],
+      reposteria: [{ name: 'Croissant', desc: 'Horneado esta mañana', price: 45 }, { name: 'Pan de banano', desc: 'Rebanada con nueces', price: 50, soldOut: true }]
+    };
+    const labels = [['cafe', 'Café'], ['te', 'Té'], ['comida', 'Comida'], ['reposteria', 'Repostería']];
+    const cats = labels.map(([id, label]) => {
+      const on = s.cat === id;
+      return { label, current: on ? 'true' : 'false', pick: () => this.setState({ cat: id }),
+        style: 'min-height: 44px; padding: 0 14px; border-radius: 12px; border: 0; text-align: left; font: inherit; font-size: 15px; cursor: pointer; ' + (on ? 'background: #1C1917; color: #FFFFFF; font-weight: 600' : 'background: transparent; color: #1C1917; font-weight: 500') };
+    });
+    const items = menu[s.cat].map(i => ({ ...i, priceText: 'L ' + i.price.toFixed(2), available: !i.soldOut, soldOut: !!i.soldOut,
+      open: () => this.setState({ modal: i, size: 1, milk: 0 }) }));
+    const sizeList = [['Pequeño', 0], ['Mediano +L 10', 10], ['Grande +L 20', 20]];
+    const milkList = [['Entera', 0], ['Deslactosada', 0], ['Almendra +L 15', 15], ['Avena +L 15', 15]];
+    const pill = (on) => on ? 'background: #1C1917; color: #FFFFFF; border: 1.5px solid #1C1917' : 'background: #FFFFFF; color: #1C1917; border: 1.5px solid #E7E5E4';
+    const sizes = sizeList.map(([label], i) => ({ label, pressed: String(s.size === i), pick: () => this.setState({ size: i }),
+      style: 'min-height: 48px; border-radius: 12px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; ' + pill(s.size === i) }));
+    const milks = milkList.map(([label], i) => ({ label, pressed: String(s.milk === i), pick: () => this.setState({ milk: i }),
+      style: 'height: 44px; padding: 0 14px; border-radius: 999px; font: inherit; font-size: 14px; cursor: pointer; ' + pill(s.milk === i) }));
+    const m = s.modal;
+    const unit = m ? m.price + sizeList[s.size][1] + milkList[s.milk][1] : 0;
+    let sum = 0;
+    const lines = s.lines.map((l, idx) => { sum += l.unit * l.qty; return { ...l, price: 'L ' + (l.unit * l.qty).toFixed(2),
+      remove: () => this.setState({ lines: this.state.lines.filter((_, j) => j !== idx) }) }; });
+    return {
+      accent, cats, items, lines, empty: lines.length === 0, total: 'L ' + sum.toFixed(2),
+      catTitle: labels.find(l => l[0] === s.cat)[1],
+      modalOpen: !!m, active: m || { name: '', desc: '' }, sizes, milks, modalPrice: 'L ' + unit.toFixed(2),
+      close: () => this.setState({ modal: null }),
+      add: () => this.setState({ modal: null, lines: this.state.lines.concat([{ name: m.name, opts: sizeList[s.size][0].split(' +')[0] + ' · ' + milkList[s.milk][0].split(' +')[0], unit, qty: 1 }]) })
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Mis pedidos</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F7F5F2; color: #1C1917; font-family: Inter, system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden">
+  <div style="flex: 1; display: flex; flex-direction: column; gap: 18px; padding: 56px 20px 16px; overflow: hidden">
+    <h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 30px; font-weight: 700; letter-spacing: -0.02em">Pedidos</h1>
+
+    <a href="Tracking.dc.html" style="display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: 20px; background: #1C1917; color: #FFFFFF">
+      <div style="display: flex; justify-content: space-between; align-items: center">
+        <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600"><span style="width: 8px; height: 8px; border-radius: 4px; background: #FDBA74"></span>En curso</span>
+        <span style="font-size: 13px; color: #D6D3D1">#A-1042</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: flex-end">
+        <div style="display: flex; flex-direction: column; gap: 2px">
+          <span style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 22px; font-weight: 700">Preparando</span>
+          <span style="font-size: 14px; color: #D6D3D1">Café Lempa · listo 9:15 a. m.</span>
+        </div>
+        <span style="height: 36px; padding: 0 14px; border-radius: 999px; background: {{accent}}; display: flex; align-items: center; font-size: 13px; font-weight: 600">Ver</span>
+      </div>
+    </a>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <h2 style="margin: 0; font-size: 15px; font-weight: 700">Anteriores</h2>
+      <sc-for list="{{past}}" as="o" hint-placeholder-count="4">
+        <div style="display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border-radius: 18px; background: #FFFFFF; border: 1px solid #E7E5E4">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px">
+            <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+              <span style="font-weight: 600; font-size: 15px">{{o.shop}}</span>
+              <span style="font-size: 13px; color: #57534E">{{o.date}}</span>
+            </div>
+            <span style="{{o.badge}}">{{o.status}}</span>
+          </div>
+          <span style="font-size: 14px; color: #44403C; line-height: 1.4">{{o.items}}</span>
+          <div style="display: flex; justify-content: space-between; align-items: center">
+            <span style="font-weight: 700; font-size: 15px">{{o.total}}</span>
+            <sc-if value="{{o.canReorder}}" hint-placeholder-val="{{ true }}">
+              <a href="Cart.dc.html" style="height: 40px; padding: 0 14px; border-radius: 999px; border: 1.5px solid #1C1917; display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 0 1 14-5.3L20 9"></path><path d="M20 4v5h-5"></path><path d="M20 12a8 8 0 0 1-14 5.3L4 15"></path></svg>
+                Pedir de nuevo</a>
+            </sc-if>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <nav aria-label="Navegación principal" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); height: 76px; padding-bottom: 12px; box-sizing: border-box; background: #FFFFFF; border-top: 1px solid #E7E5E4">
+    <a href="Main.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 11px; font-weight: 500; color: #57534E">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"></path></svg>Inicio</a>
+    <a href="Orders.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 11px; font-weight: 600; color: {{accent}}">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6M9 12h6"></path></svg>Pedidos</a>
+    <a href="Loyalty.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 11px; font-weight: 500; color: #57534E">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><circle cx="8.5" cy="12" r="1.5"></circle><circle cx="13" cy="12" r="1.5"></circle></svg>Sellos</a>
+    <a href="Login.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 11px; font-weight: 500; color: #57534E">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"></path></svg>Perfil</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#B4441B","options":["#B4441B","#1D4ED8","#3F6212","#7C2D12"]},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const accent = this.props.accent ?? '#B4441B';
+    const ok = 'padding: 4px 8px; border-radius: 6px; background: #DCFCE7; color: #14532D; font-size: 12px; font-weight: 700; white-space: nowrap';
+    const no = 'padding: 4px 8px; border-radius: 6px; background: #FEE2E2; color: #991B1B; font-size: 12px; font-weight: 700; white-space: nowrap';
+    const past = [
+      { shop: 'Café Lempa', date: 'Ayer · 8:42 a. m.', items: 'Latte mediano, Croissant', total: 'L 120.00', status: 'Recogido · +1 sello', badge: ok, canReorder: true },
+      { shop: 'La Molienda', date: 'Lun 9 nov · 3:10 p. m.', items: 'Cold brew, Pan de banano', total: 'L 135.00', status: 'Recogido · +1 sello', badge: ok, canReorder: true },
+      { shop: 'Café Lempa', date: 'Vie 6 nov · 7:55 a. m.', items: 'Americano grande', total: 'L 70.00', status: 'Cancelado', badge: no, canReorder: false }
+    ];
+    return { accent, past };
+  }
+}
+</script>
+</body>
+</html>

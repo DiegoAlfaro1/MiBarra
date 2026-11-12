@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Pedido cancelado</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F7F5F2; color: #1C1917; font-family: Inter, system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden">
+  <div style="display: flex; justify-content: space-between; align-items: center; padding: 52px 20px 8px">
+    <a href="Main.dc.html" aria-label="Ir al inicio" style="width: 44px; height: 44px; border-radius: 22px; background: #FFFFFF; border: 1px solid #E7E5E4; box-sizing: border-box; display: flex; align-items: center; justify-content: center">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1C1917" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+    </a>
+    <span style="font-size: 14px; font-weight: 600; color: #57534E">Pedido #A-1042</span>
+    <span style="width: 44px"></span>
+  </div>
+
+  <div style="flex: 1; display: flex; flex-direction: column; gap: 20px; padding: 12px 20px 28px">
+    <div role="status" style="display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 28px 20px; border-radius: 24px; background: #FFFFFF; border: 1px solid #E7E5E4">
+      <div style="width: 80px; height: 80px; border-radius: 40px; background: #FEE2E2; display: flex; align-items: center; justify-content: center">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#B91C1C" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+      </div>
+      <h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 28px; font-weight: 700; letter-spacing: -0.02em; text-align: center">{{title}}</h1>
+      <p style="margin: 0; font-size: 15px; color: #57534E; text-align: center; line-height: 1.45; max-width: 290px">{{body}}</p>
+    </div>
+
+    <sc-if value="{{byShop}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E7E5E4">
+        <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: #57534E">MOTIVO DE LA CAFETERÍA</span>
+        <span style="font-size: 15px; line-height: 1.45">“Se nos acabó la leche de almendra. Disculpa, Diego.”</span>
+      </div>
+    </sc-if>
+
+    <ul style="list-style: none; margin: 0; padding: 4px 16px; display: flex; flex-direction: column; background: #FFFFFF; border: 1px solid #E7E5E4; border-radius: 16px; font-size: 14px">
+      <li style="display: flex; gap: 10px; align-items: center; min-height: 48px; border-bottom: 1px solid #F1EFEC">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#15803D" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+        No se hizo ningún cobro
+      </li>
+      <li style="display: flex; gap: 10px; align-items: center; min-height: 48px">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#57534E" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5M12 8h.01"></path></svg>
+        Los pedidos cancelados no suman sellos
+      </li>
+    </ul>
+
+    <div style="flex: 1"></div>
+
+    <a href="Menu.dc.html" style="height: 56px; border-radius: 16px; background: {{accent}}; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 16px">Volver al menú</a>
+    <a href="Main.dc.html" style="height: 44px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600; text-decoration: underline">Probar otra cafetería</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#B4441B","options":["#B4441B","#1D4ED8","#3F6212","#7C2D12"]},"cancelledBy":{"editor":"enum","options":["cafetería","cliente"],"default":"cafetería"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const accent = this.props.accent ?? '#B4441B';
+    const byShop = (this.props.cancelledBy ?? 'cafetería') === 'cafetería';
+    return {
+      accent, byShop,
+      title: byShop ? 'Café Lempa canceló tu pedido' : 'Cancelaste tu pedido',
+      body: byShop ? 'Lo sentimos. Abajo está el motivo que nos dejó la cafetería.' : 'Listo, la cafetería ya fue avisada y no preparará tu pedido.'
+    };
+  }
+}
+</script>
+</body>
+</html>

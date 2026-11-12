@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>MiBarra web — Mis sellos y pedidos</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit;opacity:0.85}
+</style>
+</helmet>
+<div style="width: 100%; min-height: 100vh; box-sizing: border-box; background: #F7F5F2; color: #1C1917; font-family: Inter, system-ui, sans-serif">
+  <header style="background: #FFFFFF; border-bottom: 1px solid #E7E5E4">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 0 24px; min-height: 72px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px">
+      <a href="WebHome.dc.html" style="display: flex; align-items: center; gap: 10px">
+        <span style="width: 36px; height: 36px; border-radius: 10px; background: {{accent}}; display: flex; align-items: center; justify-content: center">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"></path><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17"></path></svg>
+        </span>
+        <span style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 22px; font-weight: 700; letter-spacing: -0.02em">MiBarra</span>
+      </a>
+      <nav aria-label="Principal" style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+        <a href="WebHome.dc.html" style="padding: 10px 14px; border-radius: 10px; font-size: 15px; font-weight: 500">Explorar</a>
+        <a href="WebAccount.dc.html" aria-current="page" style="padding: 10px 14px; border-radius: 10px; font-size: 15px; font-weight: 600; background: #F1EFEC">Mi cuenta</a>
+        <a href="WebAccount.dc.html" style="margin-left: 8px; display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 14px 0 6px; border-radius: 22px; border: 1px solid #E7E5E4; font-size: 14px; font-weight: 600">
+          <span style="width: 32px; height: 32px; border-radius: 16px; background: #1C1917; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 13px">D</span>Diego</a>
+      </nav>
+    </div>
+  </header>
+
+  <main style="max-width: 1200px; margin: 0 auto; padding: 36px 24px 64px; display: flex; flex-direction: column; gap: 24px">
+    <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px">
+      <h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 36px; font-weight: 700; letter-spacing: -0.02em">Hola, Diego</h1>
+      <div role="tablist" aria-label="Secciones" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 4px; border-radius: 14px; background: #E7E5E4">
+        <sc-for list="{{tabs}}" as="t" hint-placeholder-count="2">
+          <button type="button" role="tab" aria-selected="{{t.selected}}" onClick="{{t.pick}}" style="{{t.style}}">{{t.label}}</button>
+        </sc-for>
+      </div>
+    </div>
+
+    <sc-if value="{{showStamps}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+        <section style="flex: 999 1 520px; min-width: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px">
+          <sc-for list="{{cards}}" as="c" hint-placeholder-count="3">
+            <div style="{{c.style}}">
+              <div style="display: flex; justify-content: space-between; align-items: center">
+                <span style="font-weight: 700; font-size: 17px">{{c.name}}</span>
+                <span style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 22px; font-weight: 700">{{c.count}}</span>
+              </div>
+              <div style="height: 8px; border-radius: 4px; background: rgba(0,0,0,0.12); overflow: hidden"><div style="{{c.bar}}"></div></div>
+              <span style="font-size: 14px; line-height: 1.4">{{c.note}}</span>
+            </div>
+          </sc-for>
+        </section>
+        <aside style="flex: 1 1 280px; display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 24px; background: #FFFFFF; border: 1px solid #E7E5E4; border-radius: 22px; text-align: center">
+          <h2 style="margin: 0; font-size: 17px; font-weight: 700">Tu código MiBarra</h2>
+          <div role="img" aria-label="Código QR de tu cuenta" style="width: 180px; height: 180px; display: grid; grid-template-columns: repeat(21, minmax(0, 1fr))">
+            <sc-for list="{{qr}}" as="q" hint-placeholder-count="441">
+              <span style="{{q}}"></span>
+            </sc-for>
+          </div>
+          <span style="font-size: 14px; color: #57534E; line-height: 1.5">Muéstralo en caja para sumar sellos en compras sin la app o canjear recompensas.</span>
+        </aside>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{showOrders}}" hint-placeholder-val="{{ false }}">
+      <section style="background: #FFFFFF; border: 1px solid #E7E5E4; border-radius: 22px; overflow-x: auto">
+        <table style="width: 100%; min-width: 640px; border-collapse: collapse; font-size: 15px">
+          <thead>
+            <tr style="text-align: left; color: #57534E; font-size: 13px">
+              <th scope="col" style="padding: 16px 20px; font-weight: 600">Fecha</th>
+              <th scope="col" style="padding: 16px 20px; font-weight: 600">Cafetería</th>
+              <th scope="col" style="padding: 16px 20px; font-weight: 600">Productos</th>
+              <th scope="col" style="padding: 16px 20px; font-weight: 600">Total</th>
+              <th scope="col" style="padding: 16px 20px; font-weight: 600">Estado</th>
+              <th scope="col" style="padding: 16px 20px"><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Acciones</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <sc-for list="{{orders}}" as="o" hint-placeholder-count="4">
+              <tr style="border-top: 1px solid #F1EFEC">
+                <td style="padding: 14px 20px; white-space: nowrap">{{o.date}}</td>
+                <td style="padding: 14px 20px; font-weight: 600">{{o.shop}}</td>
+                <td style="padding: 14px 20px; color: #44403C">{{o.items}}</td>
+                <td style="padding: 14px 20px; font-weight: 600; white-space: nowrap">{{o.total}}</td>
+                <td style="padding: 14px 20px"><span style="{{o.badge}}">{{o.status}}</span></td>
+                <td style="padding: 14px 20px; text-align: right"><a href="{{o.href}}" style="font-weight: 600; text-decoration: underline; white-space: nowrap">{{o.action}}</a></td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </section>
+    </sc-if>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#B4441B","options":["#B4441B","#1D4ED8","#3F6212","#7C2D12"]},"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { tab: 'stamps' }; }
+  renderVals() {
+    const accent = this.props.accent ?? '#B4441B';
+    const tabs = [['stamps', 'Mis sellos'], ['orders', 'Mis pedidos']].map(([id, label]) => {
+      const on = this.state.tab === id;
+      return { label, selected: String(on), pick: () => this.setState({ tab: id }),
+        style: 'height: 44px; padding: 0 18px; border: 0; border-radius: 10px; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; ' + (on ? 'background: #FFFFFF; color: #1C1917; box-shadow: 0 1px 3px rgba(0,0,0,0.12)' : 'background: transparent; color: #44403C') };
+    });
+    const card = (bg, fg) => 'display: flex; flex-direction: column; gap: 12px; padding: 20px; border-radius: 20px; background: ' + bg + '; color: ' + fg;
+    const bar = (pct, c) => 'width: ' + pct + '%; height: 8px; background: ' + c;
+    const cards = [
+      { name: 'Café Lempa', count: '6/8', note: '2 pedidos más para una bebida gratis', style: card(accent, '#FFFFFF'), bar: bar(75, '#FFFFFF') },
+      { name: 'Tostadores del Valle', count: '8/8', note: '¡Recompensa lista! Muestra tu código en caja.', style: card('#DCFCE7', '#14532D') + '; border: 1px solid #86EFAC', bar: bar(100, '#14532D') },
+      { name: 'La Molienda', count: '2/10', note: '8 pedidos más para un postre gratis', style: card('#FFFFFF', '#1C1917') + '; border: 1px solid #E7E5E4', bar: bar(20, '#3F6212') }
+    ];
+    const ok = 'padding: 4px 8px; border-radius: 6px; background: #DCFCE7; color: #14532D; font-size: 12px; font-weight: 700; white-space: nowrap';
+    const live = 'padding: 4px 8px; border-radius: 6px; background: #FFEDD5; color: #7C2D12; font-size: 12px; font-weight: 700; white-space: nowrap';
+    const no = 'padding: 4px 8px; border-radius: 6px; background: #FEE2E2; color: #991B1B; font-size: 12px; font-weight: 700; white-space: nowrap';
+    const orders = [
+      { date: 'Hoy · 9:03 a. m.', shop: 'Café Lempa', items: 'Capuchino mediano, Croissant', total: 'L 135.00', status: 'Preparando', badge: live, action: 'Seguir pedido', href: 'WebTracking.dc.html' },
+      { date: 'Ayer · 8:42 a. m.', shop: 'Café Lempa', items: 'Latte mediano, Croissant', total: 'L 120.00', status: 'Recogido · +1 sello', badge: ok, action: 'Pedir de nuevo', href: 'WebShop.dc.html' },
+      { date: 'Lun 9 nov', shop: 'La Molienda', items: 'Cold brew, Pan de banano', total: 'L 135.00', status: 'Recogido · +1 sello', badge: ok, action: 'Pedir de nuevo', href: 'WebShop.dc.html' },
+      { date: 'Vie 6 nov', shop: 'Café Lempa', items: 'Americano grande', total: 'L 70.00', status: 'Cancelado', badge: no, action: 'Ver detalle', href: 'WebTracking.dc.html' }
+    ];
+    const N = 21, qr = [];
+    const finder = (r, c) => {
+      for (const [r0, c0] of [[0, 0], [0, N - 7], [N - 7, 0]]) {
+        const y = r - r0, x = c - c0;
+        if (y >= 0 && y < 7 && x >= 0 && x < 7) return (y === 0 || y === 6 || x === 0 || x === 6 || (y >= 2 && y <= 4 && x >= 2 && x <= 4)) ? 1 : 0;
+        if (y >= -1 && y <= 7 && x >= -1 && x <= 7) return 0;
+      }
+      return -1;
+    };
+    for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+      let v = finder(r, c);
+      if (v < 0) v = ((r * 7 + c * 13 + r * c * 3) % 5 < 2) ? 1 : 0;
+      qr.push('aspect-ratio: 1; background: ' + (v ? '#1C1917' : 'transparent'));
+    }
+    return { accent, tabs, cards, orders, qr, showStamps: this.state.tab === 'stamps', showOrders: this.state.tab === 'orders' };
+  }
+}
+</script>
+</body>
+</html>

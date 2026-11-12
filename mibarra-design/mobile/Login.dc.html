@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Crear cuenta</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #FFFFFF; color: #1C1917; font-family: Inter, system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden">
+  <div style="display: flex; align-items: center; padding: 52px 20px 8px">
+    <a href="Cart.dc.html" aria-label="Volver al carrito" style="width: 44px; height: 44px; border-radius: 22px; border: 1px solid #E7E5E4; box-sizing: border-box; display: flex; align-items: center; justify-content: center">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1C1917" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>
+    </a>
+  </div>
+
+  <div style="flex: 1; display: flex; flex-direction: column; gap: 22px; padding: 12px 24px 28px">
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div style="width: 52px; height: 52px; border-radius: 16px; background: {{accent}}; display: flex; align-items: center; justify-content: center">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"></path><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17"></path></svg>
+      </div>
+      <h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 28px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.15">{{heading}}</h1>
+      <p style="margin: 0; font-size: 15px; color: #57534E; line-height: 1.45">Una sola cuenta para todas las cafeterías de MiBarra. Tu pedido te espera.</p>
+    </div>
+
+    <div role="tablist" aria-label="Método de acceso" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 4px; border-radius: 14px; background: #F1EFEC">
+      <sc-for list="{{methods}}" as="m" hint-placeholder-count="2">
+        <button type="button" role="tab" aria-selected="{{m.selected}}" onClick="{{m.pick}}" style="{{m.style}}">{{m.label}}</button>
+      </sc-for>
+    </div>
+
+    <form style="display: flex; flex-direction: column; gap: 14px">
+      <sc-if value="{{isSignup}}" hint-placeholder-val="{{ true }}">
+        <label style="display: flex; flex-direction: column; gap: 6px">
+          <span style="font-size: 14px; font-weight: 600">Nombre</span>
+          <input type="text" autocomplete="name" placeholder="¿Cómo te llamamos al entregar?" style="height: 52px; padding: 0 14px; border-radius: 14px; border: 1px solid #D6D3D1; font: inherit; font-size: 16px; color: #1C1917">
+        </label>
+      </sc-if>
+      <sc-if value="{{isPhone}}" hint-placeholder-val="{{ true }}">
+        <label style="display: flex; flex-direction: column; gap: 6px">
+          <span style="font-size: 14px; font-weight: 600">Número de celular</span>
+          <div style="display: flex; height: 52px; border-radius: 14px; border: 1px solid #D6D3D1; overflow: hidden">
+            <span style="display: flex; align-items: center; padding: 0 12px; background: #F7F5F2; border-right: 1px solid #D6D3D1; font-size: 16px; font-weight: 500">+504</span>
+            <input type="tel" autocomplete="tel" placeholder="9999 9999" style="flex: 1; border: 0; outline: none; padding: 0 14px; font: inherit; font-size: 16px; color: #1C1917">
+          </div>
+        </label>
+      </sc-if>
+      <sc-if value="{{isEmail}}" hint-placeholder-val="{{ false }}">
+        <label style="display: flex; flex-direction: column; gap: 6px">
+          <span style="font-size: 14px; font-weight: 600">Correo electrónico</span>
+          <input type="email" autocomplete="email" placeholder="tu@correo.com" style="height: 52px; padding: 0 14px; border-radius: 14px; border: 1px solid #D6D3D1; font: inherit; font-size: 16px; color: #1C1917">
+        </label>
+      </sc-if>
+      <label style="display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 14px; font-weight: 600">Contraseña</span>
+        <input type="password" autocomplete="new-password" placeholder="Mínimo 8 caracteres" style="height: 52px; padding: 0 14px; border-radius: 14px; border: 1px solid #D6D3D1; font: inherit; font-size: 16px; color: #1C1917">
+      </label>
+      <label style="display: flex; align-items: center; gap: 10px; min-height: 44px; font-size: 14px; color: #57534E">
+        <input type="checkbox" checked="{{ true }}" style="width: 20px; height: 20px; margin: 0; accent-color: #1C1917">
+        Mantener sesión iniciada en este teléfono
+      </label>
+    </form>
+
+    <div style="flex: 1"></div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px; align-items: stretch">
+      <a href="Checkout.dc.html" style="height: 56px; border-radius: 16px; background: {{accent}}; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 16px">{{cta}}</a>
+      <button type="button" onClick="{{toggleMode}}" style="min-height: 44px; border: 0; background: none; font: inherit; font-size: 15px; color: #1C1917; cursor: pointer">{{switchText}} <span style="font-weight: 700; text-decoration: underline">{{switchLink}}</span></button>
+      <p style="margin: 0; font-size: 12px; color: #57534E; text-align: center; line-height: 1.5">Al continuar aceptas los <a href="#terminos" style="text-decoration: underline">Términos</a> y la <a href="#privacidad" style="text-decoration: underline">Política de privacidad</a>.</p>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#B4441B","options":["#B4441B","#1D4ED8","#3F6212","#7C2D12"]},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { method: 'phone', signup: true }; }
+  renderVals() {
+    const accent = this.props.accent ?? '#B4441B';
+    const s = this.state;
+    const methods = [['phone', 'Celular'], ['email', 'Correo']].map(([id, label]) => {
+      const on = s.method === id;
+      return { label, selected: String(on), pick: () => this.setState({ method: id }),
+        style: 'height: 44px; border: 0; border-radius: 10px; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; ' +
+          (on ? 'background: #FFFFFF; color: #1C1917; box-shadow: 0 1px 3px rgba(0,0,0,0.12)' : 'background: transparent; color: #57534E') };
+    });
+    return {
+      accent, methods,
+      isPhone: s.method === 'phone', isEmail: s.method === 'email', isSignup: s.signup,
+      heading: s.signup ? 'Crea tu cuenta para terminar el pedido' : 'Bienvenido de vuelta',
+      cta: s.signup ? 'Crear cuenta y continuar' : 'Iniciar sesión y continuar',
+      switchText: s.signup ? '¿Ya tienes cuenta?' : '¿Eres nuevo?',
+      switchLink: s.signup ? 'Inicia sesión' : 'Crea una cuenta',
+      toggleMode: () => this.setState({ signup: !s.signup })
+    };
+  }
+}
+</script>
+</body>
+</html>

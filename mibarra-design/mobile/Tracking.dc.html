@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Seguimiento del pedido</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F7F5F2; color: #1C1917; font-family: Inter, system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden">
+  <div style="display: flex; justify-content: space-between; align-items: center; padding: 52px 20px 8px">
+    <a href="Main.dc.html" aria-label="Ir al inicio" style="width: 44px; height: 44px; border-radius: 22px; background: #FFFFFF; border: 1px solid #E7E5E4; box-sizing: border-box; display: flex; align-items: center; justify-content: center">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1C1917" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+    </a>
+    <span style="font-size: 14px; font-weight: 600; color: #57534E">Pedido #A-1042</span>
+    <span style="width: 44px"></span>
+  </div>
+
+  <div style="flex: 1; display: flex; flex-direction: column; gap: 20px; padding: 12px 20px 28px">
+    <div aria-live="polite" style="{{heroStyle}}">
+      <div style="{{iconWrap}}">
+        <sc-if value="{{isReady}}" hint-placeholder-val="{{ false }}">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+        </sc-if>
+        <sc-if value="{{notReady}}" hint-placeholder-val="{{ true }}">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"></path><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17"></path><path d="M8 3v3M12 3v3"></path></svg>
+        </sc-if>
+      </div>
+      <h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 30px; font-weight: 700; letter-spacing: -0.02em; text-align: center">{{title}}</h1>
+      <p style="margin: 0; font-size: 15px; text-align: center; line-height: 1.45; max-width: 290px">{{body}}</p>
+    </div>
+
+    <ol aria-label="Progreso del pedido" style="list-style: none; margin: 0; padding: 18px 16px; display: flex; flex-direction: column; gap: 0; background: #FFFFFF; border: 1px solid #E7E5E4; border-radius: 18px">
+      <sc-for list="{{steps}}" as="st" hint-placeholder-count="3">
+        <li style="display: flex; gap: 14px; align-items: flex-start">
+          <div style="display: flex; flex-direction: column; align-items: center">
+            <span style="{{st.dot}}"></span>
+            <span style="{{st.line}}"></span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 2px; padding-bottom: 14px; margin-top: -2px">
+            <span style="{{st.labelStyle}}">{{st.label}}</span>
+            <span style="font-size: 13px; color: #57534E">{{st.time}}</span>
+          </div>
+        </li>
+      </sc-for>
+    </ol>
+
+    <div style="display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; background: #FFFFFF; border: 1px solid #E7E5E4; border-radius: 18px; font-size: 14px">
+      <div style="display: flex; justify-content: space-between"><span style="color: #57534E">Recoger en</span><span style="font-weight: 600">Café Lempa · Col. Palmira</span></div>
+      <div style="display: flex; justify-content: space-between"><span style="color: #57534E">Hora estimada</span><span style="font-weight: 600">9:15 a. m.</span></div>
+      <div style="display: flex; justify-content: space-between"><span style="color: #57534E">Pago</span><span style="font-weight: 600">En caja · L 135.00</span></div>
+    </div>
+
+    <div style="flex: 1"></div>
+
+    <sc-if value="{{canCancel}}" hint-placeholder-val="{{ true }}">
+      <a href="Cancelled.dc.html" style="height: 52px; border-radius: 16px; border: 1.5px solid #B91C1C; color: #B91C1C; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px">Cancelar pedido</a>
+      <span style="font-size: 12px; color: #57534E; text-align: center">Puedes cancelar hasta que la cafetería empiece a prepararlo.</span>
+    </sc-if>
+    <sc-if value="{{isReady}}" hint-placeholder-val="{{ false }}">
+      <a href="Loyalty.dc.html" style="height: 56px; border-radius: 16px; background: #1C1917; color: #FFFFFF; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; font-size: 15px">Ver mi tarjeta de sellos · 7/8</a>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#B4441B","options":["#B4441B","#1D4ED8","#3F6212","#7C2D12"]},"status":{"editor":"enum","options":["recibido","preparando","listo"],"default":"preparando"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const accent = this.props.accent ?? '#B4441B';
+    const status = this.props.status ?? 'preparando';
+    const idx = { recibido: 0, preparando: 1, listo: 2 }[status] ?? 1;
+    const copy = [
+      ['Pedido recibido', 'Café Lempa ya tiene tu pedido. Te avisamos aquí cuando empiecen a prepararlo.'],
+      ['Preparando tu pedido', 'Tu barista está en ello. Sal con calma: estará listo a las 9:15 a. m.'],
+      ['¡Listo para recoger!', 'Di tu nombre en la barra: Diego, pedido A-1042.']
+    ][idx];
+    const ready = idx === 2;
+    const color = ready ? '#15803D' : accent;
+    const stepList = [['Recibido', '9:03 a. m.'], ['Preparando', idx >= 1 ? '9:05 a. m.' : 'En espera'], ['Listo', idx >= 2 ? '9:13 a. m.' : 'Aprox. 9:15 a. m.']];
+    const steps = stepList.map(([label, time], i) => {
+      const done = i <= idx;
+      return { label, time,
+        dot: 'width: 20px; height: 20px; border-radius: 10px; box-sizing: border-box; ' + (done ? 'background: ' + color + '; border: 0' : 'background: #FFFFFF; border: 2px solid #D6D3D1'),
+        line: i === 2 ? 'display: none' : 'width: 2px; height: 30px; background: ' + (i < idx ? color : '#E7E5E4'),
+        labelStyle: 'font-size: 15px; ' + (i === idx ? 'font-weight: 700' : done ? 'font-weight: 600' : 'font-weight: 500; color: #57534E') };
+    });
+    return {
+      title: copy[0], body: copy[1], steps, isReady: ready, notReady: !ready, canCancel: idx === 0,
+      heroStyle: 'display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 28px 20px; border-radius: 24px; ' + (ready ? 'background: #DCFCE7; color: #14532D' : 'background: #FFFFFF; border: 1px solid #E7E5E4'),
+      iconWrap: 'width: 80px; height: 80px; border-radius: 40px; display: flex; align-items: center; justify-content: center; background: ' + color
+    };
+  }
+}
+</script>
+</body>
+</html>

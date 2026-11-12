@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Panel MiBarra — Disponibilidad del menú</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit;opacity:0.85}
+</style>
+</helmet>
+<div style="width: 100%; min-height: 100vh; box-sizing: border-box; background: #F1EFEC; color: #1C1917; font-family: Inter, system-ui, sans-serif">
+  <header style="background: #1C1917; color: #FFFFFF">
+    <div style="padding: 12px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px">
+      <div style="display: flex; align-items: center; gap: 12px">
+        <span style="width: 40px; height: 40px; border-radius: 12px; background: {{accent}}; display: flex; align-items: center; justify-content: center">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"></path><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17"></path></svg>
+        </span>
+        <div style="display: flex; flex-direction: column">
+          <span style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 18px; font-weight: 700">Café Lempa</span>
+          <span style="font-size: 12px; color: #D6D3D1">Panel MiBarra</span>
+        </div>
+      </div>
+      <nav aria-label="Panel" style="display: flex; flex-wrap: wrap; gap: 6px">
+        <a href="DashOrders.dc.html" style="height: 48px; padding: 0 18px; border-radius: 12px; display: flex; align-items: center; font-size: 15px; font-weight: 600">Pedidos</a>
+        <a href="DashMenu.dc.html" aria-current="page" style="height: 48px; padding: 0 18px; border-radius: 12px; background: #FFFFFF; color: #1C1917; display: flex; align-items: center; font-size: 15px; font-weight: 700">Menú</a>
+        <a href="DashScan.dc.html" style="height: 48px; padding: 0 18px; border-radius: 12px; display: flex; align-items: center; font-size: 15px; font-weight: 600">Escanear</a>
+        <a href="DashSummary.dc.html" style="height: 48px; padding: 0 18px; border-radius: 12px; display: flex; align-items: center; font-size: 15px; font-weight: 600">Resumen</a>
+      </nav>
+      <span style="height: 48px; padding: 0 16px; border-radius: 24px; background: #15803D; display: flex; align-items: center; font-size: 15px; font-weight: 700">Recibiendo pedidos</span>
+    </div>
+  </header>
+
+  <main style="max-width: 1000px; margin: 0 auto; padding: 24px; display: flex; flex-direction: column; gap: 20px">
+    <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 30px; font-weight: 700">¿Qué hay hoy?</h1>
+        <span style="font-size: 15px; color: #57534E">Un toque marca un producto como agotado. Los clientes lo ven en gris al instante.</span>
+      </div>
+      <span style="padding: 10px 14px; border-radius: 12px; background: #FFFFFF; font-size: 15px; font-weight: 600">{{soldCount}} agotados</span>
+    </div>
+
+    <sc-for list="{{groups}}" as="g" hint-placeholder-count="3">
+      <section style="display: flex; flex-direction: column; background: #FFFFFF; border-radius: 20px; overflow: hidden; border: 1px solid #E7E5E4">
+        <h2 style="margin: 0; padding: 14px 20px; font-size: 16px; font-weight: 700; background: #FAFAF9; border-bottom: 1px solid #E7E5E4">{{g.title}}</h2>
+        <sc-for list="{{g.items}}" as="it" hint-placeholder-count="3">
+          <div style="display: flex; align-items: center; gap: 14px; min-height: 72px; padding: 0 20px; border-bottom: 1px solid #F1EFEC">
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0">
+              <span style="{{it.nameStyle}}">{{it.name}}</span>
+              <span style="font-size: 14px; color: #57534E">{{it.price}}</span>
+            </div>
+            <span style="{{it.badge}}">{{it.stateText}}</span>
+            <button type="button" role="switch" aria-checked="{{it.on}}" aria-label="{{it.aria}}" onClick="{{it.toggle}}" style="{{it.track}}">
+              <span style="{{it.knob}}"></span>
+            </button>
+          </div>
+        </sc-for>
+      </section>
+    </sc-for>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#B4441B","options":["#B4441B","#1D4ED8","#3F6212","#7C2D12"]},"$preview":{"width":1280,"height":860}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { sold: { 'Moca': true, 'Pan de banano': true } }; }
+  renderVals() {
+    const accent = this.props.accent ?? '#B4441B';
+    const data = [
+      ['Café', [['Capuchino', 70], ['Latte', 75], ['Americano', 50], ['Moca', 80], ['Cold brew', 85]]],
+      ['Té', [['Chai latte', 70], ['Té de manzanilla', 40]]],
+      ['Comida y repostería', [['Baleada sencilla', 35], ['Sándwich de pavo', 95], ['Croissant', 45], ['Pan de banano', 50]]]
+    ];
+    const sold = this.state.sold;
+    const groups = data.map(([title, list]) => ({ title, items: list.map(([name, p]) => {
+      const out = !!sold[name];
+      return { name, price: 'L ' + p.toFixed(2), on: String(!out), aria: 'Disponible: ' + name,
+        stateText: out ? 'Agotado' : 'Disponible',
+        badge: 'padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: 700; ' + (out ? 'background: #1C1917; color: #FFFFFF' : 'background: #DCFCE7; color: #14532D'),
+        nameStyle: 'font-size: 17px; font-weight: 600; ' + (out ? 'color: #57534E; text-decoration: line-through' : ''),
+        track: 'width: 72px; height: 44px; flex-shrink: 0; border-radius: 22px; border: 0; padding: 4px; box-sizing: border-box; display: flex; cursor: pointer; ' + (out ? 'background: #A8A29E; justify-content: flex-start' : 'background: #15803D; justify-content: flex-end'),
+        knob: 'width: 36px; height: 36px; border-radius: 18px; background: #FFFFFF; box-shadow: 0 1px 3px rgba(0,0,0,0.25)',
+        toggle: () => this.setState({ sold: { ...this.state.sold, [name]: !out } }) };
+    }) }));
+    return { accent, groups, soldCount: String(Object.values(sold).filter(Boolean).length) };
+  }
+}
+</script>
+</body>
+</html>

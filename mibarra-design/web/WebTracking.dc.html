@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>MiBarra web — Seguimiento del pedido</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit;opacity:0.85}
+</style>
+</helmet>
+<div style="width: 100%; min-height: 100vh; box-sizing: border-box; background: #F7F5F2; color: #1C1917; font-family: Inter, system-ui, sans-serif">
+  <header style="background: #FFFFFF; border-bottom: 1px solid #E7E5E4">
+    <div style="max-width: 1100px; margin: 0 auto; padding: 0 24px; min-height: 72px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px">
+      <a href="WebHome.dc.html" style="display: flex; align-items: center; gap: 10px">
+        <span style="width: 36px; height: 36px; border-radius: 10px; background: {{accent}}; display: flex; align-items: center; justify-content: center">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"></path><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17"></path></svg>
+        </span>
+        <span style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 22px; font-weight: 700; letter-spacing: -0.02em">MiBarra</span>
+      </a>
+      <a href="WebAccount.dc.html" style="display: flex; align-items: center; min-height: 44px; font-size: 15px; font-weight: 600">Mis pedidos</a>
+    </div>
+  </header>
+
+  <main style="max-width: 1100px; margin: 0 auto; padding: 36px 24px 64px; display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+    <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 20px">
+      <section aria-live="polite" style="{{heroStyle}}">
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px">
+          <span style="font-size: 14px; font-weight: 600">Pedido #A-1042 · Café Lempa</span>
+          <span style="font-size: 14px; font-weight: 600">Listo aprox. 9:15 a. m.</span>
+        </div>
+        <h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: clamp(2rem, 4vw, 3rem); font-weight: 700; letter-spacing: -0.02em">{{title}}</h1>
+        <p style="margin: 0; font-size: 17px; line-height: 1.5; max-width: 560px">{{body}}</p>
+        <ol aria-label="Progreso" style="list-style: none; margin: 8px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+          <sc-for list="{{steps}}" as="st" hint-placeholder-count="3">
+            <li style="display: flex; flex-direction: column; gap: 8px">
+              <span style="{{st.bar}}"></span>
+              <span style="{{st.labelStyle}}">{{st.label}}</span>
+              <span style="font-size: 13px">{{st.time}}</span>
+            </li>
+          </sc-for>
+        </ol>
+      </section>
+
+      <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px">
+        <div style="display: flex; flex-direction: column; gap: 10px; padding: 20px; background: #FFFFFF; border: 1px solid #E7E5E4; border-radius: 20px; font-size: 15px">
+          <h2 style="margin: 0; font-size: 16px; font-weight: 700">Tu pedido</h2>
+          <div style="display: flex; justify-content: space-between"><span>1 × Capuchino mediano</span><span>L 90.00</span></div>
+          <div style="display: flex; justify-content: space-between"><span>1 × Croissant</span><span>L 45.00</span></div>
+          <div style="display: flex; justify-content: space-between; font-weight: 700; padding-top: 8px; border-top: 1px solid #F1EFEC"><span>Total · pagar en caja</span><span>L 135.00</span></div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px; padding: 20px; background: #FFFFFF; border: 1px solid #E7E5E4; border-radius: 20px; font-size: 15px">
+          <h2 style="margin: 0; font-size: 16px; font-weight: 700">Dónde recoger</h2>
+          <span>Café Lempa</span>
+          <span style="color: #57534E">Col. Palmira, Tegucigalpa</span>
+          <a href="#mapa" style="font-weight: 600; text-decoration: underline">Cómo llegar</a>
+        </div>
+      </section>
+
+      <sc-if value="{{canCancel}}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 14px">
+          <a href="#cancelar" style="height: 48px; padding: 0 20px; border-radius: 14px; border: 1.5px solid #B91C1C; color: #B91C1C; display: flex; align-items: center; font-weight: 600; font-size: 15px">Cancelar pedido</a>
+          <span style="font-size: 14px; color: #57534E">Puedes cancelar hasta que la cafetería empiece a prepararlo.</span>
+        </div>
+      </sc-if>
+    </div>
+
+    <aside style="flex: 1 1 280px; display: flex; flex-direction: column; gap: 14px; padding: 24px; border-radius: 22px; background: #1C1917; color: #FFFFFF">
+      <span style="font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #D6D3D1">Al recogerlo sumas</span>
+      <span style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 30px; font-weight: 700">+1 sello · 7/8</span>
+      <div style="display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 6px">
+        <sc-for list="{{stamps}}" as="s" hint-placeholder-count="8">
+          <span style="aspect-ratio: 1; border-radius: 999px; background: {{s.color}}"></span>
+        </sc-for>
+      </div>
+      <span style="font-size: 14px; color: #D6D3D1; line-height: 1.5">Te falta un pedido para tu bebida gratis en Café Lempa.</span>
+    </aside>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#B4441B","options":["#B4441B","#1D4ED8","#3F6212","#7C2D12"]},"status":{"editor":"enum","options":["recibido","preparando","listo"],"default":"preparando"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const accent = this.props.accent ?? '#B4441B';
+    const idx = { recibido: 0, preparando: 1, listo: 2 }[this.props.status ?? 'preparando'] ?? 1;
+    const ready = idx === 2;
+    const color = ready ? '#15803D' : accent;
+    const copy = [
+      ['Pedido recibido', 'Café Lempa ya tiene tu pedido. Esta página se actualiza sola cuando cambie el estado.'],
+      ['Preparando tu pedido', 'Tu barista está en ello. Sal con calma: estará listo a las 9:15 a. m.'],
+      ['¡Listo para recoger!', 'Di tu nombre en la barra: Diego, pedido A-1042.']
+    ][idx];
+    const stepList = [['Recibido', '9:03 a. m.'], ['Preparando', idx >= 1 ? '9:05 a. m.' : 'En espera'], ['Listo', idx >= 2 ? '9:13 a. m.' : 'Aprox. 9:15 a. m.']];
+    const steps = stepList.map(([label, time], i) => ({ label, time,
+      bar: 'height: 8px; border-radius: 4px; background: ' + (i <= idx ? color : '#E7E5E4'),
+      labelStyle: 'font-size: 15px; ' + (i === idx ? 'font-weight: 700' : 'font-weight: 500') }));
+    const stamps = [];
+    for (let i = 0; i < 8; i++) stamps.push({ color: i < 6 ? accent : i === 6 ? '#FDBA74' : '#44403C' });
+    return { accent, title: copy[0], body: copy[1], steps, stamps, canCancel: idx === 0,
+      heroStyle: 'display: flex; flex-direction: column; gap: 14px; padding: 28px; border-radius: 24px; ' + (ready ? 'background: #DCFCE7; color: #14532D; border: 1px solid #86EFAC' : 'background: #FFFFFF; border: 1px solid #E7E5E4') };
+  }
+}
+</script>
+</body>
+</html>

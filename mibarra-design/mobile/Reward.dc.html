@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Canjear recompensa</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #14532D; color: #FFFFFF; font-family: Inter, system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden">
+  <div style="display: flex; align-items: center; justify-content: space-between; padding: 52px 20px 8px">
+    <a href="Loyalty.dc.html" aria-label="Volver a mis sellos" style="width: 44px; height: 44px; border-radius: 22px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>
+    </a>
+    <span style="font-size: 14px; font-weight: 600">Tostadores del Valle</span>
+    <span style="width: 44px"></span>
+  </div>
+
+  <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 22px; padding: 20px 24px 32px; text-align: center">
+    <div style="display: flex; flex-direction: column; gap: 8px; align-items: center">
+      <span style="padding: 6px 12px; border-radius: 999px; background: #DCFCE7; color: #14532D; font-size: 12px; font-weight: 700; letter-spacing: 0.06em">8/8 SELLOS</span>
+      <h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 34px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1">Tu bebida gratis te espera</h1>
+      <p style="margin: 0; font-size: 15px; line-height: 1.45; max-width: 300px">Cualquier bebida mediana del menú. Muestra este código en caja para canjearla.</p>
+    </div>
+
+    <div style="padding: 20px; border-radius: 24px; background: #FFFFFF">
+      <div role="img" aria-label="Código QR de canje" style="width: 220px; height: 220px; display: grid; grid-template-columns: repeat(21, minmax(0, 1fr))">
+        <sc-for list="{{qr}}" as="q" hint-placeholder-count="441">
+          <span style="{{q}}"></span>
+        </sc-for>
+      </div>
+      <span style="display: block; margin-top: 12px; font-family: ui-monospace, monospace; font-size: 15px; font-weight: 600; letter-spacing: 0.12em; color: #1C1917">TV-7F3K-29</span>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 14px; background: rgba(255,255,255,0.12); font-size: 13px; line-height: 1.4; text-align: left">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="flex-shrink: 0"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5M12 8h.01"></path></svg>
+      <span>Al canjearla, tu tarjeta vuelve a 0 sellos y empiezas a juntar la siguiente.</span>
+    </div>
+
+    <div style="flex: 1"></div>
+
+    <a href="Main.dc.html" style="align-self: stretch; height: 56px; border-radius: 16px; background: #FFFFFF; color: #14532D; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 16px">Usarla en mi próximo pedido</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const N = 21, qr = [];
+    const finder = (r, c) => {
+      for (const [r0, c0] of [[0, 0], [0, N - 7], [N - 7, 0]]) {
+        const y = r - r0, x = c - c0;
+        if (y >= 0 && y < 7 && x >= 0 && x < 7) return (y === 0 || y === 6 || x === 0 || x === 6 || (y >= 2 && y <= 4 && x >= 2 && x <= 4)) ? 1 : 0;
+        if (y >= -1 && y <= 7 && x >= -1 && x <= 7) return 0;
+      }
+      return -1;
+    };
+    for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+      let v = finder(r, c);
+      if (v < 0) v = ((r * 11 + c * 5 + r * c * 7) % 5 < 2) ? 1 : 0;
+      qr.push('aspect-ratio: 1; background: ' + (v ? '#1C1917' : 'transparent'));
+    }
+    return { qr };
+  }
+}
+</script>
+</body>
+</html>

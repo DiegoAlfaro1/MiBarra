@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Panel MiBarra — Resumen del día</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit;opacity:0.85}
+</style>
+</helmet>
+<div style="width: 100%; min-height: 100vh; box-sizing: border-box; background: #F1EFEC; color: #1C1917; font-family: Inter, system-ui, sans-serif">
+  <header style="background: #1C1917; color: #FFFFFF">
+    <div style="padding: 12px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px">
+      <div style="display: flex; align-items: center; gap: 12px">
+        <span style="width: 40px; height: 40px; border-radius: 12px; background: {{accent}}; display: flex; align-items: center; justify-content: center">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"></path><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17"></path></svg>
+        </span>
+        <div style="display: flex; flex-direction: column">
+          <span style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 18px; font-weight: 700">Café Lempa</span>
+          <span style="font-size: 12px; color: #D6D3D1">Panel MiBarra</span>
+        </div>
+      </div>
+      <nav aria-label="Panel" style="display: flex; flex-wrap: wrap; gap: 6px">
+        <a href="DashOrders.dc.html" style="height: 48px; padding: 0 18px; border-radius: 12px; display: flex; align-items: center; font-size: 15px; font-weight: 600">Pedidos</a>
+        <a href="DashMenu.dc.html" style="height: 48px; padding: 0 18px; border-radius: 12px; display: flex; align-items: center; font-size: 15px; font-weight: 600">Menú</a>
+        <a href="DashScan.dc.html" style="height: 48px; padding: 0 18px; border-radius: 12px; display: flex; align-items: center; font-size: 15px; font-weight: 600">Escanear</a>
+        <a href="DashSummary.dc.html" aria-current="page" style="height: 48px; padding: 0 18px; border-radius: 12px; background: #FFFFFF; color: #1C1917; display: flex; align-items: center; font-size: 15px; font-weight: 700">Resumen</a>
+      </nav>
+      <span style="height: 48px; padding: 0 16px; border-radius: 24px; background: #15803D; display: flex; align-items: center; font-size: 15px; font-weight: 700">Recibiendo pedidos</span>
+    </div>
+  </header>
+
+  <main style="max-width: 1100px; margin: 0 auto; padding: 24px; display: flex; flex-direction: column; gap: 20px">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 30px; font-weight: 700">Resumen de hoy</h1>
+      <span style="font-size: 15px; color: #57534E">Jueves 12 de noviembre · datos de ejemplo</span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: 6px; padding: 22px; border-radius: 20px; background: #1C1917; color: #FFFFFF">
+        <span style="font-size: 14px; font-weight: 600; color: #D6D3D1">Ventas por MiBarra</span>
+        <span style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 40px; font-weight: 700">L 2,840</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px; padding: 22px; border-radius: 20px; background: #FFFFFF">
+        <span style="font-size: 14px; font-weight: 600; color: #57534E">Pedidos</span>
+        <span style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 40px; font-weight: 700">23</span>
+        <span style="font-size: 14px; color: #57534E">21 entregados · 2 cancelados</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px; padding: 22px; border-radius: 20px; background: #FFFFFF">
+        <span style="font-size: 14px; font-weight: 600; color: #57534E">Ticket promedio</span>
+        <span style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 40px; font-weight: 700">L 135</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px; padding: 22px; border-radius: 20px; background: #FFFFFF">
+        <span style="font-size: 14px; font-weight: 600; color: #57534E">Sellos entregados</span>
+        <span style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 40px; font-weight: 700">21</span>
+        <span style="font-size: 14px; color: #57534E">2 recompensas canjeadas</span>
+      </div>
+    </div>
+
+    <section style="display: flex; flex-direction: column; gap: 12px; padding: 22px; border-radius: 20px; background: #FFFFFF">
+      <h2 style="margin: 0; font-size: 17px; font-weight: 700">Cómo pagaron</h2>
+      <div role="img" aria-label="En caja L 1,980; tarjeta en línea L 860" style="display: flex; height: 20px; border-radius: 10px; overflow: hidden">
+        <span style="flex: 1980; background: #1C1917"></span>
+        <span style="flex: 860; background: {{accent}}"></span>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 20px; font-size: 15px">
+        <span style="display: flex; align-items: center; gap: 8px"><span style="width: 12px; height: 12px; border-radius: 3px; background: #1C1917"></span>En caja · L 1,980</span>
+        <span style="display: flex; align-items: center; gap: 8px"><span style="width: 12px; height: 12px; border-radius: 3px; background: {{accent}}"></span>Tarjeta en línea (demo) · L 860</span>
+      </div>
+    </section>
+
+    <section style="background: #FFFFFF; border-radius: 20px; overflow-x: auto">
+      <table style="width: 100%; min-width: 560px; border-collapse: collapse; font-size: 15px">
+        <caption style="text-align: left; padding: 18px 20px 6px; font-size: 17px; font-weight: 700">Últimos pedidos entregados</caption>
+        <thead>
+          <tr style="text-align: left; color: #57534E; font-size: 13px">
+            <th scope="col" style="padding: 10px 20px; font-weight: 600">Hora</th>
+            <th scope="col" style="padding: 10px 20px; font-weight: 600">Cliente</th>
+            <th scope="col" style="padding: 10px 20px; font-weight: 600">Productos</th>
+            <th scope="col" style="padding: 10px 20px; font-weight: 600">Pago</th>
+            <th scope="col" style="padding: 10px 20px; font-weight: 600; text-align: right">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <sc-for list="{{rows}}" as="r" hint-placeholder-count="4">
+            <tr style="border-top: 1px solid #F1EFEC">
+              <td style="padding: 14px 20px">{{r.time}}</td>
+              <td style="padding: 14px 20px; font-weight: 600">{{r.who}}</td>
+              <td style="padding: 14px 20px; color: #44403C">{{r.items}}</td>
+              <td style="padding: 14px 20px">{{r.pay}}</td>
+              <td style="padding: 14px 20px; text-align: right; font-weight: 600">{{r.total}}</td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#B4441B","options":["#B4441B","#1D4ED8","#3F6212","#7C2D12"]},"$preview":{"width":1280,"height":860}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const accent = this.props.accent ?? '#B4441B';
+    const rows = [
+      { time: '9:05 a. m.', who: 'Andrea', items: 'Americano mediano', pay: 'En caja', total: 'L 60.00' },
+      { time: '8:58 a. m.', who: 'Luis', items: 'Latte grande, Croissant', pay: 'Tarjeta (demo)', total: 'L 140.00' },
+      { time: '8:42 a. m.', who: 'Sofía', items: '2 × Capuchino', pay: 'En caja', total: 'L 140.00' },
+      { time: '8:31 a. m.', who: 'José', items: 'Cold brew, Baleada sencilla', pay: 'En caja', total: 'L 120.00' }
+    ];
+    return { accent, rows };
+  }
+}
+</script>
+</body>
+</html>

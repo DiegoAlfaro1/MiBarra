@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Panel MiBarra — Pedidos en vivo</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit;opacity:0.85}
+</style>
+</helmet>
+<div style="width: 100%; min-height: 100vh; box-sizing: border-box; background: #F1EFEC; color: #1C1917; font-family: Inter, system-ui, sans-serif; position: relative">
+  <header style="background: #1C1917; color: #FFFFFF">
+    <div style="padding: 12px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px">
+      <div style="display: flex; align-items: center; gap: 12px">
+        <span style="width: 40px; height: 40px; border-radius: 12px; background: {{accent}}; display: flex; align-items: center; justify-content: center">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"></path><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17"></path></svg>
+        </span>
+        <div style="display: flex; flex-direction: column">
+          <span style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 18px; font-weight: 700">Café Lempa</span>
+          <span style="font-size: 12px; color: #D6D3D1">Panel MiBarra</span>
+        </div>
+      </div>
+      <nav aria-label="Panel" style="display: flex; flex-wrap: wrap; gap: 6px">
+        <a href="DashOrders.dc.html" aria-current="page" style="height: 48px; padding: 0 18px; border-radius: 12px; background: #FFFFFF; color: #1C1917; display: flex; align-items: center; font-size: 15px; font-weight: 700">Pedidos</a>
+        <a href="DashMenu.dc.html" style="height: 48px; padding: 0 18px; border-radius: 12px; display: flex; align-items: center; font-size: 15px; font-weight: 600">Menú</a>
+        <a href="DashScan.dc.html" style="height: 48px; padding: 0 18px; border-radius: 12px; display: flex; align-items: center; font-size: 15px; font-weight: 600">Escanear</a>
+        <a href="DashSummary.dc.html" style="height: 48px; padding: 0 18px; border-radius: 12px; display: flex; align-items: center; font-size: 15px; font-weight: 600">Resumen</a>
+      </nav>
+      <button type="button" role="switch" aria-checked="{{openStr}}" onClick="{{toggleOpen}}" style="{{switchStyle}}">
+        <span style="{{knob}}"></span>{{openLabel}}
+      </button>
+    </div>
+  </header>
+
+  <sc-if value="{{showAlert}}" hint-placeholder-val="{{ true }}">
+    <div role="alert" style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 24px; background: {{accent}}; color: #FFFFFF">
+      <span style="display: flex; align-items: center; gap: 12px; font-size: 18px; font-weight: 700">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z"></path><path d="M16 9a4 4 0 0 1 0 6M19 6a8 8 0 0 1 0 12"></path></svg>
+        ¡Pedido nuevo! #A-1043 · María · recoger 9:20 a. m.
+      </span>
+      <button type="button" onClick="{{dismiss}}" style="height: 44px; padding: 0 18px; border-radius: 12px; border: 2px solid #FFFFFF; background: transparent; color: #FFFFFF; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer">Visto</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isClosed}}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="padding: 14px 24px; background: #44403C; color: #FFFFFF; font-size: 16px; font-weight: 600">Pedidos en pausa: los clientes ven la cafetería como cerrada. Los pedidos en curso siguen aquí.</div>
+  </sc-if>
+
+  <main style="padding: 20px 24px 32px; display: flex; flex-direction: column; gap: 16px">
+    <div style="display: flex; flex-wrap: wrap; gap: 12px">
+      <span style="padding: 10px 16px; border-radius: 12px; background: #FFFFFF; font-size: 15px"><strong>Hoy:</strong> 23 pedidos</span>
+      <span style="padding: 10px 16px; border-radius: 12px; background: #FFFFFF; font-size: 15px"><strong>Ventas:</strong> L 2,840.00</span>
+      <span style="padding: 10px 16px; border-radius: 12px; background: #FFFFFF; font-size: 15px"><strong>Por cobrar en caja:</strong> {{unpaidCount}}</span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; align-items: start">
+      <sc-for list="{{columns}}" as="col" hint-placeholder-count="3">
+        <section aria-label="{{col.title}}" style="display: flex; flex-direction: column; gap: 12px; padding: 14px; border-radius: 20px; background: #E7E5E4">
+          <h2 style="margin: 0; display: flex; justify-content: space-between; align-items: center; font-size: 17px; font-weight: 700; padding: 4px 6px">
+            <span style="display: flex; align-items: center; gap: 8px"><span style="{{col.dot}}"></span>{{col.title}}</span>
+            <span style="min-width: 28px; height: 28px; padding: 0 8px; box-sizing: border-box; border-radius: 14px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 14px">{{col.count}}</span>
+          </h2>
+          <sc-for list="{{col.cards}}" as="o" hint-placeholder-count="2">
+            <article style="{{o.cardStyle}}">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px">
+                <div style="display: flex; flex-direction: column; gap: 2px">
+                  <span style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 22px; font-weight: 700">{{o.name}}</span>
+                  <span style="font-size: 14px; color: #57534E">#{{o.id}} · recoger {{o.pickup}}</span>
+                </div>
+                <span style="{{o.payBadge}}">{{o.payText}}</span>
+              </div>
+              <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px">
+                <sc-for list="{{o.lines}}" as="ln" hint-placeholder-count="2">
+                  <li style="display: flex; flex-direction: column; gap: 2px">
+                    <span style="font-size: 16px; font-weight: 600">{{ln.main}}</span>
+                    <span style="font-size: 14px; color: #44403C">{{ln.opts}}</span>
+                  </li>
+                </sc-for>
+              </ul>
+              <sc-if value="{{o.hasNote}}" hint-placeholder-val="{{ false }}">
+                <span style="padding: 8px 10px; border-radius: 10px; background: #FEF3C7; color: #78350F; font-size: 14px; font-weight: 600">Nota: {{o.note}}</span>
+              </sc-if>
+              <div style="display: flex; flex-wrap: wrap; gap: 8px">
+                <button type="button" onClick="{{o.advance}}" style="flex: 1 1 140px; height: 52px; border: 0; border-radius: 14px; background: #1C1917; color: #FFFFFF; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer">{{o.advanceLabel}}</button>
+                <sc-if value="{{o.unpaid}}" hint-placeholder-val="{{ false }}">
+                  <button type="button" onClick="{{o.markPaid}}" style="height: 52px; padding: 0 14px; border-radius: 14px; border: 2px solid #1C1917; background: #FFFFFF; color: #1C1917; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer">Cobrado</button>
+                </sc-if>
+              </div>
+              <div style="display: flex; flex-wrap: wrap; gap: 8px">
+                <sc-if value="{{o.isReady}}" hint-placeholder-val="{{ false }}">
+                  <a href="#whatsapp" style="flex: 1 1 160px; height: 48px; border-radius: 14px; background: #15803D; color: #FFFFFF; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 15px; font-weight: 700">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 0 1-13.5 7.8L3 21l1.2-4.5A9 9 0 1 1 21 12z"></path></svg>
+                    Avisar por WhatsApp</a>
+                </sc-if>
+                <sc-if value="{{o.canCancel}}" hint-placeholder-val="{{ true }}">
+                  <button type="button" onClick="{{o.cancel}}" style="min-height: 44px; padding: 0 8px; border: 0; background: none; font: inherit; font-size: 15px; font-weight: 600; color: #B91C1C; text-decoration: underline; cursor: pointer">Cancelar</button>
+                </sc-if>
+              </div>
+            </article>
+          </sc-for>
+          <sc-if value="{{col.empty}}" hint-placeholder-val="{{ false }}">
+            <p style="margin: 0; padding: 20px; text-align: center; font-size: 15px; color: #57534E">Sin pedidos aquí</p>
+          </sc-if>
+        </section>
+      </sc-for>
+    </div>
+  </main>
+
+  <sc-if value="{{cancelOpen}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; background: rgba(28,25,23,0.6); display: flex; align-items: flex-start; justify-content: center; padding: 120px 16px">
+      <div role="dialog" aria-modal="true" aria-label="Cancelar pedido" style="width: 100%; max-width: 480px; background: #FFFFFF; border-radius: 24px; padding: 24px; display: flex; flex-direction: column; gap: 14px">
+        <h2 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 24px; font-weight: 700">Cancelar pedido de {{cancelName}}</h2>
+        <p style="margin: 0; font-size: 15px; color: #57534E">El cliente verá el motivo en su app.</p>
+        <sc-for list="{{reasons}}" as="r" hint-placeholder-count="4">
+          <button type="button" aria-pressed="{{r.pressed}}" onClick="{{r.pick}}" style="{{r.style}}">{{r.label}}</button>
+        </sc-for>
+        <div style="display: flex; gap: 10px; margin-top: 6px">
+          <button type="button" onClick="{{closeCancel}}" style="flex: 1; height: 52px; border-radius: 14px; border: 2px solid #1C1917; background: #FFFFFF; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer; color: #1C1917">Volver</button>
+          <button type="button" onClick="{{confirmCancel}}" style="flex: 1; height: 52px; border-radius: 14px; border: 0; background: #B91C1C; color: #FFFFFF; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer">Cancelar pedido</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#B4441B","options":["#B4441B","#1D4ED8","#3F6212","#7C2D12"]},"$preview":{"width":1280,"height":860}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      open: true, alert: true, cancelId: null, reason: 0,
+      orders: [
+        { id: 'A-1043', name: 'María', pickup: '9:20 a. m.', status: 0, paid: false, lines: [{ main: '2 × Latte grande', opts: 'Leche de avena' }], note: '' },
+        { id: 'A-1044', name: 'Carlos', pickup: '9:30 a. m.', status: 0, paid: true, lines: [{ main: '1 × Cold brew', opts: 'Sin hielo extra' }, { main: '1 × Baleada sencilla', opts: '' }], note: 'Pago con tarjeta (demo)' },
+        { id: 'A-1042', name: 'Diego', pickup: '9:15 a. m.', status: 1, paid: false, lines: [{ main: '1 × Capuchino mediano', opts: 'Leche entera · Sirope de vainilla' }, { main: '1 × Croissant', opts: '' }], note: 'Extra caliente' },
+        { id: 'A-1040', name: 'Andrea', pickup: '9:05 a. m.', status: 2, paid: false, lines: [{ main: '1 × Americano', opts: 'Mediano' }], note: '' }
+      ]
+    };
+  }
+  renderVals() {
+    const accent = this.props.accent ?? '#B4441B';
+    const s = this.state;
+    const update = (id, fn) => this.setState({ orders: this.state.orders.map(o => o.id === id ? fn(o) : o) });
+    const remove = (id) => this.setState({ orders: this.state.orders.filter(o => o.id !== id) });
+    const labels = ['Aceptar y preparar', 'Marcar listo', 'Entregado · +1 sello'];
+    const colDefs = [['Nuevos', accent], ['Preparando', '#D97706'], ['Listos para recoger', '#15803D']];
+    const columns = colDefs.map(([title, color], ci) => {
+      const cards = s.orders.filter(o => o.status === ci).map(o => ({
+        ...o, hasNote: !!o.note, unpaid: !o.paid, isReady: ci === 2, canCancel: ci < 2,
+        payText: o.paid ? 'Pagado' : 'Por cobrar',
+        payBadge: 'padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; white-space: nowrap; ' + (o.paid ? 'background: #DCFCE7; color: #14532D' : 'background: #FEF3C7; color: #78350F'),
+        cardStyle: 'display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: 16px; background: #FFFFFF; ' + (ci === 0 ? 'border: 2px solid ' + accent : 'border: 1px solid #D6D3D1'),
+        advanceLabel: labels[ci],
+        advance: () => ci === 2 ? remove(o.id) : update(o.id, x => ({ ...x, status: x.status + 1 })),
+        markPaid: () => update(o.id, x => ({ ...x, paid: true })),
+        cancel: () => this.setState({ cancelId: o.id, reason: 0 })
+      }));
+      return { title, count: cards.length, cards, empty: cards.length === 0,
+        dot: 'width: 12px; height: 12px; border-radius: 6px; background: ' + color };
+    });
+    const reasonList = ['Se agotó un producto', 'Estamos muy llenos', 'Vamos a cerrar pronto', 'Otro motivo'];
+    const reasons = reasonList.map((label, i) => ({ label, pressed: String(s.reason === i), pick: () => this.setState({ reason: i }),
+      style: 'min-height: 52px; padding: 0 16px; border-radius: 14px; text-align: left; font: inherit; font-size: 16px; font-weight: 600; cursor: pointer; ' + (s.reason === i ? 'background: #1C1917; color: #FFFFFF; border: 2px solid #1C1917' : 'background: #FFFFFF; color: #1C1917; border: 2px solid #E7E5E4') }));
+    const target = s.orders.find(o => o.id === s.cancelId);
+    return {
+      accent, columns, reasons,
+      showAlert: s.alert && s.open, isClosed: !s.open,
+      dismiss: () => this.setState({ alert: false }),
+      openStr: String(s.open), openLabel: s.open ? 'Recibiendo pedidos' : 'Pedidos en pausa',
+      toggleOpen: () => this.setState({ open: !s.open }),
+      switchStyle: 'height: 48px; padding: 0 16px 0 6px; border-radius: 24px; border: 0; display: flex; align-items: center; gap: 10px; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; ' + (s.open ? 'background: #15803D; color: #FFFFFF' : 'background: #57534E; color: #FFFFFF'),
+      knob: 'width: 36px; height: 36px; border-radius: 18px; background: #FFFFFF',
+      unpaidCount: String(s.orders.filter(o => !o.paid).length),
+      cancelOpen: !!target, cancelName: target ? target.name : '',
+      closeCancel: () => this.setState({ cancelId: null }),
+      confirmCancel: () => { remove(s.cancelId); this.setState({ cancelId: null }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

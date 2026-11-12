@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Cafetería cerrada</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F7F5F2; color: #1C1917; font-family: Inter, system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden; position: relative">
+  <div style="background: #44403C; color: #FFFFFF; padding: 52px 20px 22px; display: flex; flex-direction: column; gap: 16px">
+    <a href="Main.dc.html" aria-label="Volver" style="width: 44px; height: 44px; border-radius: 22px; background: rgba(255,255,255,0.18); display: flex; align-items: center; justify-content: center">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>
+    </a>
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 30px; font-weight: 700; letter-spacing: -0.02em">Tostadores del Valle</h1>
+      <span style="font-size: 14px">Lomas del Guijarro · 2.8 km</span>
+    </div>
+  </div>
+
+  <div role="status" style="margin: 16px 20px 0; display: flex; gap: 12px; padding: 16px; border-radius: 16px; background: #FFFFFF; border: 1.5px solid #1C1917">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1C1917" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="flex-shrink: 0"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <strong style="font-size: 15px">{{headline}}</strong>
+      <span style="font-size: 14px; color: #57534E; line-height: 1.4">{{detail}}</span>
+    </div>
+  </div>
+
+  <div style="flex: 1; display: flex; flex-direction: column; gap: 10px; padding: 18px 20px 120px; overflow: hidden">
+    <h2 style="margin: 0; font-size: 15px; font-weight: 700">Menú</h2>
+    <sc-for list="{{items}}" as="it" hint-placeholder-count="4">
+      <div style="display: flex; gap: 14px; align-items: center; padding: 12px; background: #FFFFFF; border: 1px solid #E7E5E4; border-radius: 18px">
+        <div style="width: 56px; height: 56px; flex-shrink: 0; border-radius: 14px; background: #E7E5E4"></div>
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+          <span style="font-weight: 600; font-size: 15px">{{it.name}}</span>
+          <span style="font-size: 14px; color: #57534E">{{it.price}}</span>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; padding: 16px 20px 28px; background: #FFFFFF; border-top: 1px solid #E7E5E4; display: flex; flex-direction: column; gap: 10px">
+    <button type="button" disabled="{{ true }}" style="height: 52px; border-radius: 16px; border: 0; background: #E7E5E4; color: #57534E; font: inherit; font-size: 15px; font-weight: 600; cursor: not-allowed">No se aceptan pedidos ahora</button>
+    <a href="Main.dc.html" style="height: 48px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600; text-decoration: underline">Ver cafeterías abiertas cerca</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"reason":{"editor":"enum","options":["fuera de horario","pausado por la tienda"],"default":"fuera de horario"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const paused = (this.props.reason ?? 'fuera de horario') === 'pausado por la tienda';
+    return {
+      headline: paused ? 'Pedidos en pausa' : 'Cerrado ahora',
+      detail: paused ? 'La cafetería está muy llena y pausó los pedidos por unos minutos. Vuelve a intentar pronto.' : 'Abre mañana a las 6:30 a. m. Puedes ver el menú, pero no hacer pedidos todavía.',
+      items: [{ name: 'Espresso', price: 'L 45.00' }, { name: 'Capuchino', price: 'L 70.00' }, { name: 'Flat white', price: 'L 75.00' }, { name: 'Croissant', price: 'L 45.00' }]
+    };
+  }
+}
+</script>
+</body>
+</html>

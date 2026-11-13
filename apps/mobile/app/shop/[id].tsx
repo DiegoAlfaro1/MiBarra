@@ -7,9 +7,19 @@ import { AppText, Badge, Banner, BackHeader, Button, Chip, EmptyState, Screen, S
 import { CATEGORIES, CLOSED_SHOP_MENU, PRODUCTS, SHOPS } from '../../src/data/mock';
 import { cartCount, cartTotalCents } from '../../src/lib/cart';
 import { formatLempiras } from '../../src/lib/format';
+import { useIsWide } from '../../src/lib/useIsWide';
 import { useAppState } from '../../src/state/AppState';
+import { WebShop } from '../../src/web/WebShop';
 
 export default function ShopScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const wide = useIsWide();
+  const shop = SHOPS.find((s) => s.id === id);
+  // Closed shops and unknown ids keep the phone layout until their web designs are built.
+  return wide && shop?.open ? <WebShop shop={shop} /> : <MobileShop />;
+}
+
+function MobileShop() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const shop = SHOPS.find((s) => s.id === id);
   const { cart } = useAppState();

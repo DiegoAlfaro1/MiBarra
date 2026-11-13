@@ -6,9 +6,15 @@ import { Feather } from '@expo/vector-icons';
 import { ShopRow } from '../../src/components/ShopRow';
 import { AppText, EmptyState, Screen, SectionTitle, StampDots, Avatar, t, textStyle } from '../../src/components/ui';
 import { MOCK_CUSTOMER_NAME, PRODUCTS, SHOPS } from '../../src/data/mock';
+import { useIsWide } from '../../src/lib/useIsWide';
 import { useAppState } from '../../src/state/AppState';
+import { WebHome } from '../../src/web/WebHome';
 
 export default function Home() {
+  return useIsWide() ? <WebHome /> : <MobileHome />;
+}
+
+function MobileHome() {
   const { session } = useAppState();
   const [query, setQuery] = useState('');
   const name = session?.name ?? MOCK_CUSTOMER_NAME;

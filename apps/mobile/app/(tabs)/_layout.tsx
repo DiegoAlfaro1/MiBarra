@@ -2,6 +2,7 @@ import { Feather } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import type { ColorValue } from 'react-native';
 
+import { useIsWide } from '../../src/lib/useIsWide';
 import { t, textStyle, type IconName } from '../../src/components/ui';
 
 const icon = (name: IconName) =>
@@ -10,6 +11,8 @@ const icon = (name: IconName) =>
   };
 
 export default function TabsLayout() {
+  // On wide screens the web header carries the navigation.
+  const wide = useIsWide();
   return (
     <Tabs
       screenOptions={{
@@ -17,7 +20,7 @@ export default function TabsLayout() {
         tabBarActiveTintColor: t.colors.text,
         tabBarInactiveTintColor: t.colors.textSubtle,
         tabBarLabelStyle: { ...textStyle('caption'), fontFamily: textStyle('label').fontFamily },
-        tabBarStyle: { backgroundColor: t.colors.surface, borderTopColor: t.colors.border, minHeight: 64 },
+        tabBarStyle: wide ? { display: 'none' } : { backgroundColor: t.colors.surface, borderTopColor: t.colors.border, minHeight: 64 },
         tabBarItemStyle: { minHeight: t.minTouchTarget },
       }}
     >

@@ -75,7 +75,7 @@ export function WebFooter() {
 
 const styles = StyleSheet.create({
   bar: { backgroundColor: t.colors.surface, borderBottomWidth: 1, borderBottomColor: t.colors.border },
-  inner: { width: '100%', maxWidth: WEB_MAX_WIDTH, alignSelf: 'center', paddingHorizontal: 24, minHeight: 72, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16 },
+  inner: { width: '100%', maxWidth: WEB_MAX_WIDTH, alignSelf: 'center', paddingHorizontal: 24, minHeight: 72, flexDirection: 'row', flexWrap: 'wrap', alignContent: 'center', alignItems: 'center', justifyContent: 'space-between', gap: 16 },
   brand: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 44 },
   logo: { width: 36, height: 36, borderRadius: 10, backgroundColor: t.colors.primary, alignItems: 'center', justifyContent: 'center' },
   nav: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8 },

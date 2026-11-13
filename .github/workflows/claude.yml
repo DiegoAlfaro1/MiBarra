@@ -36,6 +36,8 @@ jobs:
       PROJECT_OWNER: ${{ vars.CLAUDE_PROJECT_OWNER }}
       PROJECT_NUMBER: ${{ vars.CLAUDE_PROJECT_NUMBER }}
       IS_NEW_TASK: ${{ github.event_name == 'issues' }}
+      # Label run, or @claude comment on an issue (not a PR): these move the board card
+      ON_ISSUE: ${{ github.event_name == 'issues' || (github.event_name == 'issue_comment' && !github.event.issue.pull_request) }}
     steps:
       - name: Pick model from labels
         id: pick
@@ -60,7 +62,7 @@ jobs:
           fetch-depth: 1
 
       - name: Board → In progress
-        if: env.IS_NEW_TASK == 'true'
+        if: env.ON_ISSUE == 'true'
         continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.CLAUDE_PAT }}
@@ -84,25 +86,36 @@ jobs:
             --allowedTools "Edit,MultiEdit,Write,Agent,Task,Bash(npm ci),Bash(npm test:*),Bash(npm run lint),Bash(npm run typecheck),Bash(node --test:*),Bash(npx expo export:*),Bash(gh pr create:*),Bash(gh pr list:*),Bash(gh pr view:*)"
 
       - name: Check a PR was opened
-        if: env.IS_NEW_TASK == 'true'
+        id: pr
+        if: env.ON_ISSUE == 'true'
         env:
           GH_TOKEN: ${{ secrets.CLAUDE_PAT }}
           N: ${{ github.event.issue.number }}
         run: |
           PR="$(gh pr list --state open --json headRefName,url \
             --jq ".[] | select(.headRefName | startswith(\"claude/issue-$N-\")) | .url" | head -n1)"
-          [ -n "$PR" ] || { echo "Claude finished without opening a PR for #$N"; exit 1; }
-          echo "PR: $PR"
+          if [ -n "$PR" ]; then echo "found=true" >> "$GITHUB_OUTPUT"; echo "PR: $PR"; exit 0; fi
+          echo "found=false" >> "$GITHUB_OUTPUT"
+          echo "Claude finished without opening a PR for #$N"
+          # Label runs must end with a PR; comment runs may just answer or ask a question
+          [ "$IS_NEW_TASK" != "true" ]
 
       - name: Board → In review
-        if: success() && env.IS_NEW_TASK == 'true'
+        if: success() && steps.pr.outputs.found == 'true'
         continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.CLAUDE_PAT }}
         run: bash .claude/scripts/board.sh set-status "${{ github.event.issue.number }}" "In review"
 
+      - name: Board → Backlog (comment run, no PR)
+        if: success() && steps.pr.outputs.found == 'false'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.CLAUDE_PAT }}
+        run: bash .claude/scripts/board.sh set-status "${{ github.event.issue.number }}" "Backlog"
+
       - name: Board → Backlog (run failed)
-        if: failure() && env.IS_NEW_TASK == 'true'
+        if: failure() && env.ON_ISSUE == 'true'
         continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.CLAUDE_PAT }}

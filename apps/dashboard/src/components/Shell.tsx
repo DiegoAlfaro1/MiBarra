@@ -32,7 +32,7 @@ export function Header() {
           const active = item.href === '/' ? path === '/' : path.startsWith(item.href);
           return (
             <Link key={item.href} href={item.href} asChild>
-              <Pressable accessibilityRole="link" aria-current={active ? 'page' : undefined} style={[styles.navItem, active && styles.navActive]}>
+              <Pressable accessibilityRole="link" aria-current={active ? 'page' : undefined} style={StyleSheet.flatten([styles.navItem, active && styles.navActive])}>
                 <Text style={[styles.navText, { color: active ? colors.text : colors.textInverse, fontWeight: active ? '700' : '600' }]}>{item.label}</Text>
               </Pressable>
             </Link>

@@ -10,7 +10,7 @@
     "node": ">=22.18"
   },
   "scripts": {
-    "test": "node --test \"packages/*/src/**/*.test.ts\" \"supabase/functions/**/*.test.ts\"",
+    "test": "node --test \"packages/*/src/**/*.test.ts\" \"supabase/functions/**/*.test.ts\" \"apps/*/src/**/*.test.ts\"",
     "lint": "eslint .",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "dev": "supabase start && node scripts/write-local-env.mjs && concurrently -k -n functions,dashboard -c magenta,yellow \"supabase functions serve\" \"npm run dashboard\"",

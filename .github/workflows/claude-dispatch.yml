@@ -6,9 +6,10 @@ name: Claude dispatch
 
 on:
   schedule:
-    # Every 10 minutes, 7pm–7am Honduras time (01:00–13:00 UTC), nights starting Mon–Fri.
+    # Cron hours are UTC. Honduras is UTC-6, so add 6 to the local hour.
+    # Every 10 minutes, 7pm–7am Honduras time (01:00–12:59 UTC), nights starting Mon–Fri.
     # Each run counts as 1 Actions minute. Adjust to fit your schedule and minutes.
-    - cron: "*/10 19-23,0-7 * * 1-6"
+    - cron: "*/10 1-12 * * 1-6"
   workflow_dispatch:
 
 concurrency:

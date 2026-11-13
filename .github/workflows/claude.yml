@@ -72,13 +72,27 @@ jobs:
           cache: npm
 
       - uses: anthropics/claude-code-action@v1
+        env:
+          # PAT (not GITHUB_TOKEN) so the PR Claude opens triggers board sync and CI
+          GH_TOKEN: ${{ secrets.CLAUDE_PAT }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           label_trigger: "claude"
           claude_args: >-
             --model ${{ steps.pick.outputs.model }}
             --max-turns ${{ steps.pick.outputs.turns }}
-            --allowedTools "Edit,MultiEdit,Write,Agent,Task,Bash(npm ci),Bash(npm test:*),Bash(npm run lint),Bash(npm run typecheck),Bash(node --test:*),Bash(npx expo export:*)"
+            --allowedTools "Edit,MultiEdit,Write,Agent,Task,Bash(npm ci),Bash(npm test:*),Bash(npm run lint),Bash(npm run typecheck),Bash(node --test:*),Bash(npx expo export:*),Bash(gh pr create:*),Bash(gh pr list:*),Bash(gh pr view:*)"
+
+      - name: Check a PR was opened
+        if: env.IS_NEW_TASK == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.CLAUDE_PAT }}
+          N: ${{ github.event.issue.number }}
+        run: |
+          PR="$(gh pr list --state open --json headRefName,url \
+            --jq ".[] | select(.headRefName | startswith(\"claude/issue-$N-\")) | .url" | head -n1)"
+          [ -n "$PR" ] || { echo "Claude finished without opening a PR for #$N"; exit 1; }
+          echo "PR: $PR"
 
       - name: Board → In review
         if: success() && env.IS_NEW_TASK == 'true'

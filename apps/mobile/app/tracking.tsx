@@ -5,7 +5,9 @@ import { StyleSheet, View } from 'react-native';
 
 import { AppText, BackHeader, Button, Card, EmptyState, Screen, t } from '../src/components/ui';
 import { formatLempiras } from '../src/lib/format';
+import { useIsWide } from '../src/lib/useIsWide';
 import { useAppState, type OrderStatus } from '../src/state/AppState';
+import { WebTracking } from '../src/web/WebTracking';
 
 const STEPS = ['Recibido', 'Preparando', 'Listo'] as const;
 const ORDER: OrderStatus[] = ['received', 'preparing', 'ready'];
@@ -13,7 +15,11 @@ const ORDER: OrderStatus[] = ['received', 'preparing', 'ready'];
 // Demo only: the real status will come from the shop dashboard in realtime (NOT-01).
 const DEMO_ADVANCE_MS: Partial<Record<OrderStatus, number>> = { received: 6000, preparing: 8000 };
 
-export default function Tracking() {
+export default function TrackingRoute() {
+  return useIsWide() ? <WebTracking /> : <Tracking />;
+}
+
+function Tracking() {
   const { order, setOrderStatus, session } = useAppState();
   const status = order?.status;
 

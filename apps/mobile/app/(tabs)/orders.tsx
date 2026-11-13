@@ -5,7 +5,9 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { AppText, Badge, Card, Screen, SectionTitle, t } from '../../src/components/ui';
 import { PAST_ORDERS, PRODUCTS } from '../../src/data/mock';
 import { formatLempiras } from '../../src/lib/format';
+import { useIsWide } from '../../src/lib/useIsWide';
 import { useAppState, type OrderStatus } from '../../src/state/AppState';
+import { WebAccount } from '../../src/web/WebAccount';
 
 const ACTIVE_LABEL: Record<OrderStatus, string> = {
   received: 'Recibido',
@@ -14,7 +16,11 @@ const ACTIVE_LABEL: Record<OrderStatus, string> = {
   cancelled: 'Cancelado',
 };
 
-export default function Orders() {
+export default function OrdersRoute() {
+  return useIsWide() ? <WebAccount tab="orders" /> : <Orders />;
+}
+
+function Orders() {
   const { order, dispatch } = useAppState();
   const active = order && order.status !== 'cancelled' ? order : null;
 

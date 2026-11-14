@@ -3,7 +3,14 @@ import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
 
-import { OPTION_KINDS, ORDER_STATUSES, PAYMENT_PROVIDERS, PAYMENT_STATUSES, STAFF_ROLES } from './types.ts';
+import {
+  LOYALTY_SCAN_ACTIONS,
+  OPTION_KINDS,
+  ORDER_STATUSES,
+  PAYMENT_PROVIDERS,
+  PAYMENT_STATUSES,
+  STAFF_ROLES,
+} from './types.ts';
 
 const dir = new URL('../../../supabase/migrations/', import.meta.url);
 const sql = readdirSync(dir)
@@ -23,9 +30,10 @@ const MODEL_TABLES = [
   'loyalty_cards',
 ];
 
-/** Values listed in `check (<column> in ('a', 'b'))`. */
+/** Values listed in the latest `check (<column> in ('a', 'b'))` (later migrations may replace a check). */
 function checkValues(column: string): string[] {
-  const match = new RegExp(`${column}\\s+in\\s*\\(([^)]*)\\)`).exec(sql);
+  const matches = [...sql.matchAll(new RegExp(`check \\(${column}\\s+in\\s*\\(([^)]*)\\)`, 'g'))];
+  const match = matches.at(-1);
   assert.ok(match?.[1], `no check constraint found for ${column}`);
   return [...match[1].matchAll(/'([^']+)'/g)].map((m) => m[1] as string);
 }
@@ -50,6 +58,7 @@ test('TypeScript enums match the SQL check constraints', () => {
   assert.deepEqual(checkValues('payment_provider'), [...PAYMENT_PROVIDERS]);
   assert.deepEqual(checkValues('kind'), [...OPTION_KINDS]);
   assert.deepEqual(checkValues('role'), [...STAFF_ROLES]);
+  assert.deepEqual(checkValues('action'), [...LOYALTY_SCAN_ACTIONS]);
 });
 
 test('money is integer cents and one loyalty card exists per customer and shop', () => {

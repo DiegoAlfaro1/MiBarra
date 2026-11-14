@@ -37,7 +37,7 @@ To use the app on a phone, the phone must be on the same Wi-Fi, and Windows Fire
 | Supabase Studio (database admin) | http://localhost:54323 |
 | Edge functions | http://127.0.0.1:54321/functions/v1 |
 
-Test logins (password `password123`): `customer@mibarra.test` (customer) and `owner@mibarra.test` (owner of the demo shop).
+Test logins (password `password123`): `customer@mibarra.test` (customer), and `owner@mibarra.test`, `manager@mibarra.test` and `barista@mibarra.test` (staff of the demo shop).
 
 `npm run dev:stop` shuts down Supabase's Docker containers.
 
@@ -47,6 +47,7 @@ Test logins (password `password123`): `customer@mibarra.test` (customer) and `ow
 | --- | --- |
 | `npm run dev` / `dev:stop` | Start / stop everything locally (see above) |
 | `npm test` | Unit tests (Node's built-in test runner, runs TypeScript directly) |
+| `npm run test:db` | Database access-control tests (pgTAP, needs local Supabase running) |
 | `npm run lint` | ESLint (`eslint-config-expo`) |
 | `npm run typecheck` | `tsc` in every workspace |
 | `npm run db:reset` | Recreate the local DB from migrations + `supabase/seed.sql` |
@@ -54,15 +55,15 @@ Test logins (password `password123`): `customer@mibarra.test` (customer) and `ow
 
 ## Data model and security
 
-Defined in `supabase/migrations/20261112000000_init.sql`.
+Defined in `supabase/migrations`. See [docs/data-model.md](docs/data-model.md) and [docs/access-control.md](docs/access-control.md).
 
-- **Roles**: anyone signed in is a customer; `shop_staff` makes a user an `owner` or `barista` of a shop.
-- **Row level security** is on for every table. Customers see only their own orders and points; staff see their shop's. Only owners edit menus and staff.
+- **Roles**: anyone who signs up in the app is a customer. Staff logins are created only by invitation (the `staff-invite` edge function), and `shop_members` gives them a role at a shop: `owner`, `manager` or `barista`. `platform_admins` lists the logins that can act across all shops.
+- **Row level security** is on for every table and follows the permission matrix in [docs/access-control.md](docs/access-control.md). Roles are looked up on every request, so removing someone ends their access immediately. Refunds, late cancellations, payment settings, staff changes and admin actions go through database functions that check the role again and write to `audit_log`.
 - **Orders** can only be created with the `place_order` function (called by the `place-order` edge function). Prices come from the `products` table, not from the client. Each checkout sends an `idempotencyKey`, and `(customer_id, idempotency_key)` is unique, so a retried request returns the original order instead of creating a second one.
 - **Loyalty points** are an append-only ledger (`loyalty_ledger`, balances in the `loyalty_balances` view). `unique (order_id, reason)` stops points from being awarded twice for the same order. The earning rules aren't defined yet.
 - **Realtime**: `orders` is in the `supabase_realtime` publication; `apps/dashboard/src/hooks/useLiveOrders.ts` shows how to subscribe.
 
 ## Deploying
 
-- **Supabase**: `npx supabase link --project-ref <ref>`, `npx supabase db push`, `npx supabase functions deploy place-order`. Set `ALLOWED_ORIGIN` with `npx supabase secrets set` to the customer web app's Pages domain (the default is `*`).
+- **Supabase**: `npx supabase link --project-ref <ref>`, `npx supabase db push`, `npx supabase functions deploy place-order staff-invite`. Set `STAFF_INVITE_REDIRECT_URL` to the dashboard's sign-in page so invitation links open it. Set `ALLOWED_ORIGIN` with `npx supabase secrets set` to the customer web app's Pages domain (the default is `*`).
 - **Cloudflare Pages**: `npx wrangler login`, then `npm run deploy:mobile` / `npm run deploy:dashboard`. Set `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY` in the environment when building, because they are inlined at build time.

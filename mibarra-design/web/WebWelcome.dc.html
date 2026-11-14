@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>MiBarra web — Bienvenida</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit;opacity:0.9}
+</style>
+</helmet>
+<div style="width: 100%; min-height: 100vh; box-sizing: border-box; background: #F7F5F2; color: #1C1917; font-family: Inter, system-ui, sans-serif; display: flex; flex-wrap: wrap">
+  <section style="flex: 1 1 520px; min-height: 420px; box-sizing: border-box; background: {{accent}}; color: #FFFFFF; padding: 48px clamp(24px, 5vw, 80px); display: flex; flex-direction: column; justify-content: space-between; gap: 40px; position: relative; overflow: hidden">
+    <div aria-hidden="true" style="position: absolute; right: -140px; bottom: -140px; width: 480px; height: 480px; border-radius: 240px; border: 64px solid rgba(255,255,255,0.08)"></div>
+    <a href="WebWelcome.dc.html" style="display: flex; align-items: center; gap: 10px; position: relative">
+      <span style="width: 40px; height: 40px; border-radius: 12px; background: #FFFFFF; display: flex; align-items: center; justify-content: center">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{accent}}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"></path><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17"></path></svg>
+      </span>
+      <span style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 24px; font-weight: 700; letter-spacing: -0.02em">MiBarra</span>
+    </a>
+    <div style="display: flex; flex-direction: column; gap: 20px; max-width: 560px; position: relative">
+      <h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: clamp(2.6rem, 5vw, 4.4rem); font-weight: 700; letter-spacing: -0.03em; line-height: 1">Tu café, listo cuando llegas.</h1>
+      <p style="margin: 0; font-size: 19px; line-height: 1.5">Pide en tus cafeterías favoritas, recoge sin hacer fila y junta sellos con cada pedido.</p>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 10px; position: relative">
+      <span style="padding: 8px 14px; border-radius: 999px; background: rgba(255,255,255,0.16); font-size: 14px; font-weight: 600">Elige la hora de recogida</span>
+      <span style="padding: 8px 14px; border-radius: 999px; background: rgba(255,255,255,0.16); font-size: 14px; font-weight: 600">Aviso cuando esté listo</span>
+      <span style="padding: 8px 14px; border-radius: 999px; background: rgba(255,255,255,0.16); font-size: 14px; font-weight: 600">Sellos en cada cafetería</span>
+    </div>
+  </section>
+
+  <section style="flex: 1 1 440px; box-sizing: border-box; padding: 48px 24px; display: flex; align-items: center; justify-content: center">
+    <div style="width: 100%; max-width: 440px; display: flex; flex-direction: column; gap: 16px">
+      <h2 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 34px; font-weight: 700; letter-spacing: -0.02em">Bienvenido a MiBarra</h2>
+      <p style="margin: 0 0 8px; font-size: 16px; color: #57534E">¿Cómo quieres empezar?</p>
+
+      <a href="WebSignUp.dc.html" style="display: flex; align-items: center; gap: 16px; padding: 20px; border-radius: 20px; background: #1C1917; color: #FFFFFF">
+        <span style="width: 48px; height: 48px; flex-shrink: 0; border-radius: 14px; background: {{accent}}; display: flex; align-items: center; justify-content: center">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10" cy="8" r="4"></circle><path d="M2 21c1.5-4 4.5-6 8-6"></path><path d="M18 14v6M15 17h6"></path></svg>
+        </span>
+        <span style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 17px; font-weight: 700">Crear cuenta</span>
+          <span style="font-size: 14px; color: #D6D3D1">Junta sellos y guarda tus pedidos</span>
+        </span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+      </a>
+
+      <a href="WebSignIn.dc.html" style="display: flex; align-items: center; gap: 16px; padding: 20px; border-radius: 20px; background: #FFFFFF; border: 1px solid #E7E5E4">
+        <span style="width: 48px; height: 48px; flex-shrink: 0; border-radius: 14px; background: #F1EFEC; display: flex; align-items: center; justify-content: center">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1C1917" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><path d="M10 17l5-5-5-5M15 12H3"></path></svg>
+        </span>
+        <span style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 17px; font-weight: 700">Ya tengo cuenta</span>
+          <span style="font-size: 14px; color: #57534E">Inicia sesión con tu celular o correo</span>
+        </span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#57534E" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+      </a>
+
+      <a href="WebGuest.dc.html" style="display: flex; align-items: center; gap: 16px; padding: 20px; border-radius: 20px; border: 1.5px dashed #A8A29E">
+        <span style="width: 48px; height: 48px; flex-shrink: 0; border-radius: 14px; background: #F1EFEC; display: flex; align-items: center; justify-content: center">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1C1917" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"></path><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17"></path></svg>
+        </span>
+        <span style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 17px; font-weight: 700">Continuar como invitado</span>
+          <span style="font-size: 14px; color: #57534E">Pide sin registrarte</span>
+        </span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#57534E" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+      </a>
+
+      <p style="margin: 8px 0 0; font-size: 13px; color: #57534E; line-height: 1.5">Al continuar aceptas los <a href="#terminos" style="text-decoration: underline">Términos</a> y la <a href="#privacidad" style="text-decoration: underline">Política de privacidad</a>.</p>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#B4441B","options":["#B4441B","#1D4ED8","#3F6212","#7C2D12"]},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { accent: this.props.accent ?? '#B4441B' };
+  }
+}
+</script>
+</body>
+</html>

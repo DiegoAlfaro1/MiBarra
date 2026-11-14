@@ -4,12 +4,14 @@ import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { AppText, Banner, Button, Field, LinkText, t } from '../components/ui';
+import { signIn as signInRequest, signUp as signUpRequest } from '../lib/auth';
+import { supabase } from '../lib/supabase';
 import { passwordStrength, validateAuth, validateGuest, validateSignup, type FieldErrors } from '../lib/validation';
 import { useAppState } from '../state/AppState';
 import { CheckRow, ContactField, MethodTabs, PasswordField, type Method } from './accessParts';
 
 // Form bodies shared by the phone screens and the desktop web pages (design A2–A4 and WA2–WA4).
-// UI mockups: valid input starts the in-memory demo session and goes Home; there is no backend.
+// Sign-in and sign-up use Supabase Auth; the guest form starts a local no-account session.
 
 const PERKS = ['Sellos en cada cafetería', 'Historial', 'Pedir de nuevo'];
 const STRENGTH_CAPTION = ['', 'Muy corta · mínimo 8 caracteres', 'Contraseña aceptable · mínimo 8 caracteres', 'Contraseña fuerte'];
@@ -22,7 +24,7 @@ export const GUEST_INCLUDED = [
 ];
 
 export function SignInForm({ showTitle = true }: { showTitle?: boolean }) {
-  const { signIn } = useAppState();
+  const [busy, setBusy] = useState(false);
   const [method, setMethod] = useState<Method>('phone');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -31,14 +33,20 @@ export function SignInForm({ showTitle = true }: { showTitle?: boolean }) {
   const [errors, setErrors] = useState<FieldErrors>({});
   const [failed, setFailed] = useState(false);
 
-  const submit = () => {
+  const [failure, setFailure] = useState<string | null>(null);
+
+  const submit = async () => {
+    if (busy) return;
     const found = validateAuth({ signup: false, method, name: '', phone, email, password });
     setErrors(found);
     setFailed(Object.keys(found).length > 0);
-    if (Object.keys(found).length === 0) {
-      signIn({ name: 'Diego' });
-      router.replace('/');
-    }
+    setFailure(null);
+    if (Object.keys(found).length > 0) return;
+    setBusy(true);
+    const outcome = await signInRequest(supabase, { method, phone, email, password });
+    setBusy(false);
+    if (outcome.ok) router.replace('/');
+    else setFailure(outcome.message);
   };
 
   return (
@@ -54,15 +62,15 @@ export function SignInForm({ showTitle = true }: { showTitle?: boolean }) {
         </>
       ) : null}
       <MethodTabs value={method} onChange={(m) => { setMethod(m); setErrors({}); setFailed(false); }} />
-      {failed ? (
+      {failed || failure ? (
         <Banner tone="danger" icon="alert-circle">
-          {method === 'phone' ? 'Revisa tu número y contraseña. Intenta de nuevo.' : 'Revisa tu correo y contraseña. Intenta de nuevo.'}
+          {failure ?? (method === 'phone' ? 'Revisa tu número y contraseña. Intenta de nuevo.' : 'Revisa tu correo y contraseña. Intenta de nuevo.')}
         </Banner>
       ) : null}
       <ContactField method={method} phone={phone} email={email} onPhone={setPhone} onEmail={setEmail} errors={errors} />
       <PasswordField value={password} onChange={setPassword} error={errors.password} autoComplete="current-password" show={show} onToggle={() => setShow((v) => !v)} />
       <LinkText label="¿Olvidaste tu contraseña?" onPress={() => undefined} />
-      <Button label="Iniciar sesión" onPress={submit} />
+      <Button label="Iniciar sesión" onPress={submit} disabled={busy} />
       <AppText variant="caption" color={t.colors.textMuted} style={styles.center}>
         o
       </AppText>
@@ -82,7 +90,8 @@ export function SignInForm({ showTitle = true }: { showTitle?: boolean }) {
 }
 
 export function SignUpForm({ showTitle = true }: { showTitle?: boolean }) {
-  const { signIn } = useAppState();
+  const [busy, setBusy] = useState(false);
+  const [failure, setFailure] = useState<string | null>(null);
   const [method, setMethod] = useState<Method>('phone');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -93,13 +102,17 @@ export function SignUpForm({ showTitle = true }: { showTitle?: boolean }) {
   const [errors, setErrors] = useState<FieldErrors>({});
   const strength = passwordStrength(password);
 
-  const submit = () => {
+  const submit = async () => {
+    if (busy) return;
     const found = validateSignup({ signup: true, method, name, phone, email, password, acceptedTerms: terms });
     setErrors(found);
-    if (Object.keys(found).length === 0) {
-      signIn({ name: name.trim() });
-      router.replace('/');
-    }
+    setFailure(null);
+    if (Object.keys(found).length > 0) return;
+    setBusy(true);
+    const outcome = await signUpRequest(supabase, name, { method, phone, email, password });
+    setBusy(false);
+    if (outcome.ok) router.replace('/');
+    else setFailure(outcome.message);
   };
 
   return (
@@ -137,7 +150,12 @@ export function SignUpForm({ showTitle = true }: { showTitle?: boolean }) {
           {errors.terms}
         </AppText>
       ) : null}
-      <Button label="Crear cuenta" onPress={submit} disabled={!terms} />
+      {failure ? (
+        <Banner tone="danger" icon="alert-circle">
+          {failure}
+        </Banner>
+      ) : null}
+      <Button label="Crear cuenta" onPress={submit} disabled={!terms || busy} />
       <View style={styles.row}>
         <AppText variant="bodySm" color={t.colors.textMuted}>
           ¿Ya tienes cuenta?
@@ -166,7 +184,7 @@ export function PerkChips() {
 }
 
 export function GuestForm({ showTitle = true, showIncluded = true }: { showTitle?: boolean; showIncluded?: boolean }) {
-  const { signIn } = useAppState();
+  const { startGuest } = useAppState();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [errors, setErrors] = useState<FieldErrors>({});
@@ -175,7 +193,7 @@ export function GuestForm({ showTitle = true, showIncluded = true }: { showTitle
     const found = validateGuest({ name, phone });
     setErrors(found);
     if (Object.keys(found).length === 0) {
-      signIn({ name: name.trim() });
+      startGuest(name.trim());
       router.replace('/');
     }
   };

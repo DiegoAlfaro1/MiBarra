@@ -5,6 +5,7 @@ import { AppText, BackHeader, Banner, Button, Card, EmptyState, Field, LinkText,
 import { SHOPS } from '../src/data/mock';
 import { cartTotalCents, lineTotalCents } from '../src/lib/cart';
 import { formatLempiras } from '../src/lib/format';
+import { checkoutRoute } from '../src/lib/access';
 import { useAppState } from '../src/state/AppState';
 
 export default function CartScreen() {
@@ -34,7 +35,7 @@ export default function CartScreen() {
             <AppText variant="h3">Total</AppText>
             <AppText variant="h2">{formatLempiras(total)}</AppText>
           </View>
-          <Button label="Continuar al pago" variant="dark" onPress={() => router.push(session ? '/checkout' : '/login')} />
+          <Button label="Continuar al pago" variant="dark" onPress={() => router.push(checkoutRoute(session))} />
         </>
       }
     >

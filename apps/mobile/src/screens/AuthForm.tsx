@@ -2,14 +2,17 @@ import { Feather } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { AppText, Button, Field, LinkText, t, type IconName } from '../components/ui';
+import { AppText, Banner, Button, Field, LinkText, t, type IconName } from '../components/ui';
+import { signIn, signUp } from '../lib/auth';
+import { rememberLogin } from '../lib/session';
+import { supabase } from '../lib/supabase';
 import { validateAuth, type FieldErrors } from '../lib/validation';
 
 export interface AuthResult {
   name: string;
 }
 
-/** Sign-up / log-in form (ACC-01..03). Calls `onSuccess` only when the input is valid. Demo: no account is created. */
+/** Sign-up / log-in form (ACC-01..03). Creates the account (or signs in) with Supabase Auth and calls `onSuccess` only when that works. */
 export function AuthForm({ onSuccess }: { onSuccess: (result: AuthResult) => void }) {
   const [signup, setSignup] = useState(true);
   const [method, setMethod] = useState<'phone' | 'email'>('phone');
@@ -19,11 +22,22 @@ export function AuthForm({ onSuccess }: { onSuccess: (result: AuthResult) => voi
   const [password, setPassword] = useState('');
   const [keep, setKeep] = useState(true);
   const [errors, setErrors] = useState<FieldErrors>({});
+  const [busy, setBusy] = useState(false);
+  const [failure, setFailure] = useState<string | null>(null);
 
-  const submit = () => {
+  const submit = async () => {
+    if (busy) return;
     const found = validateAuth({ signup, method, name, phone, email, password });
     setErrors(found);
-    if (Object.keys(found).length === 0) onSuccess({ name: name.trim() || 'Diego' });
+    setFailure(null);
+    if (Object.keys(found).length > 0) return;
+    setBusy(true);
+    const credentials = { method, phone, email, password };
+    const outcome = signup ? await signUp(supabase, name, credentials) : await signIn(supabase, credentials);
+    if (outcome.ok) await rememberLogin(keep);
+    setBusy(false);
+    if (outcome.ok) onSuccess(outcome.session);
+    else setFailure(outcome.message);
   };
   const icon: IconName = 'coffee';
 
@@ -61,6 +75,12 @@ export function AuthForm({ onSuccess }: { onSuccess: (result: AuthResult) => voi
           </Pressable>
         ))}
       </View>
+
+      {failure ? (
+        <Banner tone="danger" icon="alert-circle">
+          {failure}
+        </Banner>
+      ) : null}
 
       {signup ? (
         <Field label="Nombre" placeholder="¿Cómo te llamamos al entregar?" value={name} onChangeText={setName} autoComplete="name" error={errors.name} />
@@ -108,10 +128,10 @@ export function AuthForm({ onSuccess }: { onSuccess: (result: AuthResult) => voi
         <View style={[styles.box, keep && { backgroundColor: t.colors.primary, borderColor: t.colors.primary }]}>
           {keep ? <Feather name="check" size={16} color={t.colors.onPrimary} /> : null}
         </View>
-        <AppText variant="bodySm">Mantener sesión iniciada en este teléfono</AppText>
+        <AppText variant="bodySm">Mantener sesión iniciada por 30 días en este dispositivo</AppText>
       </Pressable>
 
-      <Button label={signup ? 'Crear cuenta y continuar' : 'Iniciar sesión y continuar'} onPress={submit} />
+      <Button label={busy ? 'Un momento…' : signup ? 'Crear cuenta y continuar' : 'Iniciar sesión y continuar'} onPress={submit} disabled={busy} />
       <View style={styles.switchRow}>
         <AppText variant="bodySm" color={t.colors.textMuted}>
           {signup ? '¿Ya tienes cuenta?' : '¿Eres nuevo?'}

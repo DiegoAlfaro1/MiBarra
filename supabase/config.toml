@@ -31,8 +31,20 @@ site_url = "http://localhost:8081"
 additional_redirect_urls = ["http://localhost:8082", "mibarra://"]
 jwt_expiry = 3600
 enable_signup = true
+# Server-side floor; the app also asks for an uppercase letter and a special character (issue #16).
+minimum_password_length = 8
+
+# A login lasts at most 30 days, even if the app never refreshes it (the app also checks this itself).
+# Session time-boxing may need a paid plan when hosted; the app-side check works regardless.
+[auth.sessions]
+timebox = "720h"
 
 [auth.email]
+enable_signup = true
+enable_confirmations = false
+
+# Phone + password sign-up without an SMS provider (no OTP yet; verification is a FUTURE item).
+[auth.sms]
 enable_signup = true
 enable_confirmations = false
 

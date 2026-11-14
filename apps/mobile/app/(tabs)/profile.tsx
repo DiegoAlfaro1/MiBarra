@@ -5,12 +5,12 @@ import { AuthForm } from '../../src/screens/AuthForm';
 import { useAppState } from '../../src/state/AppState';
 
 export default function Profile() {
-  const { session, signIn, signOut } = useAppState();
+  const { session, signOut } = useAppState();
 
   if (!session) {
     return (
       <Screen>
-        <AuthForm onSuccess={signIn} />
+        <AuthForm onSuccess={() => undefined} />
       </Screen>
     );
   }

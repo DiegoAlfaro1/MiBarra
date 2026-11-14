@@ -25,10 +25,22 @@ export function validateAuth(input: AuthInput): FieldErrors {
   } else if (!EMAIL.test(input.email.trim())) {
     errors.email = 'Ingresa un correo válido, por ejemplo tu@correo.com.';
   }
-  if (input.password.length < 8) {
+  if (input.signup) {
+    const problem = passwordProblem(input.password);
+    if (problem) errors.password = problem;
+  } else if (input.password.length < 8) {
+    // Sign-in keeps the plain length check so existing accounts are never locked out.
     errors.password = 'La contraseña debe tener al menos 8 caracteres.';
   }
   return errors;
+}
+
+/** Sign-up password rule (issue #16): 8+ characters, an uppercase letter and a special character. */
+export function passwordProblem(password: string): string | null {
+  if (password.length < 8) return 'La contraseña debe tener al menos 8 caracteres.';
+  if (!/[A-Z]/.test(password)) return 'La contraseña debe incluir al menos una letra mayúscula.';
+  if (!/[^A-Za-z0-9]/.test(password)) return 'La contraseña debe incluir al menos un carácter especial, por ejemplo ! o #.';
+  return null;
 }
 
 /** Sign-up also needs the terms box ticked (design: Crear cuenta stays disabled until then). */

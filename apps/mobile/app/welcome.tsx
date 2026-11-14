@@ -1,9 +1,10 @@
 import { Feather } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { Redirect, router } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText, t, type IconName } from '../src/components/ui';
+import { useIsWide } from '../src/lib/useIsWide';
 
 const BENEFITS: { icon: IconName; label: string }[] = [
   { icon: 'clock', label: 'Elige la hora de recogida' },
@@ -13,8 +14,11 @@ const BENEFITS: { icon: IconName; label: string }[] = [
 
 /** Welcome screen (ACC-02). UI mockup: buttons only navigate. */
 export default function Welcome() {
+  const wide = useIsWide();
   const insets = useSafeAreaInsets();
   const onAccent = t.colors.onPrimary;
+  // The web app has no Welcome page: its entry point is Sign in.
+  if (wide) return <Redirect href="/signin" />;
   return (
     <View style={[styles.root, { paddingTop: insets.top + 16, paddingBottom: Math.max(insets.bottom, 16) }]}>
       <View style={styles.ring} />

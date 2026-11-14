@@ -13,7 +13,7 @@ export function AccessTop({ skip = true }: { skip?: boolean }) {
       <IconButton
         icon="chevron-left"
         label="Volver"
-        onPress={() => (router.canGoBack() ? router.back() : router.replace('/welcome'))}
+        onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
       />
       {skip ? <LinkText label="Omitir" onPress={() => router.push('/guest')} /> : null}
     </View>

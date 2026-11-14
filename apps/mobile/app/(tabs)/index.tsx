@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { Redirect, router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
@@ -11,7 +11,11 @@ import { useAppState } from '../../src/state/AppState';
 import { WebHome } from '../../src/web/WebHome';
 
 export default function Home() {
-  return useIsWide() ? <WebHome /> : <MobileHome />;
+  const { session } = useAppState();
+  const wide = useIsWide();
+  // App entry point: nobody is signed in yet, so open Welcome on phones and Sign in on web (no Welcome there).
+  if (!session) return <Redirect href={wide ? '/signin' : '/welcome'} />;
+  return wide ? <WebHome /> : <MobileHome />;
 }
 
 function MobileHome() {

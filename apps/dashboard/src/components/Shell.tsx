@@ -1,6 +1,7 @@
 import { Link, usePathname } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { useAuth } from '../state/AuthState.tsx';
 import { useDashboard } from '../state/DashboardState.tsx';
 import { SHOP_NAME } from '../mock/data.ts';
 import { colors, theme, tones, typography } from '../theme.ts';
@@ -16,6 +17,7 @@ const NAV = [
 export function Header() {
   const path = usePathname();
   const { open, setOpen } = useDashboard();
+  const { signOut } = useAuth();
   return (
     <View style={styles.header}>
       <View style={styles.brand}>
@@ -48,6 +50,9 @@ export function Header() {
       >
         <View style={styles.knob} />
         <Text style={styles.switchText}>{open ? 'Recibiendo pedidos' : 'Pedidos en pausa'}</Text>
+      </Pressable>
+      <Pressable accessibilityRole="button" accessibilityLabel="Cerrar sesión" onPress={signOut} style={styles.navItem}>
+        <Text style={[styles.navText, { color: colors.textInverse }]}>Cerrar sesión</Text>
       </Pressable>
     </View>
   );

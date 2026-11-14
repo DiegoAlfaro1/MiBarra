@@ -77,7 +77,7 @@ can't reopen it.
 - Staff logins are created only by the `staff-invite` edge function, from an invitation by an owner, a manager
   (baristas only) or a platform admin. The login is marked `app_metadata.account_type = 'staff'`, which only the
   server can set, so it gets no `customers` row and can't place orders. `isStaffAccount()` in `@mibarra/shared`
-  lets the apps send each kind of login to its own sign-in screen (the dashboard sign-in screen is issue #21).
+  lets the apps send each kind of login to its own sign-in screen (the dashboard sign-in is described below).
 - Nobody can turn a customer account into a staff account. Users can't write to `shop_members`, and
   `add_shop_member()` (server only) rejects logins that have a `customers` row.
 
@@ -130,5 +130,14 @@ npm run test:db
   details and to reports goes through logged functions. Admin access in the MVP is direct database access.
 - **Baristas and order totals**: baristas can see each order's total, because they take payment. "Daily count
   only" applies to reports.
-- **Screens**: the dashboard staff sign-in (#21) and the customer login (#20) are separate stories. They should
-  use `isStaffAccount()` and the permission helpers in `@mibarra/shared`.
+- **Screens**: the customer login (#20) is a separate story. It should use `isStaffAccount()` and the permission
+  helpers in `@mibarra/shared`.
+
+## Dashboard sign-in (#21)
+
+The dashboard signs in with Supabase email and password, then calls `dashboard_access()`. It returns one row per
+active shop membership (owner, manager, barista) plus a `platform_admin` row for platform admins. No rows
+(customers, deactivated staff) means the dashboard signs the user out again and shows "Esta cuenta no tiene
+acceso al panel". The check lives in `packages/shared/src/dashboardAccess.ts` and
+`apps/dashboard/src/logic/staffAuth.ts`; data stays protected by RLS regardless of the screen.
+Tests: `supabase/tests/database/dashboard_access.test.sql`.

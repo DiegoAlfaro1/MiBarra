@@ -43,6 +43,14 @@ body:
         - [ ] PR description includes `Closes #<issue>` and a short summary
     validations:
       required: true
+  - type: input
+    id: depends_on
+    attributes:
+      label: Depends on
+      description: >-
+        Issues that must be closed before Claude starts this one, e.g. #16, #20. The card can sit in
+        Ready meanwhile; it starts on the first dispatcher check after they close. Leave empty if none.
+      placeholder: "#16, #20"
   - type: textarea
     id: notes
     attributes:

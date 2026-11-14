@@ -1,5 +1,6 @@
 # Dispatcher: GitHub Actions can't react to board moves directly, so this checks the
-# board on a schedule and starts Claude on every issue in the "Ready" column.
+# board on a schedule and starts Claude on every issue in the "Ready" column whose
+# "Depends on" issues are all closed (the others wait there for a later run).
 # You can also run it on demand: Actions tab → Claude dispatch → Run workflow,
 # or `gh workflow run claude-dispatch.yml`.
 name: Claude dispatch
@@ -38,9 +39,26 @@ jobs:
           READY="$(bash .claude/scripts/board.sh list "Ready")"
           if [ -z "$READY" ]; then echo "Nothing in Ready."; exit 0; fi
 
+          # Issue numbers listed under "Depends on" in an issue body: the task.yml field
+          # ("### Depends on" heading) or a "Depends on: #12" line in older issues.
+          deps_of() {
+            gh issue view "$1" --json body --jq .body | tr -d '\r' \
+              | awk 'tolower($0) ~ /^(#+ *)?depends on/ { on = 1; print; next } /^#+ / { on = 0 } on' \
+              | grep -oE '#[0-9]+' | tr -d '#' | sort -u || true
+          }
+
           for N in $READY; do
             STATE="$(gh issue view "$N" --json state --jq .state)"
             [ "$STATE" = "OPEN" ] || { echo "#$N is closed, skipping"; continue; }
+
+            # Leave it in Ready until every dependency is closed (merging its PR closes it);
+            # a later dispatcher run starts it, on top of a main that already has that work.
+            WAITING=""
+            for D in $(deps_of "$N"); do
+              [ "$D" != "$N" ] || continue
+              [ "$(gh issue view "$D" --json state --jq .state)" = "CLOSED" ] || WAITING="$WAITING #$D"
+            done
+            if [ -n "$WAITING" ]; then echo "#$N waits on$WAITING"; continue; fi
 
             echo "Starting #$N"
             # Move first so the next dispatcher run doesn't pick it up again

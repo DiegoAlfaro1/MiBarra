@@ -32,6 +32,15 @@ additional_redirect_urls = ["http://localhost:8082", "mibarra://"]
 jwt_expiry = 3600
 enable_signup = true
 
+# Phone + password sign-in (no SMS confirmation for the MVP).
+[auth.sms]
+enable_signup = true
+enable_confirmations = false
+
+# Hard cap so a kept login ends after 30 days even if the app never checks.
+[auth.sessions]
+timebox = "720h"
+
 [auth.email]
 enable_signup = true
 enable_confirmations = false

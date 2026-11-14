@@ -15,3 +15,12 @@ export const supabase = createMiBarraClient(env, {
   storage: Platform.OS === 'web' ? undefined : AsyncStorage,
   detectSessionInUrl: Platform.OS === 'web',
 });
+
+/** Same storage the Supabase session lives in; used for the "stay logged in" deadline. */
+export const keepStorage = {
+  getItem: async (key: string) => (Platform.OS === 'web' ? globalThis.localStorage.getItem(key) : AsyncStorage.getItem(key)),
+  setItem: async (key: string, value: string) =>
+    Platform.OS === 'web' ? globalThis.localStorage.setItem(key, value) : AsyncStorage.setItem(key, value),
+  removeItem: async (key: string) =>
+    Platform.OS === 'web' ? globalThis.localStorage.removeItem(key) : AsyncStorage.removeItem(key),
+};

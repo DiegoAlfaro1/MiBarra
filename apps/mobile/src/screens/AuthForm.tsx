@@ -3,13 +3,14 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText, Button, Field, LinkText, t, type IconName } from '../components/ui';
+import { authenticate } from '../lib/auth';
 import { validateAuth, type FieldErrors } from '../lib/validation';
 
 export interface AuthResult {
   name: string;
 }
 
-/** Sign-up / log-in form (ACC-01..03). Calls `onSuccess` only when the input is valid. Demo: no account is created. */
+/** Sign-up / log-in form (ACC-01..03). Calls `onSuccess` only after Supabase accepted the credentials. */
 export function AuthForm({ onSuccess }: { onSuccess: (result: AuthResult) => void }) {
   const [signup, setSignup] = useState(true);
   const [method, setMethod] = useState<'phone' | 'email'>('phone');
@@ -20,10 +21,22 @@ export function AuthForm({ onSuccess }: { onSuccess: (result: AuthResult) => voi
   const [keep, setKeep] = useState(true);
   const [errors, setErrors] = useState<FieldErrors>({});
 
-  const submit = () => {
+  const [busy, setBusy] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+
+  const submit = async () => {
+    if (busy) return;
     const found = validateAuth({ signup, method, name, phone, email, password });
     setErrors(found);
-    if (Object.keys(found).length === 0) onSuccess({ name: name.trim() || 'Diego' });
+    setFormError(null);
+    if (Object.keys(found).length > 0) return;
+    setBusy(true);
+    try {
+      onSuccess(await authenticate({ signup, method, name, phone, email, password, keep }));
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : 'No pudimos continuar. Inténtalo de nuevo.');
+      setBusy(false);
+    }
   };
   const icon: IconName = 'coffee';
 
@@ -108,10 +121,19 @@ export function AuthForm({ onSuccess }: { onSuccess: (result: AuthResult) => voi
         <View style={[styles.box, keep && { backgroundColor: t.colors.primary, borderColor: t.colors.primary }]}>
           {keep ? <Feather name="check" size={16} color={t.colors.onPrimary} /> : null}
         </View>
-        <AppText variant="bodySm">Mantener sesión iniciada en este teléfono</AppText>
+        <AppText variant="bodySm">Mantener sesión iniciada por 30 días en este dispositivo</AppText>
       </Pressable>
 
-      <Button label={signup ? 'Crear cuenta y continuar' : 'Iniciar sesión y continuar'} onPress={submit} />
+      {formError ? (
+        <AppText variant="bodySm" color={t.colors.textDanger} accessibilityRole="alert">
+          {formError}
+        </AppText>
+      ) : null}
+      <Button
+        label={busy ? 'Un momento…' : signup ? 'Crear cuenta y continuar' : 'Iniciar sesión y continuar'}
+        onPress={submit}
+        disabled={busy}
+      />
       <View style={styles.switchRow}>
         <AppText variant="bodySm" color={t.colors.textMuted}>
           {signup ? '¿Ya tienes cuenta?' : '¿Eres nuevo?'}
@@ -121,6 +143,7 @@ export function AuthForm({ onSuccess }: { onSuccess: (result: AuthResult) => voi
           onPress={() => {
             setSignup((v) => !v);
             setErrors({});
+            setFormError(null);
           }}
         />
       </View>

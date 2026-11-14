@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import { AppText, BackHeader, Banner, Button, Card, EmptyState, Field, LinkText, Screen, Stepper, t } from '../src/components/ui';
 import { SHOPS } from '../src/data/mock';
 import { cartTotalCents, lineTotalCents } from '../src/lib/cart';
+import { checkoutHref } from '../src/lib/access';
 import { formatLempiras } from '../src/lib/format';
 import { useAppState } from '../src/state/AppState';
 
@@ -34,7 +35,7 @@ export default function CartScreen() {
             <AppText variant="h3">Total</AppText>
             <AppText variant="h2">{formatLempiras(total)}</AppText>
           </View>
-          <Button label="Continuar al pago" variant="dark" onPress={() => router.push(session ? '/checkout' : '/login')} />
+          <Button label="Continuar al pago" variant="dark" onPress={() => router.push(checkoutHref(session))} />
         </>
       }
     >

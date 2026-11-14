@@ -6,6 +6,7 @@ import { Modal, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react
 import { AppText, Button, EmptyState, Stepper, t, textStyle } from '../components/ui';
 import { CATEGORIES, PRODUCTS, type MockProduct, type MockShop } from '../data/mock';
 import { MILKS, SIZES } from '../data/options';
+import { checkoutHref } from '../lib/access';
 import { cartTotalCents, defaultSelection, type Selection } from '../lib/cart';
 import { formatExtra, formatLempiras } from '../lib/format';
 import { buildCartLine } from '../lib/menu';
@@ -221,7 +222,7 @@ export function WebShop({ shop }: { shop: MockShop }) {
               </AppText>
               <AppText variant="h2">{formatLempiras(total)}</AppText>
             </View>
-            <Button label="Continuar al pago" disabled={inCart.lines.length === 0} onPress={() => router.push(session ? '/checkout' : '/login')} />
+            <Button label="Continuar al pago" disabled={inCart.lines.length === 0} onPress={() => router.push(checkoutHref(session))} />
             <AppText variant="caption" color={t.colors.textMuted} style={styles.center}>
               Este pedido suma 1 sello
             </AppText>

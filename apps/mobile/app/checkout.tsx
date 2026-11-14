@@ -1,16 +1,22 @@
-import { router } from 'expo-router';
+import { Redirect, router } from 'expo-router';
 import { View, StyleSheet } from 'react-native';
 
 import { ContactSection, PaymentSection, SlotSection, SummaryCard, submitLabel } from '../src/components/CheckoutSections';
 import { AppText, BackHeader, Button, EmptyState, Screen } from '../src/components/ui';
+import { canCheckout } from '../src/lib/access';
 import { formatLempiras } from '../src/lib/format';
 import { useCheckout } from '../src/lib/useCheckout';
 import { useIsWide } from '../src/lib/useIsWide';
+import { useAppState } from '../src/state/AppState';
 import { WebCheckout } from '../src/web/WebCheckout';
 
 export default function Checkout() {
   const wide = useIsWide();
   const c = useCheckout();
+  const { session } = useAppState();
+
+  // Menus are public, but ordering needs an account: send guests to sign up (the cart is kept).
+  if (!canCheckout(session)) return <Redirect href="/login" />;
 
   if (c.isEmpty) {
     return (

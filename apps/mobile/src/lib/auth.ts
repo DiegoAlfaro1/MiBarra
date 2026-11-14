@@ -1,3 +1,5 @@
+import { isStaffAccount } from '@mibarra/shared';
+
 import { sessionFromUser, type AppSession } from './access.ts';
 
 // Sign-up and sign-in against Supabase Auth. The client is passed in so the logic can be tested without a network.
@@ -6,6 +8,7 @@ export interface AuthClient {
   auth: {
     signUp(credentials: Record<string, unknown>): Promise<{ data: { user: unknown; session: unknown }; error: { message: string; code?: string } | null }>;
     signInWithPassword(credentials: Record<string, unknown>): Promise<{ data: { user: unknown }; error: { message: string; code?: string } | null }>;
+    signOut(options?: { scope?: 'global' | 'local' | 'others' }): Promise<unknown>;
   };
 }
 
@@ -26,6 +29,7 @@ function identity(c: Credentials): { email: string } | { phone: string } {
 }
 
 const DUPLICATE = 'Ya existe una cuenta con esos datos. Inicia sesión.';
+export const STAFF_MESSAGE = 'Esta cuenta es del personal. Usa el panel de la cafetería para entrar.';
 
 /** Maps Supabase auth errors to clear Spanish copy. */
 export function authErrorMessage(error: { message: string; code?: string }): string {
@@ -71,6 +75,12 @@ export function signIn(client: AuthClient, c: Credentials): Promise<AuthOutcome>
   return guard(async () => {
     const { data, error } = await client.auth.signInWithPassword({ ...identity(c), password: c.password });
     if (error) return { ok: false, message: authErrorMessage(error) };
-    return { ok: true, session: sessionFromUser(data.user as Parameters<typeof sessionFromUser>[0]) ?? { name: 'Cliente' } };
+    const user = data.user as Parameters<typeof sessionFromUser>[0] & Parameters<typeof isStaffAccount>[0];
+    // Staff sign in on the dashboard (#20): end the session on this device instead of starting a customer one.
+    if (isStaffAccount(user)) {
+      await client.auth.signOut({ scope: 'local' });
+      return { ok: false, message: STAFF_MESSAGE };
+    }
+    return { ok: true, session: sessionFromUser(user) ?? { name: 'Cliente' } };
   });
 }

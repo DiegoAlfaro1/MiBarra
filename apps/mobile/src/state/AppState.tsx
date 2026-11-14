@@ -1,6 +1,9 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useState, type ReactNode } from 'react';
 
+import { isStaffAccount } from '@mibarra/shared';
+
 import { sessionFromUser, type AppSession } from '../lib/access.ts';
+import { closeSession, restoreSession } from '../lib/session';
 import { supabase } from '../lib/supabase';
 import { cartReducer, emptyCart, type CartAction, type CartLine, type CartState } from '../lib/cart.ts';
 
@@ -38,11 +41,15 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const [account, setAccount] = useState<Session | null>(null);
   const [guest, setGuest] = useState<Session | null>(null);
 
-  // The account session lives in Supabase Auth (persisted); mirror it here.
+  // The account session lives in Supabase Auth; mirror it here. On app start a stored session is kept
+  // only if the customer chose "stay signed in" less than 30 days ago (#20), so INITIAL_SESSION is skipped.
   useEffect(() => {
     let active = true;
-    supabase.auth.getSession().then(({ data }) => active && setAccount(sessionFromUser(data.session?.user)));
-    const { data } = supabase.auth.onAuthStateChange((_event, next) => setAccount(sessionFromUser(next?.user)));
+    restoreSession().then((restored) => active && setAccount(restored));
+    const { data } = supabase.auth.onAuthStateChange((event, next) => {
+      if (event === 'INITIAL_SESSION') return;
+      setAccount(next?.user && !isStaffAccount(next.user) ? sessionFromUser(next.user) : null);
+    });
     return () => {
       active = false;
       data.subscription.unsubscribe();
@@ -62,7 +69,8 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const signOut = useCallback(() => {
     setGuest(null);
     setAccount(null);
-    void supabase.auth.signOut();
+    // Ends only this device's session, so other devices stay signed in (#20).
+    void closeSession();
   }, []);
   const session = account ?? guest;
 

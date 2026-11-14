@@ -13,6 +13,7 @@ function fake(overrides: Partial<AuthClient['auth']> = {}): { client: AuthClient
     auth: {
       signUp: async (c) => (calls.push(c), { data: { user, session: {} }, error: null }),
       signInWithPassword: async (c) => (calls.push(c), { data: { user }, error: null }),
+      signOut: async () => ({ error: null }),
       ...overrides,
     },
   };

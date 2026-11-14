@@ -5,6 +5,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { AppText, Banner, Button, Field, LinkText, t } from '../components/ui';
 import { signIn as signInRequest, signUp as signUpRequest } from '../lib/auth';
+import { rememberLogin } from '../lib/session';
 import { supabase } from '../lib/supabase';
 import { passwordStrength, validateAuth, validateGuest, validateSignup, type FieldErrors } from '../lib/validation';
 import { useAppState } from '../state/AppState';
@@ -25,26 +26,25 @@ export const GUEST_INCLUDED = [
 ];
 
 export function SignInForm({ showTitle = true }: { showTitle?: boolean }) {
-  const [busy, setBusy] = useState(false);
   const [method, setMethod] = useState<Method>('phone');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [show, setShow] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
-  const [failed, setFailed] = useState(false);
-
+  const [keep, setKeep] = useState(true);
+  const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
 
   const submit = async () => {
     if (busy) return;
     const found = validateAuth({ signup: false, method, name: '', phone, email, password });
     setErrors(found);
-    setFailed(Object.keys(found).length > 0);
     setFailure(null);
     if (Object.keys(found).length > 0) return;
     setBusy(true);
     const outcome = await signInRequest(supabase, { method, phone, email, password });
+    if (outcome.ok) await rememberLogin(keep);
     setBusy(false);
     if (outcome.ok) router.replace('/');
     else setFailure(outcome.message);
@@ -62,16 +62,19 @@ export function SignInForm({ showTitle = true }: { showTitle?: boolean }) {
           </AppText>
         </>
       ) : null}
-      <MethodTabs value={method} onChange={(m) => { setMethod(m); setErrors({}); setFailed(false); }} />
-      {failed || failure ? (
+      <MethodTabs value={method} onChange={(m) => { setMethod(m); setErrors({}); setFailure(null); }} />
+      {failure ? (
         <Banner tone="danger" icon="alert-circle">
-          {failure ?? (method === 'phone' ? 'Revisa tu número y contraseña. Intenta de nuevo.' : 'Revisa tu correo y contraseña. Intenta de nuevo.')}
+          {failure}
         </Banner>
       ) : null}
       <ContactField method={method} phone={phone} email={email} onPhone={setPhone} onEmail={setEmail} errors={errors} />
       <PasswordField value={password} onChange={setPassword} error={errors.password} autoComplete="current-password" show={show} onToggle={() => setShow((v) => !v)} />
+      <CheckRow checked={keep} onToggle={() => setKeep((v) => !v)}>
+        Mantener sesión iniciada por 30 días en este dispositivo
+      </CheckRow>
       <LinkText label="¿Olvidaste tu contraseña?" onPress={() => undefined} />
-      <Button label="Iniciar sesión" onPress={submit} disabled={busy} />
+      <Button label={busy ? 'Un momento…' : 'Iniciar sesión'} onPress={submit} disabled={busy} />
       <AppText variant="caption" color={t.colors.textMuted} style={styles.center}>
         o
       </AppText>

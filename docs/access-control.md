@@ -35,7 +35,7 @@ can't reopen it.
 
 | Action | Customer | Barista | Manager | Owner | Platform admin | Enforced by |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| Browse menus and open shops | Yes | Yes | Yes | Yes | Yes | RLS (`shops`, `menu_*` are public; suspended shops are hidden) |
+| Browse menus and open shops | Yes | Yes | Yes | Yes | Yes | RLS (`shops`, `menu_*` are public, so visitors without an account can browse; suspended shops are hidden). Placing an order needs an account: `place_order` is not granted to `anon`, and the app sends visitors to sign up at checkout. Checked by `supabase/tests/database/guest_browsing.test.sql` |
 | Place, cancel, and view own orders | Own | No | No | No | No | `place_order()`, `cancel_order()`, RLS on `orders` |
 | View a shop's orders | No | Own shop | Own shop | Own shop | Yes | RLS on `orders`, `order_items` |
 | Change order status and mark paid | No | Own shop | Own shop | Own shop | No | RLS + column privilege on `orders.status`, `mark_order_paid()` |

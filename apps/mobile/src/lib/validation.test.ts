@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import { resolveFontFamily } from '../theme/fontNames.ts';
-import { passwordStrength, validateAuth, validateCard, validateGuest, validateSignup } from './validation.ts';
+import { isStrongPassword, passwordStrength, validateAuth, validateCard, validateGuest, validateSignup } from './validation.ts';
 
-const ok = { signup: true, method: 'phone' as const, name: 'Diego', phone: '9999 9999', email: '', password: '12345678' };
+const ok = { signup: true, method: 'phone' as const, name: 'Diego', phone: '9999 9999', email: '', password: 'Cafe2026!' };
 
 describe('validateAuth', () => {
   it('accepts valid sign-up data', () => {
@@ -40,6 +40,27 @@ describe('validateSignup', () => {
   it('requires accepting the terms', () => {
     assert.deepEqual(validateSignup({ ...ok, acceptedTerms: true }), {});
     assert.deepEqual(Object.keys(validateSignup({ ...ok, acceptedTerms: false })), ['terms']);
+  });
+});
+
+describe('password rule for sign-up', () => {
+  it('needs 8+ characters, an uppercase letter and a special character', () => {
+    assert.equal(isStrongPassword('Cafe2026!'), true);
+    assert.equal(isStrongPassword('Caf2026!'), true);
+    assert.equal(isStrongPassword('Ca2026!'), false);
+    assert.equal(isStrongPassword('cafe2026!'), false);
+    assert.equal(isStrongPassword('Cafe2026x'), false);
+  });
+  it('sends a clear error when the password is weak', () => {
+    const errors = validateSignup({ ...ok, password: 'cafe2026', acceptedTerms: true });
+    assert.match(errors.password ?? '', /mayúscula/);
+  });
+  it('rejects an invalid phone or email on sign-up', () => {
+    assert.ok(validateSignup({ ...ok, phone: '12', acceptedTerms: true }).phone);
+    assert.ok(validateSignup({ ...ok, method: 'email', email: 'x', acceptedTerms: true }).email);
+  });
+  it('does not apply the new rule when logging in', () => {
+    assert.deepEqual(validateAuth({ ...ok, signup: false, password: 'oldpass12' }), {});
   });
 });
 

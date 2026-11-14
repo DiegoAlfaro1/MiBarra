@@ -31,9 +31,18 @@ export function validateAuth(input: AuthInput): FieldErrors {
   return errors;
 }
 
-/** Sign-up also needs the terms box ticked (design: Crear cuenta stays disabled until then). */
+export const PASSWORD_RULES_MESSAGE =
+  'La contraseña debe tener al menos 8 caracteres, una mayúscula y un carácter especial (por ejemplo ! o #).';
+
+/** New-password rule (sign-up only): 8+ characters, one uppercase letter and one special character. */
+export function isStrongPassword(password: string): boolean {
+  return password.length >= 8 && /[A-Z]/.test(password) && /[^A-Za-z0-9\s]/.test(password);
+}
+
+/** Sign-up also needs the terms box ticked and a password that meets the security rule. */
 export function validateSignup(input: AuthInput & { acceptedTerms: boolean }): FieldErrors {
   const errors = validateAuth({ ...input, signup: true });
+  if (!isStrongPassword(input.password)) errors.password = PASSWORD_RULES_MESSAGE;
   if (!input.acceptedTerms) errors.terms = 'Acepta los Términos y la Política de privacidad para continuar.';
   return errors;
 }

@@ -1,5 +1,5 @@
 import { Feather } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
@@ -13,6 +13,7 @@ import { CheckRow, ContactField, MethodTabs, PasswordField, type Method } from '
 
 const PERKS = ['Sellos en cada cafetería', 'Historial', 'Pedir de nuevo'];
 const STRENGTH_CAPTION = ['', 'Muy corta · mínimo 8 caracteres', 'Contraseña aceptable · mínimo 8 caracteres', 'Contraseña fuerte'];
+const PASSWORD_HINT = 'Mínimo 8 caracteres, una mayúscula y un carácter especial.';
 
 export const GUEST_INCLUDED = [
   { ok: true, label: 'Ver menús, pedir y pagar' },
@@ -30,6 +31,7 @@ export function SignInForm({ showTitle = true }: { showTitle?: boolean }) {
   const [show, setShow] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [failed, setFailed] = useState(false);
+  const { created } = useLocalSearchParams<{ created?: string }>();
 
   const submit = () => {
     const found = validateAuth({ signup: false, method, name: '', phone, email, password });
@@ -52,6 +54,11 @@ export function SignInForm({ showTitle = true }: { showTitle?: boolean }) {
             Inicia sesión para ver tus sellos y pedidos.
           </AppText>
         </>
+      ) : null}
+      {created === '1' ? (
+        <Banner tone="success" icon="check-circle">
+          ¡Cuenta creada! Inicia sesión para continuar.
+        </Banner>
       ) : null}
       <MethodTabs value={method} onChange={(m) => { setMethod(m); setErrors({}); setFailed(false); }} />
       {failed ? (
@@ -82,7 +89,6 @@ export function SignInForm({ showTitle = true }: { showTitle?: boolean }) {
 }
 
 export function SignUpForm({ showTitle = true }: { showTitle?: boolean }) {
-  const { signIn } = useAppState();
   const [method, setMethod] = useState<Method>('phone');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -96,10 +102,8 @@ export function SignUpForm({ showTitle = true }: { showTitle?: boolean }) {
   const submit = () => {
     const found = validateSignup({ signup: true, method, name, phone, email, password, acceptedTerms: terms });
     setErrors(found);
-    if (Object.keys(found).length === 0) {
-      signIn({ name: name.trim() });
-      router.replace('/');
-    }
+    // TODO: create the account in the backend and send the verification email (future story).
+    if (Object.keys(found).length === 0) router.replace({ pathname: '/signin', params: { created: '1' } });
   };
 
   return (
@@ -117,6 +121,9 @@ export function SignUpForm({ showTitle = true }: { showTitle?: boolean }) {
       <MethodTabs value={method} onChange={(m) => { setMethod(m); setErrors({}); }} />
       <ContactField method={method} phone={phone} email={email} onPhone={setPhone} onEmail={setEmail} errors={errors} />
       <PasswordField value={password} onChange={setPassword} error={errors.password} autoComplete="new-password" show={show} onToggle={() => setShow((v) => !v)} />
+      <AppText variant="caption" color={t.colors.textMuted}>
+        {PASSWORD_HINT}
+      </AppText>
       {strength > 0 ? (
         <View accessible accessibilityLabel={STRENGTH_CAPTION[strength]} style={styles.meterWrap}>
           <View style={styles.meter}>

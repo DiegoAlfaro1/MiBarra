@@ -132,3 +132,8 @@ npm run test:db
   only" applies to reports.
 - **Screens**: the dashboard staff sign-in (#21) and the customer login (#20) are separate stories. They should
   use `isStaffAccount()` and the permission helpers in `@mibarra/shared`.
+- **Customer login (#20)**: the mobile/web app signs in with Supabase Auth (email or phone + password). A staff
+  account is signed out again with a message to use the dashboard. "Stay signed in" keeps the session for 30 days
+  (`apps/mobile/src/lib/authSession.ts`, plus `[auth.sessions] timebox` in `supabase/config.toml`); without it the
+  session is dropped on the next app start. Logging out revokes only that device's session, so other devices
+  stay signed in. No tables or policies changed.

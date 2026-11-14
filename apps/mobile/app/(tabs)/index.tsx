@@ -1,6 +1,6 @@
 import { Redirect, router } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 
 import { ShopRow } from '../../src/components/ShopRow';
@@ -11,8 +11,9 @@ import { useAppState } from '../../src/state/AppState';
 import { WebHome } from '../../src/web/WebHome';
 
 export default function Home() {
-  const { session } = useAppState();
+  const { session, sessionReady } = useAppState();
   const wide = useIsWide();
+  if (!sessionReady) return <ActivityIndicator accessibilityLabel="Cargando" color={t.colors.primary} style={{ flex: 1 }} />;
   // App entry point: nobody is signed in yet, so open Welcome on phones and Sign in on web (no Welcome there).
   if (!session) return <Redirect href={wide ? '/signin' : '/welcome'} />;
   return wide ? <WebHome /> : <MobileHome />;

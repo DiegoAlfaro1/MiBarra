@@ -32,6 +32,16 @@ additional_redirect_urls = ["http://localhost:8082", "mibarra://"]
 jwt_expiry = 3600
 enable_signup = true
 
+# A login lasts at most 30 days, even if the app never refreshes it (the app also checks this itself).
+# Session time-boxing may need a paid plan when hosted; the app-side check works regardless.
+[auth.sessions]
+timebox = "720h"
+
+# Phone + password logins without sending an SMS (no SMS provider needed locally).
+[auth.sms]
+enable_signup = true
+enable_confirmations = false
+
 [auth.email]
 enable_signup = true
 enable_confirmations = false

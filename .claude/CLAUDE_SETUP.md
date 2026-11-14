@@ -81,9 +81,10 @@ In `claude.yml`, uncomment the toolchain setup step and add `--allowedTools` wit
 | Add a task | **+ Add item** → create a new issue in the repo (not a draft: drafts aren't issues, so nothing picks them up). |
 | Start a task | Drag it to **Ready**. |
 | Start right now | Drag to Ready, then run *Claude dispatch* from the Actions tab. |
+| Start a task after others | Fill **Depends on** (e.g. `#16, #20`) and drag it to Ready with the rest. It waits in Ready until those issues are closed, then starts from a `main` that has their work. |
 | Force a model | Set the `model:` label in the card's side panel before moving to Ready. |
-| Ask for changes | Comment `@claude <what to change>` on the issue or PR (the card stays In review). |
-| Retry a failed or poor run | Move it back to **Ready**. |
+| Ask for changes | Comment `@claude <what to change>` on the issue or PR (the card stays In review). On an issue with an open Claude PR, the comment is sent to that PR, so the same PR is updated. |
+| Retry a failed or poor run | Move it back to **Ready**. If it has an open PR you don't want, close that PR first, or you'll get a second one. |
 | Park something | Leave it in Backlog. |
 
 ## Limits and costs

@@ -1,6 +1,7 @@
 # Implement: runs Claude Code on an issue when the "claude" label is added
 # (by the dispatcher when you move a card to Ready), or when someone with repo
-# access mentions @claude in a comment.
+# access mentions @claude in a comment. A comment on an issue that already has an open
+# Claude PR is sent to that PR, so Claude updates it instead of opening another one.
 # The model comes from the issue's model:haiku / model:sonnet / model:opus label.
 name: Claude
 
@@ -17,12 +18,47 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  claude:
+  # An @claude comment on an issue that already has an open Claude PR goes to that PR instead.
+  # Run on an issue, the action always starts a new branch (so a second PR); run on a PR, it
+  # pushes to the PR's branch. To start over on a fresh branch, close the PR first.
+  forward-to-pr:
     if: |
-      (github.event_name == 'issues' && github.event.label.name == 'claude') ||
-      (github.event_name != 'issues' &&
-        contains(github.event.comment.body, '@claude') &&
-        contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association))
+      github.event_name == 'issue_comment' && !github.event.issue.pull_request &&
+      contains(github.event.comment.body, '@claude') &&
+      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      pr: ${{ steps.forward.outputs.pr }}
+    env:
+      # PAT, not GITHUB_TOKEN: comments made with GITHUB_TOKEN don't start the Claude workflow.
+      GH_TOKEN: ${{ secrets.CLAUDE_PAT }}
+      GH_REPO: ${{ github.repository }}
+      N: ${{ github.event.issue.number }}
+      COMMENT_BODY: ${{ github.event.comment.body }}
+      COMMENT_URL: ${{ github.event.comment.html_url }}
+    steps:
+      - name: Send the comment to the issue's open PR, if any
+        id: forward
+        run: |
+          PR="$(gh pr list --state open --json number,headRefName,createdAt \
+            --jq "[.[] | select(.headRefName | startswith(\"claude/issue-$N-\"))] | sort_by(.createdAt) | last | .number // empty")"
+          echo "pr=$PR" >> "$GITHUB_OUTPUT"
+          if [ -z "$PR" ]; then echo "No open PR for #$N, so Claude works on the issue."; exit 0; fi
+          printf '%s\n\n_Sent from %s_\n' "$COMMENT_BODY" "$COMMENT_URL" | gh pr comment "$PR" --body-file -
+          gh issue comment "$N" --body "Sent to #$PR, so the change goes on that PR's branch instead of a new PR."
+
+  claude:
+    needs: forward-to-pr
+    # forward-to-pr is skipped for labels and PR comments; when it forwarded the comment, the PR run does the work.
+    if: |
+      needs.forward-to-pr.outputs.pr == '' && !cancelled() && needs.forward-to-pr.result != 'failure' && (
+        (github.event_name == 'issues' && github.event.label.name == 'claude') ||
+        (github.event_name != 'issues' &&
+          contains(github.event.comment.body, '@claude') &&
+          contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)))
     runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions:

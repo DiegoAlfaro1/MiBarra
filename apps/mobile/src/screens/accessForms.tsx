@@ -4,15 +4,18 @@ import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { AppText, Banner, Button, Field, LinkText, t } from '../components/ui';
+import { signUpCustomer } from '../lib/auth';
+import { supabase } from '../lib/supabase';
 import { passwordStrength, validateAuth, validateGuest, validateSignup, type FieldErrors } from '../lib/validation';
 import { useAppState } from '../state/AppState';
 import { CheckRow, ContactField, MethodTabs, PasswordField, type Method } from './accessParts';
 
 // Form bodies shared by the phone screens and the desktop web pages (design A2–A4 and WA2–WA4).
-// UI mockups: valid input starts the in-memory demo session and goes Home; there is no backend.
+// Sign-up creates a real account in Supabase Auth; sign-in and guest are still in-memory demo sessions.
 
 const PERKS = ['Sellos en cada cafetería', 'Historial', 'Pedir de nuevo'];
 const STRENGTH_CAPTION = ['', 'Muy corta · mínimo 8 caracteres', 'Contraseña aceptable · mínimo 8 caracteres', 'Contraseña fuerte'];
+const PASSWORD_HINT = 'Mínimo 8 caracteres, una mayúscula y un carácter especial.';
 
 export const GUEST_INCLUDED = [
   { ok: true, label: 'Ver menús, pedir y pagar' },
@@ -82,7 +85,6 @@ export function SignInForm({ showTitle = true }: { showTitle?: boolean }) {
 }
 
 export function SignUpForm({ showTitle = true }: { showTitle?: boolean }) {
-  const { signIn } = useAppState();
   const [method, setMethod] = useState<Method>('phone');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -91,15 +93,27 @@ export function SignUpForm({ showTitle = true }: { showTitle?: boolean }) {
   const [show, setShow] = useState(false);
   const [terms, setTerms] = useState(true);
   const [errors, setErrors] = useState<FieldErrors>({});
+  const [loading, setLoading] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [created, setCreated] = useState(false);
   const strength = passwordStrength(password);
 
-  const submit = () => {
+  const submit = async () => {
+    if (loading) return;
     const found = validateSignup({ signup: true, method, name, phone, email, password, acceptedTerms: terms });
     setErrors(found);
-    if (Object.keys(found).length === 0) {
-      signIn({ name: name.trim() });
-      router.replace('/');
+    setFormError(null);
+    if (Object.keys(found).length > 0) return;
+    setLoading(true);
+    const result = await signUpCustomer(supabase, { method, name, phone, email, password });
+    setLoading(false);
+    if (!result.ok) {
+      setFormError(result.message);
+      return;
     }
+    setCreated(true);
+    // TODO(FUTURE, issue #16): send a verification email and ask the user to confirm it before sign-in.
+    setTimeout(() => router.replace('/signin'), 1500);
   };
 
   return (
@@ -112,11 +126,24 @@ export function SignUpForm({ showTitle = true }: { showTitle?: boolean }) {
           <PerkChips />
         </>
       ) : null}
+      {created ? (
+        <Banner tone="success" icon="check-circle">
+          ¡Cuenta creada! Ahora inicia sesión.
+        </Banner>
+      ) : null}
+      {formError ? (
+        <Banner tone="danger" icon="alert-circle">
+          {formError}
+        </Banner>
+      ) : null}
       <Field label="Nombre" placeholder="¿Cómo te llamamos al entregar?" value={name} onChangeText={setName} autoComplete="name" error={errors.name} />
       <AppText variant="label">Registrarme con</AppText>
       <MethodTabs value={method} onChange={(m) => { setMethod(m); setErrors({}); }} />
       <ContactField method={method} phone={phone} email={email} onPhone={setPhone} onEmail={setEmail} errors={errors} />
       <PasswordField value={password} onChange={setPassword} error={errors.password} autoComplete="new-password" show={show} onToggle={() => setShow((v) => !v)} />
+      <AppText variant="caption" color={t.colors.textMuted}>
+        {PASSWORD_HINT}
+      </AppText>
       {strength > 0 ? (
         <View accessible accessibilityLabel={STRENGTH_CAPTION[strength]} style={styles.meterWrap}>
           <View style={styles.meter}>
@@ -137,7 +164,7 @@ export function SignUpForm({ showTitle = true }: { showTitle?: boolean }) {
           {errors.terms}
         </AppText>
       ) : null}
-      <Button label="Crear cuenta" onPress={submit} disabled={!terms} />
+      <Button label={loading ? 'Creando cuenta…' : 'Crear cuenta'} onPress={submit} disabled={!terms || loading || created} />
       <View style={styles.row}>
         <AppText variant="bodySm" color={t.colors.textMuted}>
           ¿Ya tienes cuenta?

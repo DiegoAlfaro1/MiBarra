@@ -1,11 +1,24 @@
 -- Local development data only (applied by `supabase db reset`).
-insert into public.shops (id, name, currency)
-values ('00000000-0000-4000-8000-000000000001', 'MiBarra Demo', 'MXN');
+insert into public.shops (
+  id, name, currency, address, hours, is_open, payment_provider, loyalty_stamps_required, loyalty_reward
+) values (
+  '00000000-0000-4000-8000-000000000001', 'MiBarra Demo', 'HNL', 'Col. Lomas del Guijarro, Tegucigalpa',
+  '{"mon": {"open": "07:00", "close": "19:00"}, "tue": {"open": "07:00", "close": "19:00"}, "wed": {"open": "07:00", "close": "19:00"}, "thu": {"open": "07:00", "close": "19:00"}, "fri": {"open": "07:00", "close": "19:00"}, "sat": {"open": "08:00", "close": "17:00"}, "sun": null}',
+  true, 'cash', 8, 'Bebida gratis'
+);
 
-insert into public.products (shop_id, name, price_cents) values
-  ('00000000-0000-4000-8000-000000000001', 'Espresso', 3500),
-  ('00000000-0000-4000-8000-000000000001', 'Cappuccino', 5500),
-  ('00000000-0000-4000-8000-000000000001', 'Latte', 6000);
+insert into public.menu_categories (id, shop_id, name, sort_order) values
+  ('00000000-0000-4000-8000-0000000000c1', '00000000-0000-4000-8000-000000000001', 'Café', 1);
+
+insert into public.menu_items (id, shop_id, category_id, name, description, price_cents) values
+  ('00000000-0000-4000-8000-0000000000d1', '00000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-0000000000c1', 'Espresso', 'Shot doble de la casa', 3500),
+  ('00000000-0000-4000-8000-0000000000d2', '00000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-0000000000c1', 'Cappuccino', 'Espresso con leche vaporizada', 5500),
+  ('00000000-0000-4000-8000-0000000000d3', '00000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-0000000000c1', 'Latte', 'Espresso con mucha leche', 6000);
+
+insert into public.item_options (item_id, kind, name, price_change_cents) values
+  ('00000000-0000-4000-8000-0000000000d2', 'size', 'Mediano 12 oz', 0),
+  ('00000000-0000-4000-8000-0000000000d2', 'size', 'Grande 16 oz', 1000),
+  ('00000000-0000-4000-8000-0000000000d2', 'extra', 'Sirope de vainilla', 1500);
 
 -- Test logins (password for both: password123). Local only; never seed real users.
 insert into auth.users (

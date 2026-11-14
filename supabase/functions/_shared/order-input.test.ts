@@ -40,3 +40,11 @@ test('rejects invalid items', () => {
   assert.match(errorOf({ ...valid, items: [{ productId: PRODUCT, quantity: 1.5 }] }) ?? '', /between 1 and 99/);
   assert.match(errorOf({ ...valid, items: [{ productId: PRODUCT, quantity: 100 }] }) ?? '', /between 1 and 99/);
 });
+
+test('passes valid option ids through and rejects malformed ones', () => {
+  const OPTION = '00000000-0000-4000-8000-0000000000bb';
+  const withOptions = { ...valid, items: [{ productId: PRODUCT, quantity: 1, optionIds: [OPTION] }] };
+  assert.deepEqual(validateOrderInput(withOptions), { ok: true, value: withOptions });
+  assert.match(errorOf({ ...valid, items: [{ productId: PRODUCT, quantity: 1, optionIds: ['x'] }] }) ?? '', /option/);
+  assert.match(errorOf({ ...valid, items: [{ productId: PRODUCT, quantity: 1, optionIds: 'x' }] }) ?? '', /option/);
+});

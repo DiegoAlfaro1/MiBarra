@@ -12,6 +12,8 @@ Coffee shop app to order drinks and loyalty rewards
 | Server code | Supabase Edge Functions (Deno) | `supabase/functions` |
 | Web hosting | Cloudflare Pages | `apps/*/wrangler.toml` |
 
+The database tables, relationships and access rules are documented in [docs/data-model.md](docs/data-model.md).
+
 npm workspaces tie everything together. UI screens are placeholders; the real UI comes in a separate PR.
 
 ## Getting started

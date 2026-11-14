@@ -25,11 +25,17 @@ function identity(c: Credentials): { email: string } | { phone: string } {
   return c.method === 'email' ? { email: c.email.trim().toLowerCase() } : { phone: toE164(c.phone) };
 }
 
+const DUPLICATE = 'Ya existe una cuenta con esos datos. Inicia sesión.';
+
 /** Maps Supabase auth errors to clear Spanish copy. */
 export function authErrorMessage(error: { message: string; code?: string }): string {
   const text = `${error.code ?? ''} ${error.message}`.toLowerCase();
-  if (text.includes('already') || text.includes('exists')) return 'Ya existe una cuenta con esos datos. Inicia sesión.';
-  if (text.includes('invalid login') || text.includes('invalid_credentials')) return 'Revisa tus datos e intenta de nuevo.';
+  if (text.includes('already') || text.includes('exists')) return DUPLICATE;
+  if (text.includes('weak_password')) {
+    return 'La contraseña no cumple los requisitos de seguridad. Usa 8 o más caracteres, una mayúscula y un carácter especial.';
+  }
+  if (text.includes('signup_disabled')) return 'El registro no está disponible por ahora. Intenta más tarde.';
+  if (/invalid login|invalid_credentials|validation_failed|email_address_invalid/.test(text)) return 'Revisa tus datos e intenta de nuevo.';
   if (text.includes('rate') || text.includes('too many')) return 'Demasiados intentos. Espera un momento e intenta de nuevo.';
   if (text.includes('fetch') || text.includes('network')) return 'No pudimos conectarnos. Revisa tu internet e intenta de nuevo.';
   return 'No pudimos completar la solicitud. Intenta de nuevo.';
@@ -53,6 +59,8 @@ export function signUp(client: AuthClient, name: string, c: Credentials): Promis
       options: { data: { display_name: name.trim() } },
     });
     if (error) return { ok: false, message: authErrorMessage(error) };
+    // With confirmations on, an existing contact comes back as a user with no identities instead of an error.
+    if ((data.user as { identities?: unknown[] } | null)?.identities?.length === 0) return { ok: false, message: DUPLICATE };
     // No session means the project requires confirming the account first.
     if (!data.session) return { ok: false, message: 'Te enviamos un código para confirmar tu cuenta. Confírmala e inicia sesión.' };
     return { ok: true, session: sessionFromUser(data.user as Parameters<typeof sessionFromUser>[0]) ?? { name: name.trim() } };

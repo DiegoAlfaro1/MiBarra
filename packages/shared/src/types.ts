@@ -13,8 +13,11 @@ export type PaymentProvider = (typeof PAYMENT_PROVIDERS)[number];
 export const OPTION_KINDS = ['size', 'extra'] as const;
 export type OptionKind = (typeof OPTION_KINDS)[number];
 
-export const STAFF_ROLES = ['owner', 'barista'] as const;
+export const STAFF_ROLES = ['owner', 'manager', 'barista'] as const;
 export type StaffRole = (typeof STAFF_ROLES)[number];
+
+export const LOYALTY_SCAN_ACTIONS = ['stamp', 'redeem'] as const;
+export type LoyaltyScanAction = (typeof LOYALTY_SCAN_ACTIONS)[number];
 
 /** Opening hours per weekday, e.g. `{ mon: { open: '07:00', close: '19:00' }, sun: null }`. */
 export type ShopHours = Partial<Record<'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun', { open: string; close: string } | null>>;
@@ -31,6 +34,8 @@ export interface Shop {
   /** Loyalty rule: a reward every N completed orders. Null means no loyalty program. */
   loyalty_stamps_required: number | null;
   loyalty_reward: string | null;
+  /** Set by a platform admin: hidden from customers, closed, and staff cannot reopen it. */
+  suspended: boolean;
   created_at: string;
 }
 
@@ -125,4 +130,41 @@ export interface OrderItemInput {
 export interface PlaceOrderInput {
   shopId: string;
   items: OrderItemInput[];
+}
+
+/** Links a staff login to a shop with a role. Removing someone sets `active` to false. */
+export interface ShopMember {
+  shop_id: string;
+  user_id: string;
+  role: StaffRole;
+  active: boolean;
+  invited_by: string | null;
+  created_at: string;
+}
+
+export interface PlatformAdmin {
+  user_id: string;
+  created_at: string;
+}
+
+/** Append-only record of a sensitive action. */
+export interface AuditLogEntry {
+  id: number;
+  user_id: string | null;
+  shop_id: string | null;
+  action: string;
+  target: string | null;
+  details: Record<string, unknown>;
+  time: string;
+}
+
+export interface LoyaltyScan {
+  id: string;
+  card_id: string;
+  shop_id: string;
+  customer_id: string;
+  staff_id: string | null;
+  action: LoyaltyScanAction;
+  idempotency_key: string;
+  created_at: string;
 }

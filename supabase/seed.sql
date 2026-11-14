@@ -20,7 +20,8 @@ insert into public.item_options (item_id, kind, name, price_change_cents) values
   ('00000000-0000-4000-8000-0000000000d2', 'size', 'Grande 16 oz', 1000),
   ('00000000-0000-4000-8000-0000000000d2', 'extra', 'Sirope de vainilla', 1500);
 
--- Test logins (password for both: password123). Local only; never seed real users.
+-- Test logins (password for all: password123). Local only; never seed real users.
+-- Staff logins are marked account_type = staff in app metadata, so they get no customers row.
 insert into auth.users (
   instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
   raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
@@ -28,18 +29,23 @@ insert into auth.users (
 )
 select '00000000-0000-0000-0000-000000000000', u.id, 'authenticated', 'authenticated', u.email,
   extensions.crypt('password123', extensions.gen_salt('bf')), now(),
-  '{"provider":"email","providers":["email"]}', jsonb_build_object('display_name', u.name), now(), now(),
+  jsonb_build_object('provider', 'email', 'providers', array['email']) || u.app_meta,
+  jsonb_build_object('display_name', u.name), now(), now(),
   '', '', '', ''
 from (values
-  ('00000000-0000-4000-8000-0000000000a1'::uuid, 'customer@mibarra.test', 'Test Customer'),
-  ('00000000-0000-4000-8000-0000000000a2'::uuid, 'owner@mibarra.test', 'Test Owner')
-) as u (id, email, name);
+  ('00000000-0000-4000-8000-0000000000a1'::uuid, 'customer@mibarra.test', 'Test Customer', '{}'::jsonb),
+  ('00000000-0000-4000-8000-0000000000a2'::uuid, 'owner@mibarra.test', 'Test Owner', '{"account_type":"staff"}'::jsonb),
+  ('00000000-0000-4000-8000-0000000000a3'::uuid, 'manager@mibarra.test', 'Test Manager', '{"account_type":"staff"}'::jsonb),
+  ('00000000-0000-4000-8000-0000000000a4'::uuid, 'barista@mibarra.test', 'Test Barista', '{"account_type":"staff"}'::jsonb)
+) as u (id, email, name, app_meta);
 
 insert into auth.identities (id, user_id, provider_id, provider, identity_data, last_sign_in_at, created_at, updated_at)
 select gen_random_uuid(), id, id::text, 'email',
   jsonb_build_object('sub', id::text, 'email', email, 'email_verified', true), now(), now(), now()
 from auth.users
-where email in ('customer@mibarra.test', 'owner@mibarra.test');
+where email like '%@mibarra.test';
 
-insert into public.shop_staff (shop_id, user_id, role)
-values ('00000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-0000000000a2', 'owner');
+insert into public.shop_members (shop_id, user_id, role, invited_by) values
+  ('00000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-0000000000a2', 'owner', null),
+  ('00000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-0000000000a3', 'manager', '00000000-0000-4000-8000-0000000000a2'),
+  ('00000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-0000000000a4', 'barista', '00000000-0000-4000-8000-0000000000a3');

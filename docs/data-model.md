@@ -1,7 +1,7 @@
 # MiBarra data model
 
 The MVP data model lives in Supabase (Postgres). The source of truth is `supabase/migrations`
-(`20261112000000_init.sql`, then `20261114000000_data_model.sql`); the matching TypeScript types are in
+(`20261112000000_init.sql`, then `20261114000000_data_model.sql`, then `20261114100000_access_control.sql`); the matching TypeScript types are in
 `packages/shared/src/types.ts`. A test (`packages/shared/src/data-model.test.ts`) fails if the two drift apart.
 
 Conventions:
@@ -18,7 +18,7 @@ erDiagram
     shops ||--o{ menu_items : sells
     menu_categories ||--o{ menu_items : groups
     menu_items ||--o{ item_options : "has sizes and extras"
-    shops ||--o{ shop_staff : employs
+    shops ||--o{ shop_members : employs
     customers ||--o{ orders : places
     shops ||--o{ orders : receives
     orders ||--|{ order_items : contains
@@ -68,10 +68,12 @@ erDiagram
         text email
         text phone
     }
-    shop_staff {
+    shop_members {
         uuid shop_id PK
         uuid user_id PK
-        text role "owner or barista"
+        text role "owner, manager or barista"
+        boolean active
+        uuid invited_by
     }
     orders {
         uuid id PK
@@ -115,7 +117,7 @@ erDiagram
 | `orders` | One per order | `shop_id`, `customer_id`, `status` (`pending` → `preparing` → `ready` → `completed`, or `cancelled`), `pickup_time`, `total_cents`, `payment_status` (`pending`, `paid`, `failed`, `refunded`), `note` (max 280), `idempotency_key` |
 | `order_items` | Lines in an order | `order_id`, `item_id`, `quantity` (1-99), `chosen_options` (snapshot of name and price change), `unit_price_cents` (price at time of order, options included) |
 | `loyalty_cards` | One per customer per shop | `customer_id`, `shop_id`, `stamps`, `rewards_available`, `qr_code_value` (unguessable, unique). `unique (customer_id, shop_id)` |
-| `shop_staff` | Which logins work at which shop | `shop_id`, `user_id`, `role` (`owner` can edit the shop and menu, `barista` can only work orders) |
+| `shop_members` | Which logins work at which shop | `shop_id`, `user_id`, `role` (`owner`, `manager`, `barista`), `active`, `invited_by`. One row per user per shop. See [access-control.md](access-control.md) |
 
 ## How an order is created (idempotent)
 
@@ -169,27 +171,21 @@ For example with `loyalty_stamps_required = 8`, the 8th completed order resets `
 
 ## Who can read and change what (RLS)
 
-| Table | Public (not signed in) | Customer | Barista | Owner |
-| :--- | :--- | :--- | :--- | :--- |
-| `shops` | read | read | read | read, update |
-| `menu_categories`, `menu_items`, `item_options` | read | read | read | read, create, update, delete |
-| `customers` | none | read and update own row | read customers who ordered at their shop | same as barista |
-| `orders` | none | read own | read shop's, update `status` only | same as barista |
-| `order_items` | none | read own | read shop's | read shop's |
-| `loyalty_cards` | none | read own | read shop's | read shop's |
-| `shop_staff` | none | none | read own shop's team | read, add, remove |
+Roles, the permission matrix, the RLS policies and the functions for sensitive actions are documented in
+[access-control.md](access-control.md).
 
 Extra protections:
 
-- No client can insert or delete orders, order lines or loyalty cards; there is no policy for it.
+- No client can insert or delete orders, order lines or loyalty cards. They don't have the database privilege,
+  and there is no policy for it.
 - Signed-in clients only have the database privilege to update `orders.status`. A trigger also rejects changes to
-  totals, owner, pickup time, note and payment status. Server-side code without a signed-in user (for example a
-  payment webhook using the service role) can update `payment_status`.
+  totals, owner, pickup time, note and payment status, and blocks cancelling or reopening an order with a plain
+  update (use `cancel_order()`). Payment status changes go through `mark_order_paid()` and `refund_order()`, or
+  server-side code using the service role (for example a payment webhook).
 - Orders and their lines are never deleted when a menu item changes: items that were ordered cannot be deleted,
   they are marked `available = false` instead.
 
 ## Not covered yet
 
-- Redeeming a reward (decrementing `rewards_available` when staff scan `qr_code_value`).
 - Setting `pickup_time` and `note` through the edge function (the database function already supports them).
 - Calling a payment provider and updating `payment_status`.

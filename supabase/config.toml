@@ -38,3 +38,6 @@ enable_confirmations = false
 
 [functions.place-order]
 verify_jwt = true
+
+[functions.staff-invite]
+verify_jwt = true

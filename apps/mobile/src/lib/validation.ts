@@ -31,6 +31,32 @@ export function validateAuth(input: AuthInput): FieldErrors {
   return errors;
 }
 
+/** Sign-up also needs the terms box ticked (design: Crear cuenta stays disabled until then). */
+export function validateSignup(input: AuthInput & { acceptedTerms: boolean }): FieldErrors {
+  const errors = validateAuth({ ...input, signup: true });
+  if (!input.acceptedTerms) errors.terms = 'Acepta los Términos y la Política de privacidad para continuar.';
+  return errors;
+}
+
+/** Guest checkout: a name is required, the phone is optional but must be 8 digits when given. */
+export function validateGuest(input: { name: string; phone: string }): FieldErrors {
+  const errors: FieldErrors = {};
+  if (input.name.trim().length < 2) errors.name = 'Escribe tu nombre para entregarte el pedido.';
+  const digits = input.phone.replace(/\D/g, '');
+  if (digits.length > 0 && digits.length !== 8) {
+    errors.phone = 'Ingresa un celular de 8 dígitos, por ejemplo 9999 9999.';
+  }
+  return errors;
+}
+
+/** Password strength for the sign-up meter: 0 (empty) to 3. Minimum length is 8 (see validateAuth). */
+export function passwordStrength(password: string): 0 | 1 | 2 | 3 {
+  if (password.length === 0) return 0;
+  if (password.length < 8) return 1;
+  const variety = [/[a-z]/, /[A-Z]/, /\d/, /[^A-Za-z0-9]/].filter((r) => r.test(password)).length;
+  return password.length >= 12 && variety >= 3 ? 3 : 2;
+}
+
 export interface CardInput {
   number: string;
   expiry: string;

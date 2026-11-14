@@ -1,109 +1,86 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { isStaffAccount } from '@mibarra/shared';
-import type { User } from '@supabase/supabase-js';
 
-import {
-  authErrorMessage,
-  decideOnStart,
-  displayName,
-  parseSessionMeta,
-  SESSION_META_KEY,
-  toE164,
-  type SessionMeta,
-} from './authSession';
-import { supabase } from './supabase';
+import { sessionFromUser, type AppSession } from './access.ts';
 
-export interface AuthSession {
-  name: string;
+// Sign-up and sign-in against Supabase Auth. The client is passed in so the logic can be tested without a network.
+
+export interface AuthClient {
+  auth: {
+    signUp(credentials: Record<string, unknown>): Promise<{ data: { user: unknown; session: unknown }; error: { message: string; code?: string } | null }>;
+    signInWithPassword(credentials: Record<string, unknown>): Promise<{ data: { user: unknown }; error: { message: string; code?: string } | null }>;
+    signOut(options?: { scope?: 'global' | 'local' | 'others' }): Promise<unknown>;
+  };
 }
-
-export type AuthOutcome = { ok: true; session: AuthSession } | { ok: false; message: string };
 
 export interface Credentials {
   method: 'phone' | 'email';
-  email: string;
   phone: string;
+  email: string;
   password: string;
-  /** Stay signed in on this device for 30 days. */
-  keep: boolean;
 }
 
-const STAFF_MESSAGE = 'Esta cuenta es del personal. Usa el panel de la cafetería para entrar.';
-
-function toSession(user: User): AuthSession {
-  return { name: displayName(user) };
+/** Honduran mobile number (8 digits as typed) to E.164, e.g. "9999 9999" -> "+50499999999". */
+export function toE164(phone: string): string {
+  return `+504${phone.replace(/\D/g, '')}`;
 }
 
-async function rememberLogin(keep: boolean): Promise<void> {
-  const meta: SessionMeta = { keep, startedAt: Date.now() };
-  await AsyncStorage.setItem(SESSION_META_KEY, JSON.stringify(meta));
+function identity(c: Credentials): { email: string } | { phone: string } {
+  return c.method === 'email' ? { email: c.email.trim().toLowerCase() } : { phone: toE164(c.phone) };
 }
 
-async function finish(user: User | null | undefined, keep: boolean): Promise<AuthOutcome> {
-  if (!user) return { ok: false, message: authErrorMessage(undefined) };
-  if (isStaffAccount(user)) {
-    await closeSession();
-    return { ok: false, message: STAFF_MESSAGE };
+const DUPLICATE = 'Ya existe una cuenta con esos datos. Inicia sesión.';
+export const STAFF_MESSAGE = 'Esta cuenta es del personal. Usa el panel de la cafetería para entrar.';
+
+/** Maps Supabase auth errors to clear Spanish copy. */
+export function authErrorMessage(error: { message: string; code?: string }): string {
+  const text = `${error.code ?? ''} ${error.message}`.toLowerCase();
+  if (text.includes('already') || text.includes('exists')) return DUPLICATE;
+  if (text.includes('weak_password')) {
+    return 'La contraseña no cumple los requisitos de seguridad. Usa 8 o más caracteres, una mayúscula y un carácter especial.';
   }
-  await rememberLogin(keep);
-  return { ok: true, session: toSession(user) };
+  if (text.includes('signup_disabled')) return 'El registro no está disponible por ahora. Intenta más tarde.';
+  if (/invalid login|invalid_credentials|validation_failed|email_address_invalid/.test(text)) return 'Revisa tus datos e intenta de nuevo.';
+  if (text.includes('rate') || text.includes('too many')) return 'Demasiados intentos. Espera un momento e intenta de nuevo.';
+  if (text.includes('fetch') || text.includes('network')) return 'No pudimos conectarnos. Revisa tu internet e intenta de nuevo.';
+  return 'No pudimos completar la solicitud. Intenta de nuevo.';
 }
 
-const identity = (c: Credentials) =>
-  c.method === 'phone' ? { phone: toE164(c.phone) } : { email: c.email.trim().toLowerCase() };
+export type AuthOutcome = { ok: true; session: AppSession } | { ok: false; message: string };
 
-/** Logs in. Each device gets its own Supabase session, so other devices are not affected. */
-export async function logIn(c: Credentials): Promise<AuthOutcome> {
+async function guard(run: () => Promise<AuthOutcome>): Promise<AuthOutcome> {
   try {
-    const { data, error } = await supabase.auth.signInWithPassword({ ...identity(c), password: c.password });
-    if (error) return { ok: false, message: authErrorMessage(error) };
-    return await finish(data.user, c.keep);
-  } catch (error) {
-    return { ok: false, message: authErrorMessage(error as Error) };
+    return await run();
+  } catch (e) {
+    return { ok: false, message: authErrorMessage({ message: e instanceof Error ? e.message : String(e) }) };
   }
 }
 
-/** Creates the account (the database trigger adds the customer row) and logs in. */
-export async function signUp(c: Credentials & { name: string }): Promise<AuthOutcome> {
-  try {
-    const { data, error } = await supabase.auth.signUp({
+export function signUp(client: AuthClient, name: string, c: Credentials): Promise<AuthOutcome> {
+  return guard(async () => {
+    const { data, error } = await client.auth.signUp({
       ...identity(c),
       password: c.password,
-      options: { data: { display_name: c.name.trim() } },
+      options: { data: { display_name: name.trim() } },
     });
     if (error) return { ok: false, message: authErrorMessage(error) };
-    // No session means the project requires confirmation first.
-    if (!data.session) return { ok: false, message: authErrorMessage({ code: 'email_not_confirmed' }) };
-    return await finish(data.user, c.keep);
-  } catch (error) {
-    return { ok: false, message: authErrorMessage(error as Error) };
-  }
+    // With confirmations on, an existing contact comes back as a user with no identities instead of an error.
+    if ((data.user as { identities?: unknown[] } | null)?.identities?.length === 0) return { ok: false, message: DUPLICATE };
+    // No session means the project requires confirming the account first.
+    if (!data.session) return { ok: false, message: 'Te enviamos un código para confirmar tu cuenta. Confírmala e inicia sesión.' };
+    return { ok: true, session: sessionFromUser(data.user as Parameters<typeof sessionFromUser>[0]) ?? { name: name.trim() } };
+  });
 }
 
-/** On app start: bring back a kept session, or discard one that was not kept or is older than 30 days. */
-export async function restoreSession(): Promise<AuthSession | null> {
-  try {
-    const { data } = await supabase.auth.getSession();
-    const meta = parseSessionMeta(await AsyncStorage.getItem(SESSION_META_KEY));
-    if (decideOnStart(!!data.session, meta, Date.now()) === 'restore' && data.session) {
-      // Confirms with the server that the session was not revoked (e.g. logged out elsewhere).
-      const { data: checked, error } = await supabase.auth.getUser();
-      if (!error && checked.user && !isStaffAccount(checked.user)) return toSession(checked.user);
+export function signIn(client: AuthClient, c: Credentials): Promise<AuthOutcome> {
+  return guard(async () => {
+    const { data, error } = await client.auth.signInWithPassword({ ...identity(c), password: c.password });
+    if (error) return { ok: false, message: authErrorMessage(error) };
+    const user = data.user as Parameters<typeof sessionFromUser>[0] & Parameters<typeof isStaffAccount>[0];
+    // Staff sign in on the dashboard (#20): end the session on this device instead of starting a customer one.
+    if (isStaffAccount(user)) {
+      await client.auth.signOut({ scope: 'local' });
+      return { ok: false, message: STAFF_MESSAGE };
     }
-    if (data.session) await closeSession();
-    return null;
-  } catch {
-    // Offline at start: keep the stored session for next time but show the signed-out state.
-    return null;
-  }
-}
-
-/** Revokes this device's session on the server and clears local data. Always clears locally, even offline. */
-export async function closeSession(): Promise<void> {
-  try {
-    await supabase.auth.signOut({ scope: 'local' });
-  } catch {
-    // Network failure: local state is still cleared below.
-  }
-  await AsyncStorage.removeItem(SESSION_META_KEY).catch(() => undefined);
+    return { ok: true, session: sessionFromUser(user) ?? { name: 'Cliente' } };
+  });
 }

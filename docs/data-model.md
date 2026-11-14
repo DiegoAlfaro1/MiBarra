@@ -185,6 +185,14 @@ Extra protections:
 - Orders and their lines are never deleted when a menu item changes: items that were ordered cannot be deleted,
   they are marked `available = false` instead.
 
+## Sign-up
+
+The app calls `supabase.auth.signUp` with an email or an E.164 phone (`+504…`) plus a password, and passes the name as
+`options.data.display_name`. The `handle_new_user` trigger copies name, email and phone into `customers`. Email and phone
+are unique, so the same contact cannot register twice. Local config (`supabase/config.toml`) has phone sign-up enabled
+without an SMS provider and a minimum password length of 8. The uppercase and special-character rules are checked in the
+app only. Email/phone verification is a future item.
+
 ## Not covered yet
 
 - Setting `pickup_time` and `note` through the edge function (the database function already supports them).

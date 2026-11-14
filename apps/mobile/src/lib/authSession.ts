@@ -1,5 +1,4 @@
-// Session policy for "stay signed in" (pure logic; storage and Supabase calls live in AppState).
-// Copy is Spanish, consistent with the rest of the app.
+// Session policy for "stay signed in" (pure logic; storage and Supabase calls live in session.ts).
 
 /** How long a kept session lasts before the customer has to log in again. */
 export const KEEP_SESSION_DAYS = 30;
@@ -43,50 +42,4 @@ export function decideOnStart(hasSession: boolean, meta: SessionMeta | null, now
   if (!hasSession) return 'discard';
   if (!meta || !meta.keep) return 'discard';
   return isKeptSessionExpired(meta, now) ? 'discard' : 'restore';
-}
-
-interface AuthErrorLike {
-  code?: string;
-  status?: number;
-  name?: string;
-  message?: string;
-}
-
-/** Turns a Supabase auth error into a message for the customer. Never shows raw backend text. */
-export function authErrorMessage(error: AuthErrorLike | null | undefined): string {
-  const code = error?.code;
-  if (code === 'invalid_credentials') return 'El correo, celular o contraseña no son correctos. Intenta de nuevo.';
-  if (code === 'email_not_confirmed' || code === 'phone_not_confirmed') {
-    return 'Tu cuenta aún no está confirmada. Revisa tu mensaje de confirmación.';
-  }
-  if (code === 'user_already_exists' || code === 'email_exists' || code === 'phone_exists') {
-    return 'Ya existe una cuenta con esos datos. Inicia sesión.';
-  }
-  if (code === 'weak_password') return 'La contraseña es muy débil. Usa al menos 8 caracteres.';
-  if (code === 'over_request_rate_limit' || error?.status === 429) {
-    return 'Demasiados intentos. Espera un momento e intenta de nuevo.';
-  }
-  if (error?.name === 'AuthRetryableFetchError' || error?.status === 0 || error?.status === undefined) {
-    return 'No pudimos conectarnos. Revisa tu conexión e intenta de nuevo.';
-  }
-  return 'No pudimos completar la solicitud. Intenta de nuevo.';
-}
-
-/** Honduras numbers are entered as 8 digits; Supabase wants E.164. */
-export function toE164(phone: string): string {
-  return `+504${phone.replace(/\D/g, '')}`;
-}
-
-export interface UserLike {
-  email?: string | null;
-  phone?: string | null;
-  user_metadata?: Record<string, unknown> | null;
-}
-
-/** Name shown in the app: the saved name, otherwise the email before the "@", otherwise a neutral fallback. */
-export function displayName(user: UserLike): string {
-  const saved = user.user_metadata?.display_name;
-  if (typeof saved === 'string' && saved.trim()) return saved.trim();
-  const local = user.email?.split('@')[0]?.trim();
-  return local || 'Cliente';
 }

@@ -6,7 +6,7 @@ import { AccessTop } from '../src/screens/accessParts';
 import { SignInForm } from '../src/screens/accessForms';
 import { WebAccessPage } from '../src/web/WebAccess';
 
-/** Sign-in screen (ACC-03): phone layout, or the WA2 page on wide web. UI mockup; no backend. */
+/** Sign-in screen (ACC-03): phone layout, or the WA2 page on wide web.  */
 export default function SignIn() {
   if (useIsWide()) {
     return (

@@ -3,14 +3,16 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText, Banner, Button, Field, LinkText, t, type IconName } from '../components/ui';
-import { logIn, signUp } from '../lib/auth';
+import { signIn, signUp } from '../lib/auth';
+import { rememberLogin } from '../lib/session';
+import { supabase } from '../lib/supabase';
 import { validateAuth, type FieldErrors } from '../lib/validation';
 
 export interface AuthResult {
   name: string;
 }
 
-/** Sign-up / log-in form (ACC-01..03). Talks to Supabase Auth and calls `onSuccess` only once the account is signed in. */
+/** Sign-up / log-in form (ACC-01..03). Creates the account (or signs in) with Supabase Auth and calls `onSuccess` only when that works. */
 export function AuthForm({ onSuccess }: { onSuccess: (result: AuthResult) => void }) {
   const [signup, setSignup] = useState(true);
   const [method, setMethod] = useState<'phone' | 'email'>('phone');
@@ -30,8 +32,9 @@ export function AuthForm({ onSuccess }: { onSuccess: (result: AuthResult) => voi
     setFailure(null);
     if (Object.keys(found).length > 0) return;
     setBusy(true);
-    const credentials = { method, email, phone, password, keep };
-    const outcome = signup ? await signUp({ ...credentials, name }) : await logIn(credentials);
+    const credentials = { method, phone, email, password };
+    const outcome = signup ? await signUp(supabase, name, credentials) : await signIn(supabase, credentials);
+    if (outcome.ok) await rememberLogin(keep);
     setBusy(false);
     if (outcome.ok) onSuccess(outcome.session);
     else setFailure(outcome.message);

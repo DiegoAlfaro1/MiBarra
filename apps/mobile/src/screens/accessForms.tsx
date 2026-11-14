@@ -4,16 +4,19 @@ import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { AppText, Banner, Button, Field, LinkText, t } from '../components/ui';
-import { logIn, signUp } from '../lib/auth';
+import { signIn as signInRequest, signUp as signUpRequest } from '../lib/auth';
+import { rememberLogin } from '../lib/session';
+import { supabase } from '../lib/supabase';
 import { passwordStrength, validateAuth, validateGuest, validateSignup, type FieldErrors } from '../lib/validation';
 import { useAppState } from '../state/AppState';
 import { CheckRow, ContactField, MethodTabs, PasswordField, type Method } from './accessParts';
 
 // Form bodies shared by the phone screens and the desktop web pages (design A2–A4 and WA2–WA4).
-// Sign in and sign up talk to Supabase Auth; the guest form is still a mockup (in-memory demo session).
+// Sign-in and sign-up use Supabase Auth; the guest form starts a local no-account session.
 
 const PERKS = ['Sellos en cada cafetería', 'Historial', 'Pedir de nuevo'];
 const STRENGTH_CAPTION = ['', 'Muy corta · mínimo 8 caracteres', 'Contraseña aceptable · mínimo 8 caracteres', 'Contraseña fuerte'];
+const PASSWORD_HINT = 'Mínimo 8 caracteres, una mayúscula y un carácter especial.';
 
 export const GUEST_INCLUDED = [
   { ok: true, label: 'Ver menús, pedir y pagar' },
@@ -23,7 +26,6 @@ export const GUEST_INCLUDED = [
 ];
 
 export function SignInForm({ showTitle = true }: { showTitle?: boolean }) {
-  const { signIn } = useAppState();
   const [method, setMethod] = useState<Method>('phone');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -41,14 +43,11 @@ export function SignInForm({ showTitle = true }: { showTitle?: boolean }) {
     setFailure(null);
     if (Object.keys(found).length > 0) return;
     setBusy(true);
-    const outcome = await logIn({ method, email, phone, password, keep });
+    const outcome = await signInRequest(supabase, { method, phone, email, password });
+    if (outcome.ok) await rememberLogin(keep);
     setBusy(false);
-    if (outcome.ok) {
-      signIn(outcome.session);
-      router.replace('/');
-    } else {
-      setFailure(outcome.message);
-    }
+    if (outcome.ok) router.replace('/');
+    else setFailure(outcome.message);
   };
 
   return (
@@ -95,7 +94,6 @@ export function SignInForm({ showTitle = true }: { showTitle?: boolean }) {
 }
 
 export function SignUpForm({ showTitle = true }: { showTitle?: boolean }) {
-  const { signIn } = useAppState();
   const [method, setMethod] = useState<Method>('phone');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -103,27 +101,28 @@ export function SignUpForm({ showTitle = true }: { showTitle?: boolean }) {
   const [password, setPassword] = useState('');
   const [show, setShow] = useState(false);
   const [terms, setTerms] = useState(true);
-  const [keep, setKeep] = useState(true);
   const [errors, setErrors] = useState<FieldErrors>({});
-  const [busy, setBusy] = useState(false);
-  const [failure, setFailure] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [created, setCreated] = useState(false);
   const strength = passwordStrength(password);
 
   const submit = async () => {
-    if (busy) return;
+    if (loading) return;
     const found = validateSignup({ signup: true, method, name, phone, email, password, acceptedTerms: terms });
     setErrors(found);
-    setFailure(null);
+    setFormError(null);
     if (Object.keys(found).length > 0) return;
-    setBusy(true);
-    const outcome = await signUp({ method, name, email, phone, password, keep });
-    setBusy(false);
-    if (outcome.ok) {
-      signIn(outcome.session);
-      router.replace('/');
-    } else {
-      setFailure(outcome.message);
+    setLoading(true);
+    const result = await signUpRequest(supabase, name, { method, phone, email, password });
+    setLoading(false);
+    if (!result.ok) {
+      setFormError(result.message);
+      return;
     }
+    setCreated(true);
+    // TODO(FUTURE, issue #16): send a verification email and ask the user to confirm it before sign-in.
+    setTimeout(() => router.replace('/signin'), 1500);
   };
 
   return (
@@ -136,9 +135,14 @@ export function SignUpForm({ showTitle = true }: { showTitle?: boolean }) {
           <PerkChips />
         </>
       ) : null}
-      {failure ? (
+      {created ? (
+        <Banner tone="success" icon="check-circle">
+          ¡Cuenta creada! Ahora inicia sesión.
+        </Banner>
+      ) : null}
+      {formError ? (
         <Banner tone="danger" icon="alert-circle">
-          {failure}
+          {formError}
         </Banner>
       ) : null}
       <Field label="Nombre" placeholder="¿Cómo te llamamos al entregar?" value={name} onChangeText={setName} autoComplete="name" error={errors.name} />
@@ -146,6 +150,9 @@ export function SignUpForm({ showTitle = true }: { showTitle?: boolean }) {
       <MethodTabs value={method} onChange={(m) => { setMethod(m); setErrors({}); }} />
       <ContactField method={method} phone={phone} email={email} onPhone={setPhone} onEmail={setEmail} errors={errors} />
       <PasswordField value={password} onChange={setPassword} error={errors.password} autoComplete="new-password" show={show} onToggle={() => setShow((v) => !v)} />
+      <AppText variant="caption" color={t.colors.textMuted}>
+        {PASSWORD_HINT}
+      </AppText>
       {strength > 0 ? (
         <View accessible accessibilityLabel={STRENGTH_CAPTION[strength]} style={styles.meterWrap}>
           <View style={styles.meter}>
@@ -166,10 +173,7 @@ export function SignUpForm({ showTitle = true }: { showTitle?: boolean }) {
           {errors.terms}
         </AppText>
       ) : null}
-      <CheckRow checked={keep} onToggle={() => setKeep((v) => !v)}>
-        Mantener sesión iniciada por 30 días en este dispositivo
-      </CheckRow>
-      <Button label={busy ? 'Un momento…' : 'Crear cuenta'} onPress={submit} disabled={!terms || busy} />
+      <Button label={loading ? 'Creando cuenta…' : 'Crear cuenta'} onPress={submit} disabled={!terms || loading || created} />
       <View style={styles.row}>
         <AppText variant="bodySm" color={t.colors.textMuted}>
           ¿Ya tienes cuenta?
@@ -198,7 +202,7 @@ export function PerkChips() {
 }
 
 export function GuestForm({ showTitle = true, showIncluded = true }: { showTitle?: boolean; showIncluded?: boolean }) {
-  const { signIn } = useAppState();
+  const { startGuest } = useAppState();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [errors, setErrors] = useState<FieldErrors>({});
@@ -207,7 +211,7 @@ export function GuestForm({ showTitle = true, showIncluded = true }: { showTitle
     const found = validateGuest({ name, phone });
     setErrors(found);
     if (Object.keys(found).length === 0) {
-      signIn({ name: name.trim() });
+      startGuest(name.trim());
       router.replace('/');
     }
   };

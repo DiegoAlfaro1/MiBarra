@@ -1,15 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import {
-  authErrorMessage,
-  decideOnStart,
-  displayName,
-  isKeptSessionExpired,
-  KEEP_SESSION_DAYS,
-  parseSessionMeta,
-  toE164,
-} from './authSession.ts';
+import { decideOnStart, isKeptSessionExpired, KEEP_SESSION_DAYS, parseSessionMeta } from './authSession.ts';
 
 const DAY = 24 * 60 * 60 * 1000;
 const NOW = Date.UTC(2026, 10, 14);
@@ -42,29 +34,5 @@ describe('parseSessionMeta', () => {
     assert.equal(parseSessionMeta('{"keep":"yes","startedAt":5}'), null);
     assert.equal(parseSessionMeta('{"keep":true}'), null);
     assert.equal(parseSessionMeta('null'), null);
-  });
-});
-
-describe('authErrorMessage', () => {
-  it('gives clear messages for the common failures', () => {
-    assert.match(authErrorMessage({ code: 'invalid_credentials', status: 400 }), /no son correctos/);
-    assert.match(authErrorMessage({ code: 'user_already_exists', status: 422 }), /Ya existe una cuenta/);
-    assert.match(authErrorMessage({ code: 'over_request_rate_limit', status: 429 }), /Demasiados intentos/);
-  });
-  it('reports a network failure and never leaks backend text', () => {
-    assert.match(authErrorMessage({ name: 'AuthRetryableFetchError', status: 0, message: 'fetch failed' }), /conexión/);
-    const generic = authErrorMessage({ code: 'unexpected_failure', status: 500, message: 'pg: relation x' });
-    assert.doesNotMatch(generic, /pg:/);
-  });
-});
-
-describe('helpers', () => {
-  it('formats Honduran phone numbers as E.164', () => {
-    assert.equal(toE164('9999 9999'), '+50499999999');
-  });
-  it('picks a display name', () => {
-    assert.equal(displayName({ user_metadata: { display_name: ' Ana ' }, email: 'a@b.co' }), 'Ana');
-    assert.equal(displayName({ email: 'maria@correo.com' }), 'maria');
-    assert.equal(displayName({}), 'Cliente');
   });
 });

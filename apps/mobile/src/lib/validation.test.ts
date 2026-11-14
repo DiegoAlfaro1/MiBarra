@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import { resolveFontFamily } from '../theme/fontNames.ts';
-import { passwordStrength, validateAuth, validateCard, validateGuest, validateSignup } from './validation.ts';
+import { passwordProblem, passwordStrength, validateAuth, validateCard, validateGuest, validateSignup } from './validation.ts';
 
-const ok = { signup: true, method: 'phone' as const, name: 'Diego', phone: '9999 9999', email: '', password: '12345678' };
+const ok = { signup: true, method: 'phone' as const, name: 'Diego', phone: '9999 9999', email: '', password: 'Cafe2026!' };
 
 describe('validateAuth', () => {
   it('accepts valid sign-up data', () => {
@@ -20,6 +20,19 @@ describe('validateAuth', () => {
   it('validates email when that method is chosen', () => {
     assert.ok(validateAuth({ ...ok, method: 'email', email: 'nope' }).email);
     assert.deepEqual(validateAuth({ ...ok, method: 'email', email: 'a@b.co', phone: '' }), {});
+  });
+});
+
+describe('sign-up password rule', () => {
+  it('requires 8+ characters, an uppercase letter and a special character', () => {
+    assert.match(passwordProblem('Ab1!') ?? '', /8 caracteres/);
+    assert.match(passwordProblem('cafe2026!') ?? '', /mayúscula/);
+    assert.match(passwordProblem('Cafe2026') ?? '', /especial/);
+    assert.equal(passwordProblem('Cafe2026!'), null);
+  });
+  it('rejects a weak password on sign-up but not on sign-in', () => {
+    assert.ok(validateAuth({ ...ok, password: 'cafe2026' }).password);
+    assert.deepEqual(validateAuth({ ...ok, signup: false, password: 'cafe2026' }), {});
   });
 });
 

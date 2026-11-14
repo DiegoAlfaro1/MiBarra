@@ -4,8 +4,14 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText, Avatar, Card, DemoBadge, QrPlaceholder, Screen, t } from '../../src/components/ui';
 import { SHOPS } from '../../src/data/mock';
+import { useIsWide } from '../../src/lib/useIsWide';
+import { WebAccount } from '../../src/web/WebAccount';
 
-export default function Loyalty() {
+export default function LoyaltyRoute() {
+  return useIsWide() ? <WebAccount tab="stamps" /> : <Loyalty />;
+}
+
+function Loyalty() {
   const main = SHOPS[0]!;
   const others = SHOPS.slice(1).reverse();
   const accent = t.colors.primary;

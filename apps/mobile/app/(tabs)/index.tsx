@@ -1,27 +1,26 @@
-import { Redirect, router } from 'expo-router';
+import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 
 import { ShopRow } from '../../src/components/ShopRow';
 import { AppText, EmptyState, Screen, SectionTitle, StampDots, Avatar, t, textStyle } from '../../src/components/ui';
-import { MOCK_CUSTOMER_NAME, PRODUCTS, SHOPS } from '../../src/data/mock';
+import { PRODUCTS, SHOPS } from '../../src/data/mock';
+import { greetingName } from '../../src/lib/access';
 import { useIsWide } from '../../src/lib/useIsWide';
 import { useAppState } from '../../src/state/AppState';
 import { WebHome } from '../../src/web/WebHome';
 
 export default function Home() {
-  const { session } = useAppState();
   const wide = useIsWide();
-  // App entry point: nobody is signed in yet, so open Welcome on phones and Sign in on web (no Welcome there).
-  if (!session) return <Redirect href={wide ? '/signin' : '/welcome'} />;
+  // Browsing shops and menus needs no account; sign-up is asked for at checkout.
   return wide ? <WebHome /> : <MobileHome />;
 }
 
 function MobileHome() {
   const { session } = useAppState();
   const [query, setQuery] = useState('');
-  const name = session?.name ?? MOCK_CUSTOMER_NAME;
+  const name = greetingName(session);
   const home = SHOPS[0]!;
 
   const shops = useMemo(() => {
@@ -39,7 +38,7 @@ function MobileHome() {
       <View style={styles.top}>
         <View style={styles.flex}>
           <AppText variant="bodySm" color={t.colors.textMuted}>
-            Hola, {name}
+            {name ? `Hola, ${name}` : 'Hola'}
           </AppText>
           <AppText variant="h1" accessibilityRole="header">
             ¿Dónde pedimos hoy?
@@ -47,12 +46,12 @@ function MobileHome() {
         </View>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Mi perfil"
+          accessibilityLabel={name ? 'Mi perfil' : 'Iniciar sesión o crear cuenta'}
           onPress={() => router.navigate('/profile')}
           style={styles.profile}
         >
           <AppText variant="bodyStrong" color={t.colors.textInverse}>
-            {name.charAt(0).toUpperCase()}
+            {name ? name.charAt(0).toUpperCase() : '?'}
           </AppText>
         </Pressable>
       </View>

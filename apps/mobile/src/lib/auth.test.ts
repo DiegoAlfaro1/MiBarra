@@ -1,51 +1,41 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { signUpCustomer, toE164, type SignUpClient } from './auth.ts';
+import { signUp, type AuthClient } from './auth.ts';
 
-const base = { name: ' Diego ', phone: '9999 9999', email: ' Diego@Correo.com ', password: 'Cafe2026!' };
+// Sign-up cases from issue #16; the happy path and sign-in are covered in access.test.ts.
+const creds = { method: 'phone' as const, phone: '9999 9999', email: '', password: 'Cafe2026!' };
 
-function fake(result: { identities?: unknown[]; error?: { message: string; code?: string }; throws?: boolean }) {
-  const calls: unknown[] = [];
-  const client: SignUpClient = {
+function fake(result: Awaited<ReturnType<AuthClient['auth']['signUp']>>): { client: AuthClient; calls: Record<string, unknown>[] } {
+  const calls: Record<string, unknown>[] = [];
+  const client: AuthClient = {
     auth: {
-      async signUp(c) {
-        calls.push(c);
-        if (result.throws) throw new Error('network');
-        return { data: { user: { identities: result.identities ?? [{}] } }, error: result.error ?? null };
-      },
+      signUp: async (c) => (calls.push(c), result),
+      signInWithPassword: async () => ({ data: { user: null }, error: null }),
     },
   };
   return { client, calls };
 }
 
-describe('toE164', () => {
-  it('prefixes the country code and strips spaces', () => assert.equal(toE164('9999 9999'), '+50499999999'));
-});
-
-describe('signUpCustomer', () => {
+describe('sign-up (issue #16)', () => {
   it('signs up by phone in E.164 with the display name', async () => {
-    const { client, calls } = fake({});
-    assert.deepEqual(await signUpCustomer(client, { ...base, method: 'phone' }), { ok: true });
+    const { client, calls } = fake({ data: { user: { phone: '50499999999' }, session: {} }, error: null });
+    assert.equal((await signUp(client, ' Diego ', creds)).ok, true);
     assert.deepEqual(calls[0], { phone: '+50499999999', password: 'Cafe2026!', options: { data: { display_name: 'Diego' } } });
   });
-  it('signs up by email, trimmed and lower-cased', async () => {
-    const { client, calls } = fake({});
-    await signUpCustomer(client, { ...base, method: 'email' });
-    assert.equal((calls[0] as { email: string }).email, 'diego@correo.com');
+  it('explains a duplicate account reported by error code', async () => {
+    const { client } = fake({ data: { user: null, session: null }, error: { message: 'x', code: 'phone_exists' } });
+    const out = await signUp(client, 'Diego', creds);
+    assert.ok(!out.ok && /Ya existe una cuenta/.test(out.message));
   });
-  it('explains a duplicate account', async () => {
-    const { client } = fake({ error: { message: 'x', code: 'user_already_exists' } });
-    const r = await signUpCustomer(client, { ...base, method: 'email' });
-    assert.ok(!r.ok && /Ya existe una cuenta/.test(r.message));
+  it('treats a user with no identities as a duplicate', async () => {
+    const { client } = fake({ data: { user: { identities: [] }, session: null }, error: null });
+    const out = await signUp(client, 'Diego', creds);
+    assert.ok(!out.ok && /Ya existe una cuenta/.test(out.message));
   });
-  it('treats an empty identities list as a duplicate', async () => {
-    const { client } = fake({ identities: [] });
-    assert.equal((await signUpCustomer(client, { ...base, method: 'email' })).ok, false);
-  });
-  it('returns a friendly message instead of throwing on network failure', async () => {
-    const { client } = fake({ throws: true });
-    const r = await signUpCustomer(client, { ...base, method: 'phone' });
-    assert.ok(!r.ok && /No pudimos crear tu cuenta/.test(r.message));
+  it('explains a password the server rejects as weak', async () => {
+    const { client } = fake({ data: { user: null, session: null }, error: { message: 'Password should be at least 8 characters', code: 'weak_password' } });
+    const out = await signUp(client, 'Diego', creds);
+    assert.ok(!out.ok && /requisitos de seguridad/.test(out.message));
   });
 });

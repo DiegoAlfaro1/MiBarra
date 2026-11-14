@@ -3,7 +3,7 @@ import { router, usePathname } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText, t } from '../components/ui';
-import { MOCK_CUSTOMER_NAME } from '../data/mock';
+import { greetingName } from '../lib/access';
 import { useAppState } from '../state/AppState';
 
 export const WEB_MAX_WIDTH = 1200;
@@ -17,7 +17,7 @@ const NAV = [
 export function WebHeader() {
   const pathname = usePathname();
   const { session } = useAppState();
-  const name = session?.name ?? MOCK_CUSTOMER_NAME;
+  const name = greetingName(session);
   return (
     <View style={styles.bar} accessibilityRole="header">
       <View style={styles.inner}>
@@ -42,13 +42,13 @@ export function WebHeader() {
               </Pressable>
             );
           })}
-          <Pressable accessibilityRole="link" accessibilityLabel={`Mi perfil, ${name}`} onPress={() => router.navigate('/profile')} style={styles.profile}>
+          <Pressable accessibilityRole="link" accessibilityLabel={name ? `Mi perfil, ${name}` : 'Iniciar sesión o crear cuenta'} onPress={() => router.navigate(name ? '/profile' : '/signin')} style={styles.profile}>
             <View style={styles.avatar}>
               <AppText variant="badge" color={t.colors.textInverse}>
-                {name.charAt(0).toUpperCase()}
+                {name ? name.charAt(0).toUpperCase() : '?'}
               </AppText>
             </View>
-            <AppText variant="bodyStrong">{name}</AppText>
+            <AppText variant="bodyStrong">{name ?? 'Iniciar sesión'}</AppText>
           </Pressable>
         </View>
       </View>

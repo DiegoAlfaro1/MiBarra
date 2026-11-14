@@ -9,6 +9,7 @@ import { MILKS, SIZES } from '../data/options';
 import { cartTotalCents, defaultSelection, type Selection } from '../lib/cart';
 import { formatExtra, formatLempiras } from '../lib/format';
 import { buildCartLine } from '../lib/menu';
+import { checkoutRoute } from '../lib/access';
 import { useAppState } from '../state/AppState';
 import { WEB_MAX_WIDTH, WebFooter, WebHeader } from './WebHeader';
 
@@ -221,7 +222,7 @@ export function WebShop({ shop }: { shop: MockShop }) {
               </AppText>
               <AppText variant="h2">{formatLempiras(total)}</AppText>
             </View>
-            <Button label="Continuar al pago" disabled={inCart.lines.length === 0} onPress={() => router.push(session ? '/checkout' : '/login')} />
+            <Button label="Continuar al pago" disabled={inCart.lines.length === 0} onPress={() => router.push(checkoutRoute(session))} />
             <AppText variant="caption" color={t.colors.textMuted} style={styles.center}>
               Este pedido suma 1 sello
             </AppText>

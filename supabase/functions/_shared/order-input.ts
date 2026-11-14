@@ -2,7 +2,7 @@
 
 export interface ValidOrderInput {
   shopId: string;
-  items: { productId: string; quantity: number }[];
+  items: { productId: string; quantity: number; optionIds?: string[] }[];
   idempotencyKey: string;
 }
 
@@ -11,6 +11,7 @@ export type ValidationResult = { ok: true; value: ValidOrderInput } | { ok: fals
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export const MAX_ITEMS = 50;
 export const MAX_QUANTITY = 99;
+export const MAX_OPTIONS = 20;
 
 const isUuid = (v: unknown): v is string => typeof v === 'string' && UUID_RE.test(v);
 
@@ -27,12 +28,19 @@ export function validateOrderInput(body: unknown): ValidationResult {
 
   const parsed: ValidOrderInput['items'] = [];
   for (const item of items) {
-    const { productId, quantity } = (item ?? {}) as Record<string, unknown>;
+    const { productId, quantity, optionIds } = (item ?? {}) as Record<string, unknown>;
     if (!isUuid(productId)) return { ok: false, error: 'One of the items is not a valid product.' };
     if (!Number.isInteger(quantity) || (quantity as number) < 1 || (quantity as number) > MAX_QUANTITY) {
       return { ok: false, error: `Quantity must be between 1 and ${MAX_QUANTITY}.` };
     }
-    parsed.push({ productId, quantity: quantity as number });
+    if (optionIds === undefined) {
+      parsed.push({ productId, quantity: quantity as number });
+      continue;
+    }
+    if (!Array.isArray(optionIds) || optionIds.length > MAX_OPTIONS || !optionIds.every(isUuid)) {
+      return { ok: false, error: 'One of the selected options is not valid.' };
+    }
+    parsed.push({ productId, quantity: quantity as number, optionIds: optionIds as string[] });
   }
 
   return { ok: true, value: { shopId, items: parsed, idempotencyKey } };

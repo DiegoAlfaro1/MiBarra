@@ -83,7 +83,7 @@ jobs:
           claude_args: >-
             --model ${{ steps.pick.outputs.model }}
             --max-turns ${{ steps.pick.outputs.turns }}
-            --allowedTools "Edit,MultiEdit,Write,Agent,Task,Bash(npm ci),Bash(npm test:*),Bash(npm run lint),Bash(npm run typecheck),Bash(node --test:*),Bash(npx expo export:*),Bash(gh pr create:*),Bash(gh pr list:*),Bash(gh pr view:*)"
+            --allowedTools "Edit,MultiEdit,Write,Agent,Task,Bash(npm ci),Bash(npm test:*),Bash(npm run lint),Bash(npm run typecheck),Bash(node --test:*),Bash(npx expo export:*),Bash(npx supabase migration new:*),Bash(gh pr checks:*),Bash(gh run view:*),Bash(gh pr create:*),Bash(gh pr list:*),Bash(gh pr view:*)"
 
       - name: Check a PR was opened
         id: pr

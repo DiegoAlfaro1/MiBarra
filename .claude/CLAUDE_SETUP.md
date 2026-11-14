@@ -25,6 +25,7 @@ If a run fails, the card goes back to **Backlog** with a comment linking the log
 .github/workflows/claude-dispatch.yml    Ready → In progress, starts Claude
 .github/workflows/claude.yml             Claude Code run → In review (or Backlog on failure)
 .github/workflows/claude-board-sync.yml  PR opened → In review, issue closed → Done, reopened → Backlog
+.github/workflows/ci.yml                 PR checks: lint, typecheck, unit + database tests; asks Claude to fix failures (max 2)
 .github/scripts/board.sh                 board helper used by all workflows
 .github/ISSUE_TEMPLATE/task.yml          issue form that gives Claude what it needs
 .claude/agents/explorer.md               cheap Haiku subagent for reading code

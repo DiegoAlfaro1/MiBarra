@@ -1,0 +1,107 @@
+# CI: runs on every PR. Lint, typecheck and unit tests, plus database tests on a fresh
+# local Supabase (all migrations + seed, then the pgTAP tests in supabase/tests/database).
+# If a Claude PR fails, it posts the failing log with an @claude mention so Claude fixes it,
+# at most MAX_ATTEMPTS times per PR.
+name: CI
+
+on:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Lint, typecheck, unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+
+  database:
+    name: Database tests (local Supabase)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Start local Supabase (applies migrations and seed)
+        # Skip containers the database tests don't use, to save image downloads.
+        run: npx supabase start -x studio,imgproxy,logflare,vector,mailpit,edge-runtime,supavisor,postgres-meta,storage-api
+      - run: npm run test:db
+
+  ask-claude-to-fix:
+    name: Ask Claude to fix
+    needs: [checks, database]
+    # Only Claude's own PRs from this repo.
+    if: failure() && startsWith(github.head_ref, 'claude/') && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      # PAT, not GITHUB_TOKEN: comments made with GITHUB_TOKEN don't start the Claude workflow.
+      GH_TOKEN: ${{ secrets.CLAUDE_PAT }}
+      GH_REPO: ${{ github.repository }}
+      PR: ${{ github.event.pull_request.number }}
+      RUN_ID: ${{ github.run_id }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      MAX_ATTEMPTS: 2
+    steps:
+      - name: Comment the failure and mention Claude
+        run: |
+          count() {
+            gh api --paginate "repos/$GH_REPO/issues/$PR/comments" \
+              --jq ".[] | select(.body | contains(\"$1\")) | .id" | wc -l
+          }
+          ATTEMPTS="$(count '<!-- ci-autofix -->')"
+
+          if [ "$ATTEMPTS" -ge "$MAX_ATTEMPTS" ]; then
+            echo "Already asked Claude $ATTEMPTS times on this PR."
+            if [ "$(count '<!-- ci-autofix-stop -->')" -eq 0 ]; then
+              # No "@" mention here, so this comment doesn't start another run.
+              gh pr comment "$PR" --body "<!-- ci-autofix-stop -->
+          CI is still failing after $MAX_ATTEMPTS automatic fix attempts, so Claude won't be asked again automatically. [Run logs]($RUN_URL). Mention Claude in a comment to have it try again."
+            fi
+            exit 0
+          fi
+
+          {
+            echo '<!-- ci-autofix -->'
+            echo "@claude CI failed on this PR (automatic attempt $((ATTEMPTS + 1)) of $MAX_ATTEMPTS, [run logs]($RUN_URL), run id \`$RUN_ID\`)."
+            echo
+            echo "Fix the cause on this branch and push; don't open a new PR. Run \`npm test\` and \`npm run lint\` before pushing. CI runs the database tests again on your push."
+            gh api "repos/$GH_REPO/actions/runs/$RUN_ID/jobs" \
+              --jq '.jobs[] | select(.conclusion == "failure") | "\(.id)\t\(.name)"' |
+            while IFS=$'\t' read -r JOB NAME; do
+              # Last 80 lines up to the first error, without timestamps or colors.
+              # curl, not gh api: gh refuses to print logs that contain color codes.
+              TAIL="$(curl -sfL -H "Authorization: Bearer $GH_TOKEN" \
+                "$GITHUB_API_URL/repos/$GH_REPO/actions/jobs/$JOB/logs" \
+                | sed -E 's/^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:.]+Z ?//; s/\x1b\[[0-9;]*[A-Za-z]//g' \
+                | awk '{ print } /^##\[error\]/ { exit }' | tail -n 80 | cut -c1-300)"
+              echo
+              echo "<details><summary>Failed: $NAME</summary>"
+              echo
+              echo '```'
+              echo "${TAIL:-Log not available yet; read it with gh run view $RUN_ID --log-failed}"
+              echo '```'
+              echo '</details>'
+            done
+          } > body.md
+
+          gh pr comment "$PR" --body-file body.md

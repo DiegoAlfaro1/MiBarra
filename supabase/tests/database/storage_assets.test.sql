@@ -75,7 +75,9 @@ select throws_ok($$ insert into storage.objects (bucket_id, name, owner_id) valu
   '42501', null, 'a barista cannot upload shop images');
 select is((select count(*)::int from storage.objects where name like 'shops/10000000-0000-4000-8000-00000000000a/%'), 2,
   'signed-in users can read assets');
-select is_empty($$ delete from storage.objects where name like 'shops/%' returning 1 $$, 'a barista cannot delete shop images');
+-- Direct deletes from storage.objects are blocked by Supabase itself, so check the rule the delete policy uses.
+select is(public.can_write_asset('shops/10000000-0000-4000-8000-00000000000a/menu/latte.webp'), false,
+  'a barista cannot change or delete shop images');
 
 -- Visitors
 select tests.login_anon();

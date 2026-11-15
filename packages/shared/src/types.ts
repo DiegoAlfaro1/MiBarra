@@ -28,6 +28,8 @@ export interface Shop {
   currency: string;
   logo_url: string | null;
   address: string | null;
+  /** Contact phone in E.164, e.g. `+50422223333`. */
+  phone: string | null;
   hours: ShopHours;
   is_open: boolean;
   payment_provider: PaymentProvider;

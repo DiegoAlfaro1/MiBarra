@@ -31,6 +31,7 @@ erDiagram
         text name
         text logo_url
         text address
+        text phone "E.164"
         jsonb hours
         boolean is_open
         text payment_provider
@@ -109,9 +110,9 @@ erDiagram
 
 | Table | Purpose | Key fields and rules |
 | :--- | :--- | :--- |
-| `shops` | One row per coffee shop | `name`, `logo_url`, `address`, `hours` (JSON per weekday), `is_open` (manual open/closed switch), `payment_provider` (`cash`, `stripe`, `paypal`, `other`), loyalty rule: `loyalty_stamps_required` + `loyalty_reward` (null = no program) |
+| `shops` | One row per coffee shop | `name`, `logo_url` (http(s) link), `address`, `phone` (E.164, e.g. `+50422223333`), `hours` (JSON per weekday: `mon`..`sun`, each `null` = closed or `{"open": "07:00", "close": "19:00"}` in 24h time with open before close; checked by `shop_hours_valid()`), `is_open` (manual open/closed switch), `payment_provider` (`cash`, `stripe`, `paypal`, `other`), loyalty rule: `loyalty_stamps_required` + `loyalty_reward` (null = no program) |
 | `menu_categories` | Groups of items | `shop_id`, `name`, `sort_order` |
-| `menu_items` | Items for sale | `category_id`, `name`, `description`, `price_cents` (HNL), `photo_url`, `available`. `shop_id` is kept too and a composite foreign key guarantees the category belongs to the same shop |
+| `menu_items` | Items for sale | `category_id`, `name`, `description`, `price_cents` (HNL), `photo_url` (http(s) link), `available`. `shop_id` is kept too and a composite foreign key guarantees the category belongs to the same shop |
 | `item_options` | Sizes and extras | `item_id`, `kind` (`size`/`extra`), `name`, `price_change_cents` (may be negative), `available` |
 | `customers` | App users | `name`, `email` and/or `phone` (at least one), `id` = login id. Created automatically when someone signs up |
 | `orders` | One per order | `shop_id`, `customer_id`, `status` (`pending` → `preparing` → `ready` → `completed`, or `cancelled`), `pickup_time`, `total_cents`, `payment_status` (`pending`, `paid`, `failed`, `refunded`), `note` (max 280), `idempotency_key` |

@@ -1,8 +1,8 @@
 -- Local development data only (applied by `supabase db reset`).
 insert into public.shops (
-  id, name, currency, address, hours, is_open, payment_provider, loyalty_stamps_required, loyalty_reward
+  id, name, currency, address, phone, hours, is_open, payment_provider, loyalty_stamps_required, loyalty_reward
 ) values (
-  '00000000-0000-4000-8000-000000000001', 'MiBarra Demo', 'HNL', 'Col. Lomas del Guijarro, Tegucigalpa',
+  '00000000-0000-4000-8000-000000000001', 'MiBarra Demo', 'HNL', 'Col. Lomas del Guijarro, Tegucigalpa', '+50422345678',
   '{"mon": {"open": "07:00", "close": "19:00"}, "tue": {"open": "07:00", "close": "19:00"}, "wed": {"open": "07:00", "close": "19:00"}, "thu": {"open": "07:00", "close": "19:00"}, "fri": {"open": "07:00", "close": "19:00"}, "sat": {"open": "08:00", "close": "17:00"}, "sun": null}',
   true, 'cash', 8, 'Bebida gratis'
 );

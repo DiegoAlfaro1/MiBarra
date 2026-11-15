@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { MenuManagementError, createItem, setItemAvailable, deleteItem } from './menuApi.ts';
-import { validateCategoryInput, validateItemInput, validateOptionInput } from './menuManagement.ts';
+import { MenuManagementError, createItem, deleteCategory, deleteItem, setItemAvailable } from './menuApi.ts';
+import { lempirasInput, parseLempiras, validateCategoryInput, validateItemInput, validateOptionInput } from './menuManagement.ts';
 
 const CATEGORY = '00000000-0000-4000-8000-0000000000c1';
 
@@ -12,7 +12,7 @@ describe('validation', () => {
     assert.deepEqual(ok, { ok: true, value: { name: 'Café' } });
     const bad = validateCategoryInput({ name: '   ' });
     assert.equal(bad.ok, false);
-    if (!bad.ok) assert.match(bad.errors.name ?? '', /Enter a category name/);
+    if (!bad.ok) assert.match(bad.errors.name ?? '', /Escribe un nombre para la categoría/);
   });
 
   it('rejects fractional, negative and huge prices for items', () => {
@@ -73,11 +73,39 @@ describe('menu api', () => {
 
   it('explains that items with past orders cannot be deleted', async () => {
     const { client } = fakeClient({ error: { code: '23503', message: 'fk' } });
-    await assert.rejects(deleteItem(client, 'i1'), /sold out instead/);
+    await assert.rejects(deleteItem(client, 'i1'), /agotado en lugar de borrarlo/);
   });
 
   it('hides raw database errors behind a friendly message', async () => {
-    const { client } = fakeClient({ error: { code: '42501', message: 'permission denied for table x' } });
-    await assert.rejects(setItemAvailable(client, 'i1', true), /could not save/);
+    const { client } = fakeClient({ error: { code: 'XX000', message: 'internal error at table x' } });
+    await assert.rejects(setItemAvailable(client, 'i1', true), /No pudimos guardar/);
+  });
+
+  it('explains permission errors and non-empty categories', async () => {
+    const denied = fakeClient({ error: { code: '42501', message: 'new row violates row-level security policy' } });
+    await assert.rejects(deleteItem(denied.client, 'i1'), /No tienes permiso/);
+    const used = fakeClient({ error: { code: '23503', message: 'fk' } });
+    await assert.rejects(deleteCategory(used.client, 'c1'), /todavía tiene productos/);
+  });
+});
+
+describe('prices in lempiras', () => {
+  it('turns typed prices into cents', () => {
+    assert.equal(parseLempiras('55'), 5500);
+    assert.equal(parseLempiras(' 55.5 '), 5550);
+    assert.equal(parseLempiras('L 1,250.05'), 125005);
+    assert.equal(parseLempiras('0'), 0);
+    assert.equal(lempirasInput(5550), '55.50');
+  });
+
+  it('rejects text, negatives, three decimals and prices over the limit', () => {
+    for (const raw of ['', 'abc', '-5', '5.555', '12,5', '100000', '1e3']) {
+      assert.equal(parseLempiras(raw), null, raw);
+    }
+  });
+
+  it('rejects photo links that are not web links', () => {
+    const bad = validateItemInput({ category_id: CATEGORY, name: 'Latte', price_cents: 100, photo_url: 'file:///foto.jpg' });
+    assert.equal(bad.ok, false);
   });
 });

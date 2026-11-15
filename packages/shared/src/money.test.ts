@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { formatMoney, sumLineItems } from './money.ts';
+import { formatMoney, formatPriceChange, sumLineItems } from './money.ts';
 
 test('formats integer cents as currency', () => {
   assert.equal(formatMoney(4550, 'USD', 'en-US'), '$45.50');
@@ -22,4 +22,11 @@ test('sums line items', () => {
     ]),
     1199,
   );
+});
+
+test('formats option price changes with their sign', () => {
+  assert.equal(formatPriceChange(1500), '+L 15');
+  assert.equal(formatPriceChange(1250), '+L 12.50');
+  assert.equal(formatPriceChange(-500), '-L 5');
+  assert.equal(formatPriceChange(0), 'Sin costo');
 });

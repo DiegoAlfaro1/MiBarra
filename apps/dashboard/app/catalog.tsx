@@ -11,6 +11,7 @@ import {
   updateCategory,
   updateItem,
   uploadMenuPhoto,
+  type ItemOption,
   type MenuCategory,
   type MenuData,
   type MenuItem,
@@ -19,6 +20,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
 import { Button, Card, Field, formStyles, Notice, StateView, Toggle } from '../src/components/Form.tsx';
+import { OptionsEditor, optionSummary } from '../src/components/OptionsEditor.tsx';
 import { newUploadId, pickImage } from '../src/lib/pickImage.ts';
 import { supabase } from '../src/lib/supabase.ts';
 import { formatLempiras } from '../src/logic/dashboard.ts';
@@ -34,7 +36,7 @@ function errorOf(e: unknown): { message: string; fields: Errors } {
   return { message: 'No pudimos guardar los cambios. Revisa tu conexión e inténtalo de nuevo.', fields: {} };
 }
 
-/** Owner/manager screen: build the menu with categories and items (name, description, photo, price in lempiras). */
+/** Owner/manager screen: build the menu with categories and items (name, description, photo, price in lempiras, sizes and extras). */
 export default function MenuCatalog() {
   const { access } = useAuth();
   const shopId = access?.shopId ?? null;
@@ -62,6 +64,8 @@ export default function MenuCatalog() {
     setLoad({ status: 'loading' });
     setReloads((n) => n + 1);
   }, []);
+
+  const refresh = useCallback(() => setReloads((n) => n + 1), []);
 
   const done = (text: string) => {
     setEditing(null);
@@ -132,9 +136,9 @@ export default function MenuCatalog() {
                 {items.map((item) =>
                   editing?.kind === 'item' && editing.item?.id === item.id ? (
                     <ItemForm key={item.id} shopId={shopId} categories={load.menu.categories} categoryId={item.category_id} item={item}
-                      onCancel={() => setEditing(null)} onSaved={(deleted) => done(deleted ? 'Producto borrado.' : 'Producto guardado.')} />
+                      options={load.menu.options} onOptionsChanged={refresh} onCancel={() => setEditing(null)} onSaved={(deleted) => done(deleted ? 'Producto borrado.' : 'Producto guardado.')} />
                   ) : (
-                    <ItemRow key={item.id} item={item} canEdit={canEdit} onEdit={() => { setNotice(null); setEditing({ kind: 'item', categoryId: item.category_id, item }); }} />
+                    <ItemRow key={item.id} item={item} options={load.menu.options} canEdit={canEdit} onEdit={() => { setNotice(null); setEditing({ kind: 'item', categoryId: item.category_id, item }); }} />
                   ),
                 )}
               </Card>
@@ -161,7 +165,8 @@ function Photo({ uri, size, label }: { uri: string | null; size: number; label: 
   );
 }
 
-function ItemRow({ item, canEdit, onEdit }: { item: MenuItem; canEdit: boolean; onEdit: () => void }) {
+function ItemRow({ item, options, canEdit, onEdit }: { item: MenuItem; options: ItemOption[]; canEdit: boolean; onEdit: () => void }) {
+  const summary = optionSummary(options, item.id);
   return (
     <View style={styles.itemRow}>
       <Photo uri={item.photo_url} size={56} label={item.name} />
@@ -172,6 +177,7 @@ function ItemRow({ item, canEdit, onEdit }: { item: MenuItem; canEdit: boolean; 
           {formatLempiras(item.price_cents / 100)}
           {item.available ? '' : ' · Agotado'}
         </Text>
+        {summary.map((line) => <Text key={line} style={styles.itemDesc}>{line}</Text>)}
       </View>
       {canEdit ? <Button kind="ghost" label="Editar" accessibilityLabel={`Editar ${item.name}`} onPress={onEdit} /> : null}
     </View>
@@ -239,11 +245,13 @@ function CategoryForm({ shopId, category, sortOrder, itemCount = 0, onCancel, on
   );
 }
 
-function ItemForm({ shopId, categories, categoryId, item, onCancel, onSaved }: {
+function ItemForm({ shopId, categories, categoryId, item, options = [], onOptionsChanged, onCancel, onSaved }: {
   shopId: string;
   categories: MenuCategory[];
   categoryId: string;
   item?: MenuItem;
+  options?: ItemOption[];
+  onOptionsChanged?: () => void;
   onCancel: () => void;
   onSaved: (deleted?: boolean) => void;
 }) {
@@ -334,6 +342,11 @@ function ItemForm({ shopId, categories, categoryId, item, onCancel, onSaved }: {
           <Button label={busy ? 'Guardando…' : 'Guardar producto'} onPress={save} busy={busy} disabled={uploading} />
         </View>
       </View>
+      {item ? (
+        <OptionsEditor itemId={item.id} itemName={item.name} options={options} onChanged={onOptionsChanged ?? (() => {})} />
+      ) : (
+        <Text style={styles.hint}>Guarda el producto para agregarle tamaños y extras.</Text>
+      )}
     </View>
   );
 }

@@ -66,6 +66,8 @@ describe('placing a real order', () => {
     assert.match(orderErrorMessage('This shop is closed right now.'), /cerrada/);
     assert.match(orderErrorMessage('One or more products are not available at this shop.'), /ya no está disponible/);
     assert.match(orderErrorMessage('One or more options are not available.'), /opciones/);
+    assert.match(orderErrorMessage('Choose a size for each item.'), /tamaño/);
+    assert.match(orderErrorMessage('Choose only one size for each item.'), /tamaño/);
     assert.equal(orderErrorMessage('We could not place your order. Please try again.'), ORDER_RETRY_MESSAGE);
     assert.equal(orderErrorMessage(undefined), ORDER_RETRY_MESSAGE);
   });

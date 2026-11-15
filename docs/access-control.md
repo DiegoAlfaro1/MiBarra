@@ -43,7 +43,7 @@ can't reopen it.
 | Mark items sold out | No | Own shop | Own shop | Own shop | No | `set_item_available()`, `set_option_available()` |
 | Open or close the shop | No | No | Own shop | Own shop | No | `set_shop_open()` |
 | Scan QR codes to stamp or redeem | No | Own shop | Own shop | Own shop | No | `scan_loyalty_card()` |
-| Edit menu and prices | No | No | Own shop | Own shop | Yes | RLS on `menu_categories`, `menu_items`, `item_options` (admin edits are logged). Menu photos are uploaded to `shops/<shop_id>/menu/` in the `assets` bucket, which only owners and managers can write (see `storage.md`) |
+| Edit menu and prices | No | No | Own shop | Own shop | Yes | RLS on `menu_categories`, `menu_items`, `item_options` (admin edits are logged). Size and extra rules are checked by `supabase/tests/database/item_options.test.sql`. Menu photos are uploaded to `shops/<shop_id>/menu/` in the `assets` bucket, which only owners and managers can write (see `storage.md`) |
 | Create offers | No | No | Own shop | Own shop | No | Not built yet: there is no offers table |
 | Change loyalty rules | No | No | No | Own shop | No | `set_loyalty_rule()` (logged) |
 | View sales reports | No | Daily count only | Own shop | Own shop | Yes | `shop_daily_order_count()`, `shop_sales_report()` (admin views are logged) |

@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { MenuManagementError, createCategory, createItem, deleteCategory, deleteItem, setItemAvailable } from './menuApi.ts';
-import { lempirasInput, parseLempiras, validateCategoryInput, validateItemInput, validateOptionInput } from './menuManagement.ts';
+import { MenuManagementError, createCategory, createItem, createOption, deleteCategory, deleteItem, setItemAvailable } from './menuApi.ts';
+import { lempirasInput, parseLempiras, parsePriceChange, validateCategoryInput, validateItemInput, validateOptionInput } from './menuManagement.ts';
 
 const CATEGORY = '00000000-0000-4000-8000-0000000000c1';
 
@@ -98,6 +98,20 @@ describe('menu api', () => {
       (error: MenuManagementError) => /Ya tienes una categoría/.test(error.message) && Boolean(error.fieldErrors?.name),
     );
   });
+
+  it('flags a duplicate option name on the name field', async () => {
+    const { client } = fakeClient({ error: { code: '23505', message: 'duplicate key value' } });
+    await assert.rejects(
+      createOption(client, 'i1', { kind: 'size', name: 'Grande', price_change_cents: 1000 }),
+      (error: MenuManagementError) => /ya tiene una opción/.test(error.message) && Boolean(error.fieldErrors?.name),
+    );
+  });
+
+  it('does not save an option with a blank name', async () => {
+    const { client, calls } = fakeClient({});
+    await assert.rejects(createOption(client, 'i1', { kind: 'extra', name: '  ', price_change_cents: 0 }), MenuManagementError);
+    assert.deepEqual(calls, []);
+  });
 });
 
 describe('prices in lempiras', () => {
@@ -112,6 +126,18 @@ describe('prices in lempiras', () => {
   it('rejects text, negatives, three decimals and prices over the limit', () => {
     for (const raw of ['', 'abc', '-5', '5.555', '12,5', '100000', '1e3']) {
       assert.equal(parseLempiras(raw), null, raw);
+    }
+  });
+
+  it('reads option price changes with a sign, empty meaning no change', () => {
+    assert.equal(parsePriceChange('10'), 1000);
+    assert.equal(parsePriceChange('+12.50'), 1250);
+    assert.equal(parsePriceChange('-5'), -500);
+    assert.equal(parsePriceChange('L -5'), -500);
+    assert.equal(parsePriceChange(''), 0);
+    assert.equal(Object.is(parsePriceChange('-0'), 0), true);
+    for (const raw of ['abc', '--5', '+-5', '5.555', '100000']) {
+      assert.equal(parsePriceChange(raw), null, raw);
     }
   });
 

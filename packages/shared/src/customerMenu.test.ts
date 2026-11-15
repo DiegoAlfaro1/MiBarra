@@ -53,6 +53,12 @@ describe('item options', () => {
     assert.deepEqual(defaultOptionIds(choices), ['medium']);
   });
 
+  it('lists sold-out options too for the dashboard', () => {
+    const all = itemChoices(OPTIONS, ITEM, { includeSoldOut: true });
+    const shown = all.sizes.length + all.extras.length;
+    assert.equal(shown, OPTIONS.filter((o) => o.item_id === ITEM).length);
+  });
+
   it('keeps one size and toggles extras', () => {
     let chosen = defaultOptionIds(choices);
     chosen = toggleOption(choices, chosen, 'large');

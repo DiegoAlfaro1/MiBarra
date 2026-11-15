@@ -67,6 +67,7 @@ const ORDER_ERRORS: [RegExp, string][] = [
   [/shop is closed/i, 'La cafetería está cerrada en este momento. Tu carrito sigue guardado.'],
   [/products are not available/i, 'Uno de los productos ya no está disponible. Revisa tu carrito.'],
   [/options are not available|Invalid options/i, 'Una de las opciones ya no está disponible. Revisa tu carrito.'],
+  [/size for each item/i, 'Elige un tamaño para cada producto de tu carrito.'],
   [/sign in/i, 'Inicia sesión para hacer tu pedido.'],
   [/note/i, 'La nota es demasiado larga.'],
 ];

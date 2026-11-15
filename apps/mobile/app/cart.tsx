@@ -1,16 +1,26 @@
 import { router } from 'expo-router';
-import { StyleSheet, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { AppText, BackHeader, Banner, Button, Card, EmptyState, Field, LinkText, Screen, Stepper, t } from '../src/components/ui';
-import { SHOPS } from '../src/data/mock';
 import { cartTotalCents, lineTotalCents } from '../src/lib/cart';
 import { formatLempiras } from '../src/lib/format';
 import { checkoutRoute } from '../src/lib/access';
+import { useCartShop } from '../src/lib/useCartShop';
 import { useAppState } from '../src/state/AppState';
 
 export default function CartScreen() {
   const { cart, dispatch, session } = useAppState();
-  const shop = SHOPS.find((s) => s.id === cart.shopId);
+  const { shop, loading } = useCartShop(cart.shopId);
+
+  if (cart.lines.length && loading) {
+    return (
+      <Screen header={<BackHeader title="Tu pedido" backLabel="Volver al menú" />}>
+        <View accessibilityRole="progressbar" accessibilityLabel="Cargando tu pedido" style={styles.center}>
+          <ActivityIndicator color={t.colors.primary} />
+        </View>
+      </Screen>
+    );
+  }
 
   if (!cart.lines.length || !shop) {
     return (
@@ -28,7 +38,7 @@ export default function CartScreen() {
   const total = cartTotalCents(cart.lines);
   return (
     <Screen
-      header={<BackHeader title="Tu pedido" subtitle={`${shop.name} · Recoger en tienda`} backLabel="Volver al menú" />}
+      header={<BackHeader title="Tu pedido" subtitle={shop.name ? `${shop.name} · Recoger en tienda` : 'Recoger en tienda'} backLabel="Volver al menú" />}
       footer={
         <>
           <View style={styles.totalRow}>
@@ -48,7 +58,7 @@ export default function CartScreen() {
                 {line.optionsLabel}
               </AppText>
               <View style={styles.actions}>
-                {line.selection ? (
+                {line.selection || line.optionIds?.length ? (
                   <LinkText
                     label="Editar"
                     onPress={() =>
@@ -89,6 +99,7 @@ export default function CartScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
+  center: { paddingVertical: 48, alignItems: 'center' },
   lines: { gap: 4 },
   line: { flexDirection: 'row', gap: 12, paddingVertical: 10 },
   divider: { borderTopWidth: 1, borderTopColor: t.colors.border },

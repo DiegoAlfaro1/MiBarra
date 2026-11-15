@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
-import { ContactSection, PaymentSection, SlotSection, SummaryCard, submitLabel } from '../components/CheckoutSections';
+import { ContactSection, PaymentSection, SlotSection, SubmitError, SummaryCard, submitLabel } from '../components/CheckoutSections';
 import { AppText, Button, t } from '../components/ui';
 import { formatLempiras } from '../lib/format';
 import type { Checkout } from '../lib/useCheckout';
@@ -41,7 +41,8 @@ export function WebCheckout({ c }: { c: Checkout }) {
               </AppText>
               <AppText variant="h2">{formatLempiras(c.total)}</AppText>
             </View>
-            <Button label={submitLabel(c)} variant="dark" onPress={c.submit} />
+            <SubmitError c={c} />
+            <Button label={submitLabel(c)} variant="dark" onPress={c.submit} disabled={c.submitting} />
             <AppText variant="caption" color={t.colors.textMuted} style={styles.center}>
               El pago va directo a la cafetería. MiBarra no guarda datos de tarjeta.
             </AppText>

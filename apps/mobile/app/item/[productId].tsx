@@ -1,3 +1,4 @@
+import { isUuid } from '@mibarra/shared';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
@@ -9,11 +10,18 @@ import { PRODUCTS } from '../../src/data/mock';
 import { defaultSelection, describeSelection, unitPriceCents, type Selection } from '../../src/lib/cart';
 import { formatExtra, formatLempiras } from '../../src/lib/format';
 import { useAppState } from '../../src/state/AppState';
+import { LiveItem } from '../../src/screens/LiveItem';
 
 let lineCounter = 0;
 const newLineId = () => `line-${Date.now()}-${(lineCounter += 1)}`;
 
 export default function ItemScreen() {
+  const { productId, lineId } = useLocalSearchParams<{ productId: string; lineId?: string }>();
+  // Items from the database (uuid ids) come with the options the owner set; sample items keep the sample options.
+  return isUuid(productId) ? <LiveItem itemId={productId} lineId={lineId} /> : <SampleItem />;
+}
+
+function SampleItem() {
   const { productId, shopId = 'lempa', lineId } = useLocalSearchParams<{ productId: string; shopId?: string; lineId?: string }>();
   const { cart, dispatch } = useAppState();
   const product = PRODUCTS.find((p) => p.id === productId);

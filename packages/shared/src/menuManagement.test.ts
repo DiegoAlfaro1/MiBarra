@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { MenuManagementError, createItem, deleteCategory, deleteItem, setItemAvailable } from './menuApi.ts';
+import { MenuManagementError, createCategory, createItem, deleteCategory, deleteItem, setItemAvailable } from './menuApi.ts';
 import { lempirasInput, parseLempiras, validateCategoryInput, validateItemInput, validateOptionInput } from './menuManagement.ts';
 
 const CATEGORY = '00000000-0000-4000-8000-0000000000c1';
@@ -40,6 +40,9 @@ describe('menu api', () => {
     const calls: unknown[] = [];
     const builder = {
       delete: () => builder,
+      insert: () => builder,
+      select: () => builder,
+      single: async () => ({ data: null, error: null, ...result }),
       eq: async () => ({ data: null, error: null, ...result }),
     };
     const client = {
@@ -86,6 +89,14 @@ describe('menu api', () => {
     await assert.rejects(deleteItem(denied.client, 'i1'), /No tienes permiso/);
     const used = fakeClient({ error: { code: '23503', message: 'fk' } });
     await assert.rejects(deleteCategory(used.client, 'c1'), /todavía tiene productos/);
+  });
+
+  it('flags a duplicate category name on the name field', async () => {
+    const { client } = fakeClient({ error: { code: '23505', message: 'duplicate key value' } });
+    await assert.rejects(
+      createCategory(client, 's', { name: 'Café' }),
+      (error: MenuManagementError) => /Ya tienes una categoría/.test(error.message) && Boolean(error.fieldErrors?.name),
+    );
   });
 });
 

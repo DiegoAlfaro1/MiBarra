@@ -63,6 +63,16 @@ describe('cartReducer', () => {
     });
     assert.equal(state.lines.length, 2);
   });
+  it('keeps menu items with different option ids separate and merges the same ones', () => {
+    const live = (id: string, optionIds: string[]) => line({ id, selection: null, optionIds });
+    let state = cartReducer(emptyCart, { type: 'add', line: live('a', ['size-m']) });
+    state = cartReducer(state, { type: 'add', line: live('b', ['size-l']) });
+    state = cartReducer(state, { type: 'add', line: live('c', ['vanilla', 'size-m'].reverse()) });
+    assert.equal(state.lines.length, 3);
+    state = cartReducer(state, { type: 'add', line: live('d', ['size-m']) });
+    assert.equal(state.lines.length, 3);
+    assert.equal(state.lines[0]!.quantity, 2);
+  });
   it('starts a new cart when ordering from another shop', () => {
     let state = cartReducer(emptyCart, { type: 'add', line: line() });
     state = cartReducer(state, { type: 'add', line: line({ id: 'z', shopId: 'molienda' }) });

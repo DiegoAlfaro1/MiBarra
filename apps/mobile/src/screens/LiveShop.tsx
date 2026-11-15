@@ -4,10 +4,14 @@ import { router } from 'expo-router';
 import { ActivityIndicator, Linking, Pressable, StyleSheet, View } from 'react-native';
 
 import { ShopLogo } from '../components/ShopLogo';
-import { AppText, BackHeader, Banner, Button, EmptyState, Screen, t } from '../components/ui';
+import { AppText, BackHeader, Button, EmptyState, Screen, t } from '../components/ui';
+import { cartCount, cartTotalCents } from '../lib/cart';
+import { formatLempiras } from '../lib/format';
 import { useShop } from '../lib/useShops';
+import { useAppState } from '../state/AppState';
+import { LiveMenu } from './LiveMenu';
 
-/** A shop read from Supabase: the profile the owner saved (logo, address, phone, hours). */
+/** A shop read from Supabase: the profile the owner saved (logo, address, phone, hours) and its menu. */
 export function LiveShop({ id }: { id: string | undefined }) {
   const [loaded, reload] = useShop(id);
 
@@ -45,8 +49,22 @@ export function LiveShop({ id }: { id: string | undefined }) {
 function Profile({ shop }: { shop: Shop }) {
   const { open, label } = shopStatus(shop, new Date());
   const phone = formatPhone(shop.phone);
+  const { cart } = useAppState();
+  const count = cart.shopId === shop.id ? cartCount(cart.lines) : 0;
   return (
-    <Screen header={<BackHeader title={shop.name} subtitle={shop.address ?? undefined} />}>
+    <Screen
+      header={<BackHeader title={shop.name} subtitle={shop.address ?? undefined} />}
+      footer={
+        count > 0 ? (
+          <Button
+            variant="dark"
+            label={`Ver carrito (${count})`}
+            right={formatLempiras(cartTotalCents(cart.lines))}
+            onPress={() => router.push('/cart')}
+          />
+        ) : undefined
+      }
+    >
       <View style={styles.top}>
         <ShopLogo name={shop.name} logoUrl={shop.logo_url} size={72} />
         <AppText variant="bodyStrong" color={open ? t.colors.textSuccess : t.colors.textDanger}>
@@ -86,9 +104,10 @@ function Profile({ shop }: { shop: Shop }) {
         ))}
       </View>
 
-      <Banner tone="neutral" icon="clock" title="Menú próximamente">
-        El menú de esta cafetería todavía no está disponible para pedir desde la app.
-      </Banner>
+      <AppText variant="h2" accessibilityRole="header">
+        Menú
+      </AppText>
+      <LiveMenu shopId={shop.id} canOrder={open} />
     </Screen>
   );
 }

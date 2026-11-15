@@ -1,8 +1,8 @@
 import { Redirect, router } from 'expo-router';
-import { View, StyleSheet } from 'react-native';
+import { ActivityIndicator, View, StyleSheet } from 'react-native';
 
-import { ContactSection, PaymentSection, SlotSection, SummaryCard, submitLabel } from '../src/components/CheckoutSections';
-import { AppText, BackHeader, Button, EmptyState, Screen } from '../src/components/ui';
+import { ContactSection, PaymentSection, SlotSection, SubmitError, SummaryCard, submitLabel } from '../src/components/CheckoutSections';
+import { AppText, BackHeader, Button, EmptyState, Screen, t } from '../src/components/ui';
 import { formatLempiras } from '../src/lib/format';
 import { useCheckout } from '../src/lib/useCheckout';
 import { SIGNUP_FOR_CHECKOUT_ROUTE } from '../src/lib/access';
@@ -17,6 +17,16 @@ export default function Checkout() {
 
   // Browsing is open, but placing an order needs an account: visitors who land here are asked to sign up first.
   if (!session) return <Redirect href={SIGNUP_FOR_CHECKOUT_ROUTE} />;
+
+  if (c.loadingShop) {
+    return (
+      <Screen header={<BackHeader title="Confirmar pedido" />}>
+        <View accessibilityRole="progressbar" accessibilityLabel="Cargando tu pedido" style={styles.center}>
+          <ActivityIndicator color={t.colors.primary} />
+        </View>
+      </Screen>
+    );
+  }
 
   if (c.isEmpty) {
     return (
@@ -38,11 +48,12 @@ export default function Checkout() {
       header={<BackHeader title="Confirmar pedido" />}
       footer={
         <>
+          <SubmitError c={c} />
           <View style={styles.totalRow}>
             <AppText variant="bodyStrong">Recoger: {c.pickupLabel}</AppText>
             <AppText variant="h2">{formatLempiras(c.total)}</AppText>
           </View>
-          <Button label={submitLabel(c)} variant="dark" onPress={c.submit} />
+          <Button label={submitLabel(c)} variant="dark" onPress={c.submit} disabled={c.submitting} />
         </>
       }
     >
@@ -55,5 +66,6 @@ export default function Checkout() {
 }
 
 const styles = StyleSheet.create({
+  center: { paddingVertical: 48, alignItems: 'center' },
   totalRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
 });

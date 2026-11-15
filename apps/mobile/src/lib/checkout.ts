@@ -50,3 +50,35 @@ export function validateCheckout(input: CheckoutInput, now?: Date): FieldErrors 
   if (input.payment === 'card') Object.assign(errors, validateCard(input.card, now));
   return errors;
 }
+
+export interface OrderLine {
+  productId: string;
+  quantity: number;
+  optionIds?: string[];
+}
+
+/** Cart lines as `place-order` items. Prices are not sent: the server prices every line itself. */
+export function orderItemsFromCart(lines: readonly OrderLine[]): OrderLine[] {
+  return lines.map((l) => (l.optionIds?.length ? { productId: l.productId, quantity: l.quantity, optionIds: [...l.optionIds] } : { productId: l.productId, quantity: l.quantity }));
+}
+
+// Messages written by `place_order` / `place-order` for users, shown in Spanish.
+const ORDER_ERRORS: [RegExp, string][] = [
+  [/shop is closed/i, 'La cafetería está cerrada en este momento. Tu carrito sigue guardado.'],
+  [/products are not available/i, 'Uno de los productos ya no está disponible. Revisa tu carrito.'],
+  [/options are not available|Invalid options/i, 'Una de las opciones ya no está disponible. Revisa tu carrito.'],
+  [/sign in/i, 'Inicia sesión para hacer tu pedido.'],
+  [/note/i, 'La nota es demasiado larga.'],
+];
+
+export const ORDER_RETRY_MESSAGE = 'No pudimos enviar tu pedido. Revisa tu conexión e inténtalo de nuevo; no se hará un pedido doble.';
+
+export function orderErrorMessage(message: string | undefined): string {
+  const found = ORDER_ERRORS.find(([pattern]) => message && pattern.test(message));
+  return found ? found[1] : ORDER_RETRY_MESSAGE;
+}
+
+/** Short code the customer says at the counter, e.g. `#3F1C`. */
+export function orderCode(orderId: string): string {
+  return `#${orderId.replace(/-/g, '').slice(0, 4).toUpperCase()}`;
+}

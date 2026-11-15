@@ -123,16 +123,31 @@ export function SummaryCard({ c }: { c: Checkout }) {
           <AppText variant="bodySm" color={t.colors.textMuted}>
             Recoger en {shop.name}
           </AppText>
-          <AppText variant="bodySm" color={t.colors.textMuted}>
-            {shop.area}
-          </AppText>
+          {shop.area ? (
+            <AppText variant="bodySm" color={t.colors.textMuted}>
+              {shop.area}
+            </AppText>
+          ) : null}
         </View>
       ) : null}
     </Card>
   );
 }
 
+/** Why the last attempt failed (server or connection); the cart is kept so the customer can retry. */
+export function SubmitError({ c }: { c: Checkout }) {
+  if (!c.submitError) return null;
+  return (
+    <View accessibilityRole="alert" accessibilityLiveRegion="polite">
+      <Banner tone="danger" icon="alert-circle">
+        {c.submitError}
+      </Banner>
+    </View>
+  );
+}
+
 export function submitLabel(c: Checkout): string {
+  if (c.submitting) return 'Enviando pedido…';
   return c.payment === 'card' ? `Pagar ${formatLempiras(c.total)} (demo)` : 'Hacer pedido';
 }
 

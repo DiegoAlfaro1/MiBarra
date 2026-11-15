@@ -132,6 +132,8 @@ export interface OrderItemInput {
 export interface PlaceOrderInput {
   shopId: string;
   items: OrderItemInput[];
+  /** Optional note for the shop (at most 280 characters). */
+  note?: string;
 }
 
 /** Links a staff login to a shop with a role. Removing someone sets `active` to false. */

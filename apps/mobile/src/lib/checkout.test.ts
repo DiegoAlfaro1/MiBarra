@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { isSlotFull, pickupLabelFor, validateCheckout, validateContact } from './checkout.ts';
+import { isSlotFull, ORDER_RETRY_MESSAGE, orderCode, orderErrorMessage, orderItemsFromCart, pickupLabelFor, validateCheckout, validateContact } from './checkout.ts';
 
 const now = new Date(2026, 10, 13);
 const asap = { id: 'asap', label: 'Lo antes posible', sub: '~10 min' };
@@ -43,5 +43,34 @@ describe('validateCheckout', () => {
     assert.deepEqual(Object.keys(errors).sort(), ['cvv', 'expiry', 'number']);
     const ok = { number: '4242 4242 4242 4242', expiry: '12/28', cvv: '123' };
     assert.deepEqual(validateCheckout({ ...base, payment: 'card', card: ok }, now), {});
+  });
+});
+
+describe('placing a real order', () => {
+  it('sends product ids, quantities and option ids only', () => {
+    assert.deepEqual(
+      orderItemsFromCart([
+        { productId: 'p1', quantity: 2, optionIds: ['o1'] },
+        { productId: 'p2', quantity: 1, optionIds: [] },
+        { productId: 'p3', quantity: 1 },
+      ]),
+      [
+        { productId: 'p1', quantity: 2, optionIds: ['o1'] },
+        { productId: 'p2', quantity: 1 },
+        { productId: 'p3', quantity: 1 },
+      ],
+    );
+  });
+
+  it('explains server errors in Spanish and falls back to a retry message', () => {
+    assert.match(orderErrorMessage('This shop is closed right now.'), /cerrada/);
+    assert.match(orderErrorMessage('One or more products are not available at this shop.'), /ya no está disponible/);
+    assert.match(orderErrorMessage('One or more options are not available.'), /opciones/);
+    assert.equal(orderErrorMessage('We could not place your order. Please try again.'), ORDER_RETRY_MESSAGE);
+    assert.equal(orderErrorMessage(undefined), ORDER_RETRY_MESSAGE);
+  });
+
+  it('builds a short pickup code from the order id', () => {
+    assert.equal(orderCode('3f1c2a9e-8b7d-4c6e-9f10-112233445566'), '#3F1C');
   });
 });

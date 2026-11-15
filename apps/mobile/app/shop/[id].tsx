@@ -9,12 +9,15 @@ import { cartCount, cartTotalCents } from '../../src/lib/cart';
 import { formatLempiras } from '../../src/lib/format';
 import { useIsWide } from '../../src/lib/useIsWide';
 import { useAppState } from '../../src/state/AppState';
+import { LiveShop } from '../../src/screens/LiveShop';
 import { WebShop } from '../../src/web/WebShop';
 
 export default function ShopScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const wide = useIsWide();
   const shop = SHOPS.find((s) => s.id === id);
+  // Shops from the database (real ids) show the profile the owner saved; the sample shops keep their sample menu.
+  if (!shop) return <LiveShop id={id} />;
   // Closed shops and unknown ids keep the phone layout until their web designs are built.
   return wide && shop?.open ? <WebShop shop={shop} /> : <MobileShop />;
 }

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import { PRODUCTS, SHOPS } from '../data/mock.ts';
-import { filterShops } from './shops.ts';
+import { filterShops, searchShops } from './shops.ts';
 
 const ids = (list: { id: string }[]) => list.map((s) => s.id);
 
@@ -27,5 +27,20 @@ describe('filterShops', () => {
   });
   it('returns an empty list when nothing matches', () => {
     assert.deepEqual(filterShops(SHOPS, PRODUCTS, 'all', 'zzz'), []);
+  });
+});
+
+describe('searchShops', () => {
+  const shops = [
+    { name: 'Café Lempa', address: 'Col. Palmira' },
+    { name: 'La Molienda', address: null },
+  ];
+  it('returns everything for an empty query', () => {
+    assert.equal(searchShops(shops, '  ').length, 2);
+  });
+  it('matches name or address, and copes with a missing address', () => {
+    assert.deepEqual(searchShops(shops, 'LEMPA').map((s) => s.name), ['Café Lempa']);
+    assert.deepEqual(searchShops(shops, 'palmira').map((s) => s.name), ['Café Lempa']);
+    assert.deepEqual(searchShops(shops, 'zzz'), []);
   });
 });

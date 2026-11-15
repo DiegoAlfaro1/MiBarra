@@ -35,3 +35,10 @@ export function filterShops(
   if (filter === 'near') result.sort((a, b) => distance(a) - distance(b));
   return result;
 }
+
+/** Search for the live shop list: by name or address, ignoring case and extra spaces. */
+export function searchShops<T extends { name: string; address: string | null }>(shops: readonly T[], query: string): T[] {
+  const q = query.trim().toLowerCase();
+  if (!q) return [...shops];
+  return shops.filter((s) => s.name.toLowerCase().includes(q) || (s.address ?? '').toLowerCase().includes(q));
+}

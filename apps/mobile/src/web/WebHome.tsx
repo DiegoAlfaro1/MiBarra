@@ -1,12 +1,15 @@
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { formatPhone, shopStatus, type Shop } from '@mibarra/shared';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
-import { AppText, Badge, EmptyState, StampDots, t, textStyle } from '../components/ui';
+import { AppText, Badge, Button, EmptyState, StampDots, t, textStyle } from '../components/ui';
+import { ShopLogo } from '../components/ShopLogo';
 import { shopHref } from '../components/ShopRow';
-import { PRODUCTS, SHOPS, type MockShop } from '../data/mock';
-import { filterShops, SHOP_FILTERS, type ShopFilter } from '../lib/shops';
+import { SHOPS } from '../data/mock';
+import { searchShops, SHOP_FILTERS, type ShopFilter } from '../lib/shops';
+import { useShops } from '../lib/useShops';
 import { WEB_MAX_WIDTH, WebFooter, WebHeader } from './WebHeader';
 
 const COVERS = ['#B4441B', '#3F6212', '#78716C'];
@@ -16,31 +19,32 @@ const HOW = [
   { title: 'Recoge y suma sellos', body: 'Te avisamos cuando esté listo. Cada pedido suma a tu tarjeta.' },
 ];
 
-function ShopCard({ shop, index }: { shop: MockShop; index: number }) {
-  const status = shop.open ? 'Abierto' : 'Cerrado';
+function ShopCard({ shop, index }: { shop: Shop; index: number }) {
+  const { open, label } = shopStatus(shop, new Date());
+  const status = open ? 'Abierto' : 'Cerrado';
+  const place = shop.address ?? 'Sin dirección';
+  const phone = formatPhone(shop.phone);
   return (
     <Pressable
       accessibilityRole="link"
-      accessibilityLabel={`${shop.name}, ${shop.area}, ${shop.distanceKm}. ${status}. ${shop.waitLabel}`}
+      accessibilityLabel={`${shop.name}, ${place}. ${status}. ${label}`}
       onPress={() => router.push(shopHref(shop))}
       style={styles.shopCard}
     >
-      <View style={[styles.cover, { backgroundColor: shop.open ? (COVERS[index % 2] ?? COVERS[0]) : COVERS[2] }]}>
-        <AppText variant="display" color={t.colors.textInverse}>
-          {shop.initials}
-        </AppText>
+      <View style={[styles.cover, { backgroundColor: open ? (COVERS[index % 2] ?? COVERS[0]) : COVERS[2] }]}>
+        <ShopLogo name={shop.name} logoUrl={shop.logo_url} size={72} />
       </View>
       <View style={styles.shopBody}>
         <View style={styles.row}>
           <AppText variant="h3" style={styles.flex}>
             {shop.name}
           </AppText>
-          <Badge label={status} tone={shop.open ? 'success' : 'danger'} />
+          <Badge label={status} tone={open ? 'success' : 'danger'} />
         </View>
         <AppText variant="bodySm" color={t.colors.textMuted}>
-          {shop.area} · {shop.distanceKm}
+          {phone ? `${place} · ${phone}` : place}
         </AppText>
-        <AppText variant="bodyStrong">{shop.waitLabel}</AppText>
+        <AppText variant="bodyStrong">{label}</AppText>
       </View>
     </Pressable>
   );
@@ -50,7 +54,12 @@ export function WebHome() {
   const [draft, setDraft] = useState('');
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<ShopFilter>('all');
-  const shops = useMemo(() => filterShops(SHOPS, PRODUCTS, filter, query), [filter, query]);
+  const [loaded, reload] = useShops();
+  const shops = useMemo(() => {
+    if (loaded.status !== 'ready') return [];
+    const found = searchShops(loaded.data, query);
+    return filter === 'open' ? found.filter((s) => shopStatus(s, new Date()).open) : found;
+  }, [loaded, filter, query]);
   const home = SHOPS[0]!;
   const left = home.stampGoal - home.stamps;
 
@@ -128,7 +137,7 @@ export function WebHome() {
                 Cafeterías en MiBarra
               </AppText>
               <View accessibilityRole="radiogroup" aria-label="Filtrar" style={styles.filters}>
-                {SHOP_FILTERS.map((f) => {
+                {SHOP_FILTERS.filter((f) => f.id !== 'near').map((f) => {
                   const on = f.id === filter;
                   return (
                     <Pressable
@@ -147,14 +156,22 @@ export function WebHome() {
                 })}
               </View>
             </View>
-            {shops.length ? (
+            {loaded.status === 'loading' ? (
+              <View accessibilityRole="progressbar" accessibilityLabel="Cargando cafeterías" style={{ paddingVertical: 48 }}>
+                <ActivityIndicator color={t.colors.primary} />
+              </View>
+            ) : loaded.status === 'error' ? (
+              <EmptyState icon="wifi-off" title="No pudimos cargar las cafeterías" body={loaded.message} action={<Button label="Reintentar" onPress={reload} />} />
+            ) : shops.length ? (
               <View style={styles.grid}>
                 {shops.map((shop, i) => (
                   <ShopCard key={shop.id} shop={shop} index={i} />
                 ))}
               </View>
-            ) : (
+            ) : query.trim() || filter !== 'all' ? (
               <EmptyState icon="search" title="Sin resultados" body="No encontramos cafeterías con esa búsqueda. Prueba con otro nombre." />
+            ) : (
+              <EmptyState icon="coffee" title="Aún no hay cafeterías" body="Cuando una cafetería se una a MiBarra, la verás aquí." />
             )}
           </View>
 

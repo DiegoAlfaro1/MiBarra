@@ -29,6 +29,7 @@ export class MenuManagementError extends Error {
 
 const GENERIC_ERROR = 'No pudimos guardar los cambios. Revisa tu conexión e inténtalo de nuevo.';
 const IN_PAST_ORDERS = 'Este producto aparece en pedidos anteriores. Márcalo como agotado en lugar de borrarlo.';
+const DUPLICATE_CATEGORY = 'Ya tienes una categoría con ese nombre.';
 const CATEGORY_NOT_EMPTY = 'Esta categoría todavía tiene productos. Muévelos a otra categoría o bórralos primero.';
 
 function unwrap<T>(result: Validation<T, T>): T {
@@ -37,6 +38,8 @@ function unwrap<T>(result: Validation<T, T>): T {
 }
 
 function failure(error: { code?: string; message?: string }, stillUsed = IN_PAST_ORDERS): MenuManagementError {
+  // 23505 = unique violation: only category names are unique (per shop).
+  if (error.code === '23505') return new MenuManagementError(DUPLICATE_CATEGORY, { name: DUPLICATE_CATEGORY });
   // 23503 = foreign key violation: the row is still referenced (an item with past orders, a category with items).
   if (error.code === '23503') return new MenuManagementError(stillUsed);
   // 42501 = RLS or a role check refused the change.

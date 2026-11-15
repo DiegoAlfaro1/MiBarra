@@ -11,3 +11,5 @@ export * from './menuApi.ts';
 export * from './shopApi.ts';
 export * from './assetPaths.ts';
 export * from './shopDirectory.ts';
+export * from './customerMenu.ts';
+export * from './menuPhotos.ts';

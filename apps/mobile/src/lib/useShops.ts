@@ -1,5 +1,5 @@
-import type { Shop } from '@mibarra/shared';
-import { findShop, listShops } from '@mibarra/shared';
+import type { MenuData, MenuItemDetail, Shop } from '@mibarra/shared';
+import { findShop, getMenuItem, listShops, loadShopMenu } from '@mibarra/shared';
 import { useCallback, useEffect, useState } from 'react';
 
 import { supabase } from './supabase';
@@ -41,3 +41,9 @@ export const useShops = () => useLoad<Shop[]>(() => listShops(supabase), 'all');
 
 /** One shop by id; `data` is null when it does not exist. */
 export const useShop = (id: string | undefined) => useLoad<Shop | null>(() => (id ? findShop(supabase, id) : Promise.resolve(null)), id ?? '');
+
+/** A shop's menu (categories, items and options) as the owner saved it. */
+export const useShopMenu = (shopId: string) => useLoad<MenuData>(() => loadShopMenu(supabase, shopId), shopId);
+
+/** One menu item with its options; `data` is null when it does not exist or its shop is hidden. */
+export const useMenuItem = (itemId: string) => useLoad<MenuItemDetail | null>(() => getMenuItem(supabase, itemId), itemId);

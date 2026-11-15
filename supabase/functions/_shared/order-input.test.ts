@@ -15,7 +15,7 @@ function errorOf(body: unknown): string | undefined {
 
 test('accepts a valid order and strips unknown fields', () => {
   const result = validateOrderInput({ ...valid, items: [{ productId: PRODUCT, quantity: 2, price: 1 }], extra: 1 });
-  assert.deepEqual(result, { ok: true, value: valid });
+  assert.deepEqual(result, { ok: true, value: { ...valid, note: null } });
 });
 
 test('rejects non-object bodies', () => {
@@ -44,7 +44,16 @@ test('rejects invalid items', () => {
 test('passes valid option ids through and rejects malformed ones', () => {
   const OPTION = '00000000-0000-4000-8000-0000000000bb';
   const withOptions = { ...valid, items: [{ productId: PRODUCT, quantity: 1, optionIds: [OPTION] }] };
-  assert.deepEqual(validateOrderInput(withOptions), { ok: true, value: withOptions });
+  assert.deepEqual(validateOrderInput(withOptions), { ok: true, value: { ...withOptions, note: null } });
   assert.match(errorOf({ ...valid, items: [{ productId: PRODUCT, quantity: 1, optionIds: ['x'] }] }) ?? '', /option/);
   assert.match(errorOf({ ...valid, items: [{ productId: PRODUCT, quantity: 1, optionIds: 'x' }] }) ?? '', /option/);
+});
+
+test('trims the note and rejects long or non-text notes', () => {
+  const result = validateOrderInput({ ...valid, note: '  sin tapa  ' });
+  assert.equal(result.ok && result.value.note, 'sin tapa');
+  const blank = validateOrderInput({ ...valid, note: '   ' });
+  assert.equal(blank.ok && blank.value.note, null);
+  assert.match(errorOf({ ...valid, note: 'x'.repeat(281) }) ?? '', /at most 280/);
+  assert.equal(errorOf({ ...valid, note: 5 }), 'Invalid note.');
 });

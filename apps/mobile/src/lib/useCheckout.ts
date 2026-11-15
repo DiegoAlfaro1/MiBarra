@@ -4,8 +4,26 @@ import { useRef, useState } from 'react';
 import { PICKUP_SLOTS, SHOPS } from '../data/mock';
 import { useAppState } from '../state/AppState';
 import { cartTotalCents } from './cart';
-import { pickupLabelFor, validateCheckout, type PaymentMethod, type PickupSlot } from './checkout';
+import {
+  orderCode,
+  orderErrorMessage,
+  orderItemsFromCart,
+  pickupLabelFor,
+  validateCheckout,
+  type PaymentMethod,
+  type PickupSlot,
+} from './checkout';
+import { newCheckoutKey, submitOrder } from './orders';
+import { useCartShop } from './useCartShop';
 import type { FieldErrors } from './validation';
+
+export interface CheckoutShop {
+  id: string;
+  name: string;
+  /** Neighbourhood, for sample shops. */
+  area?: string;
+  live: boolean;
+}
 
 // All checkout state and submit logic, shared by the phone screen and the web layout
 // so the two UIs only differ in presentation.
@@ -19,10 +37,16 @@ export function useCheckout() {
   const [name, setName] = useState(session?.name ?? '');
   const [phone, setPhone] = useState('');
   const [errors, setErrors] = useState<FieldErrors>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   // Guards against double taps so one checkout never creates two orders.
   const submitted = useRef(false);
+  // One key per checkout, reused on every retry: place-order returns the same order instead of a second one.
+  const checkoutKey = useRef<string | null>(null);
 
-  const shop = SHOPS.find((s) => s.id === cart.shopId);
+  const { shop: cartShop, loading: loadingShop } = useCartShop(cart.shopId);
+  const sample = SHOPS.find((s) => s.id === cart.shopId);
+  const shop: CheckoutShop | undefined = cartShop ? { ...cartShop, area: sample?.area } : undefined;
   const slot = (PICKUP_SLOTS as readonly PickupSlot[]).find((s) => s.id === slotId);
   const total = cartTotalCents(cart.lines);
   const pickupLabel = slot ? pickupLabelFor(slot) : '';
@@ -32,18 +56,47 @@ export function useCheckout() {
     setErrors({});
   };
 
-  const submit = () => {
+  const submit = async () => {
     if (submitted.current || !shop) return;
     const found = validateCheckout({ name, phone, slot, payment, card: { number, expiry, cvv } });
     setErrors(found);
+    setSubmitError(null);
     if (Object.keys(found).length) return;
     submitted.current = true;
+
+    let code = 'A-1042';
+    let totalCents = total;
+    if (shop.live) {
+      // Orders for real shops need a MiBarra account (the guest session has no login).
+      if (session?.guest) {
+        submitted.current = false;
+        setSubmitError('Para pedir en esta cafetería necesitas una cuenta. Crea una o inicia sesión desde tu perfil.');
+        return;
+      }
+      checkoutKey.current ??= newCheckoutKey();
+      setSubmitting(true);
+      try {
+        const order = await submitOrder(
+          { shopId: shop.id, items: orderItemsFromCart(cart.lines), note: cart.note.trim() || undefined },
+          checkoutKey.current,
+        );
+        code = orderCode(order.id);
+        totalCents = order.total_cents;
+      } catch (e) {
+        submitted.current = false;
+        setSubmitting(false);
+        setSubmitError(orderErrorMessage(e instanceof Error ? e.message : undefined));
+        return;
+      }
+      setSubmitting(false);
+    }
+
     placeOrder({
-      code: 'A-1042',
+      code,
       shopId: shop.id,
       shopName: shop.name,
       lines: cart.lines,
-      totalCents: total,
+      totalCents,
       pickupLabel,
       payment,
       status: 'received',
@@ -56,7 +109,8 @@ export function useCheckout() {
     shop,
     total,
     pickupLabel,
-    isEmpty: !cart.lines.length || !shop,
+    loadingShop,
+    isEmpty: !cart.lines.length || (!shop && !loadingShop),
     slotId,
     setSlotId,
     payment,
@@ -64,7 +118,9 @@ export function useCheckout() {
     card: { number, expiry, cvv, setNumber, setExpiry, setCvv },
     contact: { name, phone, setName, setPhone },
     errors,
-    submit,
+    submit: () => void submit(),
+    submitting,
+    submitError,
   };
 }
 

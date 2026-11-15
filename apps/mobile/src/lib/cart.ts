@@ -16,6 +16,8 @@ export interface CartLine {
   /** Description shown under the name (options, or the product blurb). */
   optionsLabel: string;
   selection: Selection | null;
+  /** Chosen `item_options` ids, for items read from the database (sent to `place-order`). */
+  optionIds?: string[];
   unitCents: number;
   quantity: number;
 }
@@ -71,6 +73,10 @@ const selectionKey = (selection: Selection | null) =>
     ? `${selection.sizeId}|${selection.milkId}|${[...selection.extraIds].sort().join(',')}`
     : '';
 
+/** Two lines are the same order line when product and choices match. */
+const lineKey = (line: CartLine) =>
+  `${line.productId}#${selectionKey(line.selection)}#${[...(line.optionIds ?? [])].sort().join(',')}`;
+
 export const lineTotalCents = (line: CartLine) => line.unitCents * line.quantity;
 export const cartTotalCents = (lines: readonly CartLine[]) =>
   lines.reduce((sum, line) => sum + lineTotalCents(line), 0);
@@ -81,11 +87,7 @@ export function cartReducer(state: CartState, action: CartAction): CartState {
     case 'add': {
       // A cart belongs to one shop: ordering from another shop starts a new cart.
       const base = state.shopId === action.line.shopId ? state : emptyCart;
-      const same = base.lines.find(
-        (l) =>
-          l.productId === action.line.productId &&
-          selectionKey(l.selection) === selectionKey(action.line.selection),
-      );
+      const same = base.lines.find((l) => lineKey(l) === lineKey(action.line));
       const lines = same
         ? base.lines.map((l) =>
             l.id === same.id ? { ...l, quantity: clampQty(l.quantity + action.line.quantity) } : l,

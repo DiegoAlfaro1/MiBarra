@@ -35,7 +35,7 @@ can't reopen it.
 
 | Action | Customer | Barista | Manager | Owner | Platform admin | Enforced by |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| Browse menus and open shops | Yes | Yes | Yes | Yes | Yes | RLS (`shops`, `menu_*` are public, so visitors without an account can browse; suspended shops are hidden). Placing an order needs an account: `place_order` is not granted to `anon`, and the app sends visitors to sign up at checkout. Checked by `supabase/tests/database/guest_browsing.test.sql` |
+| Browse menus and open shops | Yes | Yes | Yes | Yes | Yes | RLS (`shops`, `menu_*` are public, so visitors without an account can browse; suspended shops and their menus are hidden from everyone but their staff and platform admins, via `menu_visible()`. Checked by `supabase/tests/database/menu_visibility.test.sql`). Placing an order needs an account: `place_order` is not granted to `anon`, and the app sends visitors to sign up at checkout. Checked by `supabase/tests/database/guest_browsing.test.sql` |
 | Place, cancel, and view own orders | Own | No | No | No | No | `place_order()`, `cancel_order()`, RLS on `orders` |
 | View a shop's orders | No | Own shop | Own shop | Own shop | Yes | RLS on `orders`, `order_items` |
 | Change order status and mark paid | No | Own shop | Own shop | Own shop | No | RLS + column privilege on `orders.status`, `mark_order_paid()` |
@@ -43,7 +43,7 @@ can't reopen it.
 | Mark items sold out | No | Own shop | Own shop | Own shop | No | `set_item_available()`, `set_option_available()` |
 | Open or close the shop | No | No | Own shop | Own shop | No | `set_shop_open()` |
 | Scan QR codes to stamp or redeem | No | Own shop | Own shop | Own shop | No | `scan_loyalty_card()` |
-| Edit menu and prices | No | No | Own shop | Own shop | Yes | RLS on `menu_categories`, `menu_items`, `item_options` (admin edits are logged) |
+| Edit menu and prices | No | No | Own shop | Own shop | Yes | RLS on `menu_categories`, `menu_items`, `item_options` (admin edits are logged). Menu photos are uploaded to `shops/<shop_id>/menu/` in the `assets` bucket, which only owners and managers can write (see `storage.md`) |
 | Create offers | No | No | Own shop | Own shop | No | Not built yet: there is no offers table |
 | Change loyalty rules | No | No | No | Own shop | No | `set_loyalty_rule()` (logged) |
 | View sales reports | No | Daily count only | Own shop | Own shop | Yes | `shop_daily_order_count()`, `shop_sales_report()` (admin views are logged) |

@@ -10,6 +10,7 @@ import {
   parseLempiras,
   updateCategory,
   updateItem,
+  uploadMenuPhoto,
   type MenuCategory,
   type MenuData,
   type MenuItem,
@@ -18,6 +19,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
 import { Button, Card, Field, formStyles, Notice, StateView, Toggle } from '../src/components/Form.tsx';
+import { newUploadId, pickImage } from '../src/lib/pickImage.ts';
 import { supabase } from '../src/lib/supabase.ts';
 import { formatLempiras } from '../src/logic/dashboard.ts';
 import { useAuth } from '../src/state/AuthState.tsx';
@@ -253,6 +255,8 @@ function ItemForm({ shopId, categories, categoryId, item, onCancel, onSaved }: {
   const [available, setAvailable] = useState(item?.available ?? true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<{ message: string; fields: Errors } | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [photoError, setPhotoError] = useState<string | null>(null);
 
   const run = async (action: () => Promise<unknown>, deleted = false) => {
     setBusy(true);
@@ -263,6 +267,20 @@ function ItemForm({ shopId, categories, categoryId, item, onCancel, onSaved }: {
     } catch (e) {
       setError(errorOf(e));
       setBusy(false);
+    }
+  };
+
+  const upload = async () => {
+    setPhotoError(null);
+    const file = await pickImage();
+    if (!file) return;
+    setUploading(true);
+    try {
+      setPhoto(await uploadMenuPhoto(supabase, shopId, file, newUploadId()));
+    } catch (e) {
+      setPhotoError(e instanceof Error ? e.message : 'No pudimos subir la foto. Inténtalo de nuevo.');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -287,7 +305,8 @@ function ItemForm({ shopId, categories, categoryId, item, onCancel, onSaved }: {
       <Field label="Descripción" value={description} onChangeText={setDescription} error={f.description} multiline maxLength={280} placeholder="Espresso con leche vaporizada" hint={`${description.length}/280`} />
       <View style={[styles.fields, { alignItems: 'flex-end' }]}>
         <Photo uri={photo.trim() || null} size={72} label={name || 'el producto'} />
-        <Field label="Enlace de la foto" value={photo} onChangeText={setPhoto} error={f.photo_url} keyboardType="url" autoCapitalize="none" placeholder="https://…/latte.jpg" hint="Opcional. Sin foto se muestra una taza." />
+        <Field label="Enlace de la foto" value={photo} onChangeText={setPhoto} error={photoError ?? f.photo_url} keyboardType="url" autoCapitalize="none" placeholder="https://…/latte.jpg" hint="Opcional. Sube una imagen JPG, PNG o WebP (máx. 5 MB) o pega un enlace. Sin foto se muestra una taza." />
+        <Button kind="secondary" label={uploading ? 'Subiendo…' : 'Subir foto'} accessibilityLabel="Subir foto del producto" onPress={upload} busy={uploading} disabled={busy} />
       </View>
       {categories.length > 1 ? (
         <View style={{ gap: 6 }}>
@@ -312,7 +331,7 @@ function ItemForm({ shopId, categories, categoryId, item, onCancel, onSaved }: {
         {item ? <DeleteButton label={item.name} busy={busy} onConfirm={() => run(() => deleteItem(supabase, item.id), true)} /> : <View />}
         <View style={styles.actions}>
           <Button kind="secondary" label="Cancelar" onPress={onCancel} disabled={busy} />
-          <Button label={busy ? 'Guardando…' : 'Guardar producto'} onPress={save} busy={busy} />
+          <Button label={busy ? 'Guardando…' : 'Guardar producto'} onPress={save} busy={busy} disabled={uploading} />
         </View>
       </View>
     </View>

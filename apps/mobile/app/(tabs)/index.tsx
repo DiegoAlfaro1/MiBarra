@@ -1,12 +1,14 @@
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 
 import { ShopRow } from '../../src/components/ShopRow';
-import { AppText, EmptyState, Screen, SectionTitle, StampDots, Avatar, t, textStyle } from '../../src/components/ui';
-import { PRODUCTS, SHOPS } from '../../src/data/mock';
+import { AppText, Button, EmptyState, Screen, SectionTitle, StampDots, Avatar, t, textStyle } from '../../src/components/ui';
+import { SHOPS } from '../../src/data/mock';
 import { greetingName } from '../../src/lib/access';
+import { searchShops } from '../../src/lib/shops';
+import { useShops } from '../../src/lib/useShops';
 import { useIsWide } from '../../src/lib/useIsWide';
 import { useAppState } from '../../src/state/AppState';
 import { WebHome } from '../../src/web/WebHome';
@@ -23,15 +25,8 @@ function MobileHome() {
   const name = greetingName(session);
   const home = SHOPS[0]!;
 
-  const shops = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return SHOPS;
-    // Every open shop serves the same sample menu, so a drink match lists the open shops.
-    const drinkMatch = PRODUCTS.some((p) => p.name.toLowerCase().includes(q));
-    return SHOPS.filter(
-      (s) => s.name.toLowerCase().includes(q) || s.area.toLowerCase().includes(q) || (drinkMatch && s.open),
-    );
-  }, [query]);
+  const [loaded, reload] = useShops();
+  const shops = useMemo(() => (loaded.status === 'ready' ? searchShops(loaded.data, query) : []), [loaded, query]);
 
   return (
     <Screen>
@@ -92,15 +87,28 @@ function MobileHome() {
         <StampDots filled={home.stamps} total={home.stampGoal} />
       </Pressable>
 
-      <SectionTitle right={`${shops.length} en la red`}>Cafeterías cerca de ti</SectionTitle>
-      {shops.length ? (
+      <SectionTitle right={loaded.status === 'ready' ? `${shops.length} en la red` : undefined}>Cafeterías cerca de ti</SectionTitle>
+      {loaded.status === 'loading' ? (
+        <View accessibilityRole="progressbar" accessibilityLabel="Cargando cafeterías" style={styles.loading}>
+          <ActivityIndicator color={t.colors.primary} />
+        </View>
+      ) : loaded.status === 'error' ? (
+        <EmptyState
+          icon="wifi-off"
+          title="No pudimos cargar las cafeterías"
+          body={loaded.message}
+          action={<Button label="Reintentar" onPress={reload} />}
+        />
+      ) : shops.length ? (
         <View style={styles.list}>
           {shops.map((shop) => (
             <ShopRow key={shop.id} shop={shop} />
           ))}
         </View>
-      ) : (
+      ) : query.trim() ? (
         <EmptyState icon="search" title="Sin resultados" body="No encontramos cafeterías con esa búsqueda. Prueba con otro nombre." />
+      ) : (
+        <EmptyState icon="coffee" title="Aún no hay cafeterías" body="Cuando una cafetería se una a MiBarra, la verás aquí." />
       )}
     </Screen>
   );
@@ -115,4 +123,5 @@ const styles = StyleSheet.create({
   stampCard: { backgroundColor: t.colors.surfaceInverse, borderRadius: t.radii.cardLg, padding: 16, gap: 14 },
   stampTop: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   list: { gap: 10 },
+  loading: { paddingVertical: 32, alignItems: 'center' },
 });

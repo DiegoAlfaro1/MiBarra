@@ -2,34 +2,35 @@ import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import type { MockShop } from '../data/mock';
-import { AppText, Avatar, t } from './ui';
+import { formatPhone, shopStatus, type Shop } from '@mibarra/shared';
 
-export function shopHref(shop: MockShop) {
+import { ShopLogo } from './ShopLogo';
+import { AppText, t } from './ui';
+
+export function shopHref(shop: { id: string }) {
   return { pathname: '/shop/[id]', params: { id: shop.id } } as const;
 }
 
-export function ShopRow({ shop }: { shop: MockShop }) {
-  const status = shop.open ? 'Abierto' : 'Cerrado';
+export function ShopRow({ shop }: { shop: Shop }) {
+  const { open, label } = shopStatus(shop, new Date());
+  const place = shop.address ?? 'Sin dirección';
+  const phone = formatPhone(shop.phone);
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`${shop.name}, ${shop.area}, ${shop.distanceKm}. ${status}. ${shop.waitLabel}`}
+      accessibilityLabel={`${shop.name}, ${place}. ${open ? 'Abierto' : 'Cerrado'}. ${label}`}
       onPress={() => router.push(shopHref(shop))}
       style={styles.row}
     >
-      <Avatar initials={shop.initials} size={52} />
+      <ShopLogo name={shop.name} logoUrl={shop.logo_url} />
       <View style={styles.flex}>
         <AppText variant="bodyStrong">{shop.name}</AppText>
-        <AppText variant="caption" color={t.colors.textMuted}>
-          {shop.area} · {shop.distanceKm}
+        <AppText variant="caption" color={t.colors.textMuted} numberOfLines={1}>
+          {phone ? `${place} · ${phone}` : place}
         </AppText>
         <View style={styles.meta}>
-          <AppText variant="badge" color={shop.open ? t.colors.textSuccess : t.colors.textDanger}>
-            ● {status}
-          </AppText>
-          <AppText variant="caption" color={t.colors.textMuted}>
-            {shop.waitLabel}
+          <AppText variant="badge" color={open ? t.colors.textSuccess : t.colors.textDanger}>
+            ● {label}
           </AppText>
         </View>
       </View>

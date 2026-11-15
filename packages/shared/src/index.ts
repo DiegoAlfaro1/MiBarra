@@ -10,3 +10,4 @@ export * from './menuManagement.ts';
 export * from './menuApi.ts';
 export * from './shopApi.ts';
 export * from './assetPaths.ts';
+export * from './shopDirectory.ts';

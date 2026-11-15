@@ -1,3 +1,4 @@
+import { can, type Permission } from '@mibarra/shared';
 import { Link, usePathname } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -6,18 +7,20 @@ import { useDashboard } from '../state/DashboardState.tsx';
 import { SHOP_NAME } from '../mock/data.ts';
 import { colors, theme, tones, typography } from '../theme.ts';
 
-const NAV = [
+const NAV: readonly { href: '/' | '/menu' | '/scan' | '/summary' | '/catalog' | '/shop'; label: string; needs?: Permission }[] = [
   { href: '/', label: 'Pedidos' },
   { href: '/menu', label: 'Menú' },
   { href: '/scan', label: 'Escanear' },
   { href: '/summary', label: 'Resumen' },
-] as const;
+  { href: '/catalog', label: 'Editar menú', needs: 'editMenu' },
+  { href: '/shop', label: 'Tienda', needs: 'editShopSettings' },
+];
 
 /** Dark header with shop name, section nav and the open/pause switch. */
 export function Header() {
   const path = usePathname();
   const { open, setOpen } = useDashboard();
-  const { signOut } = useAuth();
+  const { signOut, access } = useAuth();
   return (
     <View style={styles.header}>
       <View style={styles.brand}>
@@ -30,7 +33,7 @@ export function Header() {
         </View>
       </View>
       <View style={styles.nav} accessibilityRole="menu" aria-label="Panel">
-        {NAV.map((item) => {
+        {NAV.filter((item) => !item.needs || can(access?.role, item.needs)).map((item) => {
           const active = item.href === '/' ? path === '/' : path.startsWith(item.href);
           return (
             <Link key={item.href} href={item.href} asChild>

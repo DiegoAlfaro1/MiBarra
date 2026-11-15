@@ -39,13 +39,49 @@ export interface OptionInput {
   available?: boolean;
 }
 
-function cleanName(raw: unknown, label: string): { value?: string; error?: string } {
+/** Spanish wording per kind of row, so messages read naturally ("el nombre del producto"). */
+const LABELS = {
+  category: { a: 'la categoría', of: 'de la categoría' },
+  item: { a: 'el producto', of: 'del producto' },
+  option: { a: 'la opción', of: 'de la opción' },
+} as const;
+
+function cleanName(raw: unknown, kind: keyof typeof LABELS): { value?: string; error?: string } {
   const name = typeof raw === 'string' ? raw.trim() : '';
-  if (!name) return { error: `Enter a ${label} name.` };
+  if (!name) return { error: `Escribe un nombre para ${LABELS[kind].a}.` };
   if (name.length > MENU_LIMITS.nameMax) {
-    return { error: `Keep the ${label} name under ${MENU_LIMITS.nameMax} characters.` };
+    return { error: `El nombre ${LABELS[kind].of} debe tener máximo ${MENU_LIMITS.nameMax} caracteres.` };
   }
   return { value: name };
+}
+
+const WEB_LINK = /^https?:\/\/\S+$/i;
+
+/** True for an http(s) link; used for item photos and the shop logo. */
+export function isWebLink(value: string): boolean {
+  return WEB_LINK.test(value);
+}
+
+/**
+ * Turns what the owner typed as a price in lempiras ("55", "55.5", "L 1,250.00") into integer cents.
+ * Returns null when it is not a price of 0 or more with at most two decimals.
+ */
+export function parseLempiras(raw: string): number | null {
+  let text = raw.trim().replace(/^L\.?\s*/i, '');
+  // Commas only as thousands separators ("1,250"), so "12,5" is refused instead of read as 125.
+  if (text.includes(',')) {
+    if (!/^\d{1,3}(,\d{3})+(\.\d+)?$/.test(text)) return null;
+    text = text.replace(/,/g, '');
+  }
+  const match = /^(\d{1,7})(?:\.(\d{1,2}))?$/.exec(text);
+  if (!match) return null;
+  const cents = Number(match[1]) * 100 + Number((match[2] ?? '').padEnd(2, '0'));
+  return cents <= MENU_LIMITS.maxPriceCents ? cents : null;
+}
+
+/** Cents as an editable price field value: 5550 -> "55.50". */
+export function lempirasInput(cents: number): string {
+  return (cents / 100).toFixed(2);
 }
 
 function validCents(value: unknown, allowNegative: boolean): value is number {
@@ -62,7 +98,7 @@ export function validateCategoryInput(input: CategoryInput): Validation<Category
   const name = cleanName(input.name, 'category');
   if (name.error) errors.name = name.error;
   if (input.sort_order !== undefined && !Number.isSafeInteger(input.sort_order)) {
-    errors.sort_order = 'Order must be a whole number.';
+    errors.sort_order = 'El orden debe ser un número entero.';
   }
   if (Object.keys(errors).length > 0) return { ok: false, errors };
   const value: CategoryInput = { name: name.value as string };
@@ -74,21 +110,23 @@ export function validateItemInput(input: ItemInput): Validation<ItemInput> {
   const errors: FieldErrors<ItemInput> = {};
   const name = cleanName(input.name, 'item');
   if (name.error) errors.name = name.error;
-  if (!isUuid(input.category_id)) errors.category_id = 'Choose a category.';
+  if (!isUuid(input.category_id)) errors.category_id = 'Elige una categoría.';
   if (!validCents(input.price_cents, false)) {
-    errors.price_cents = 'Enter a price of 0 or more, with at most two decimals.';
+    errors.price_cents = 'Escribe un precio de 0 o más, con máximo dos decimales (por ejemplo 55.00).';
   }
   const description = input.description?.trim() || null;
   if (description && description.length > MENU_LIMITS.descriptionMax) {
-    errors.description = `Keep the description under ${MENU_LIMITS.descriptionMax} characters.`;
+    errors.description = `La descripción debe tener máximo ${MENU_LIMITS.descriptionMax} caracteres.`;
   }
+  const photo_url = input.photo_url?.trim() || null;
+  if (photo_url && !isWebLink(photo_url)) errors.photo_url = 'El enlace de la foto debe empezar con https://.';
   if (Object.keys(errors).length > 0) return { ok: false, errors };
   const value: ItemInput = {
     category_id: input.category_id,
     name: name.value as string,
     description,
     price_cents: input.price_cents,
-    photo_url: input.photo_url?.trim() || null,
+    photo_url,
   };
   if (input.available !== undefined) value.available = input.available;
   return { ok: true, value };
@@ -98,9 +136,9 @@ export function validateOptionInput(input: OptionInput): Validation<OptionInput>
   const errors: FieldErrors<OptionInput> = {};
   const name = cleanName(input.name, 'option');
   if (name.error) errors.name = name.error;
-  if (!OPTION_KINDS.includes(input.kind)) errors.kind = 'Choose size or extra.';
+  if (!OPTION_KINDS.includes(input.kind)) errors.kind = 'Elige tamaño o extra.';
   if (!validCents(input.price_change_cents, true)) {
-    errors.price_change_cents = 'Enter a valid price change, with at most two decimals.';
+    errors.price_change_cents = 'Escribe un cambio de precio válido, con máximo dos decimales.';
   }
   if (Object.keys(errors).length > 0) return { ok: false, errors };
   const value: OptionInput = {

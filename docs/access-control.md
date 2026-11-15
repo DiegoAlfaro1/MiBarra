@@ -49,7 +49,7 @@ can't reopen it.
 | View sales reports | No | Daily count only | Own shop | Own shop | Yes | `shop_daily_order_count()`, `shop_sales_report()` (admin views are logged) |
 | See customer name and phone | Own | Name only | Own shop | Own shop | Yes, logged | RLS on `customers`, `shop_customer_names()`, `admin_customer_contact()` (logged) |
 | Invite or remove staff | No | No | Baristas only | Own shop | Yes | `staff-invite` edge function + `add_shop_member()`, `remove_shop_member()` (logged) |
-| Edit shop profile, payment provider, and billing | No | No | No | Own shop | Yes | `update_shop_profile()`, `set_shop_payment_provider()` (logged) |
+| Edit shop profile, payment provider, and billing | No | No | No | Own shop | Yes | `update_shop_profile()` (name, logo, address, phone, hours), `set_shop_payment_provider()` (logged). Checked by `supabase/tests/database/shop_profile.test.sql` |
 | Create or suspend shops | No | No | No | No | Yes | `admin_create_shop()`, `admin_set_shop_suspended()` (logged) |
 
 ## How it is enforced

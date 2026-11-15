@@ -27,17 +27,21 @@ export class MenuManagementError extends Error {
   }
 }
 
-const GENERIC_ERROR = 'We could not save your changes. Check your connection and try again.';
+const GENERIC_ERROR = 'No pudimos guardar los cambios. Revisa tu conexión e inténtalo de nuevo.';
+const IN_PAST_ORDERS = 'Este producto aparece en pedidos anteriores. Márcalo como agotado en lugar de borrarlo.';
+const CATEGORY_NOT_EMPTY = 'Esta categoría todavía tiene productos. Muévelos a otra categoría o bórralos primero.';
 
 function unwrap<T>(result: Validation<T, T>): T {
   if (result.ok) return result.value;
-  throw new MenuManagementError('Check the highlighted fields.', result.errors as FieldErrors<Record<string, unknown>>);
+  throw new MenuManagementError('Revisa los campos marcados.', result.errors as FieldErrors<Record<string, unknown>>);
 }
 
-function failure(error: { code?: string; message?: string }): MenuManagementError {
-  // 23503 = foreign key violation: the row is still referenced (e.g. an item with past orders).
-  if (error.code === '23503') {
-    return new MenuManagementError('This is used by past orders. Mark it as sold out instead of deleting it.');
+function failure(error: { code?: string; message?: string }, stillUsed = IN_PAST_ORDERS): MenuManagementError {
+  // 23503 = foreign key violation: the row is still referenced (an item with past orders, a category with items).
+  if (error.code === '23503') return new MenuManagementError(stillUsed);
+  // 42501 = RLS or a role check refused the change.
+  if (error.code === '42501') {
+    return new MenuManagementError('No tienes permiso para cambiar el menú de esta tienda.');
   }
   // 22023 = a message we wrote in SQL for users.
   if (error.code === '22023' && error.message) return new MenuManagementError(error.message);
@@ -76,7 +80,7 @@ export async function updateCategory(client: MenuClient, categoryId: string, inp
 
 export async function deleteCategory(client: MenuClient, categoryId: string): Promise<void> {
   const { error } = await client.from('menu_categories').delete().eq('id', categoryId);
-  if (error) throw failure(error);
+  if (error) throw failure(error, CATEGORY_NOT_EMPTY);
 }
 
 export async function createItem(client: MenuClient, shopId: string, input: ItemInput): Promise<MenuItem> {

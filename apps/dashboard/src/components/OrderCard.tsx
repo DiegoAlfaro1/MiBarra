@@ -2,7 +2,7 @@ import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { canCancel, type DashOrder } from '../logic/dashboard.ts';
 import { useDashboard } from '../state/DashboardState.tsx';
-import { colors, radii, theme, tones, typography } from '../theme.ts';
+import { bodyFont, colors, radii, theme, tones, typography } from '../theme.ts';
 
 const ADVANCE_LABEL = { pending: 'Aceptar y preparar', preparing: 'Marcar listo', ready: 'Entregado · +1 sello' } as const;
 
@@ -58,18 +58,18 @@ const styles = StyleSheet.create({
   cardNew: { borderWidth: 2, borderColor: colors.primary },
   cardOld: { borderWidth: 1, borderColor: colors.borderStrong },
   top: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 },
-  meta: { fontSize: 14, color: colors.textMuted },
-  badge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: radii.sm, fontSize: 12, fontWeight: '700', overflow: 'hidden' },
-  line: { fontSize: 16, fontWeight: '600', color: colors.text },
-  opts: { fontSize: 14, color: '#44403C' },
-  note: { padding: 8, borderRadius: 10, backgroundColor: tones.warning.tint, color: tones.warning.onTint, fontSize: 14, fontWeight: '600', overflow: 'hidden' },
+  meta: { fontFamily: bodyFont, fontSize: 14, color: colors.textMuted },
+  badge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: radii.sm, fontFamily: bodyFont, fontSize: 12, fontWeight: '700', overflow: 'hidden' },
+  line: { fontFamily: bodyFont, fontSize: 16, fontWeight: '600', color: colors.text },
+  opts: { fontFamily: bodyFont, fontSize: 14, color: '#44403C' },
+  note: { padding: 8, borderRadius: 10, backgroundColor: tones.warning.tint, color: tones.warning.onTint, fontFamily: bodyFont, fontSize: 14, fontWeight: '600', overflow: 'hidden' },
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'center' },
   advance: { flexGrow: 1, flexBasis: 140, minHeight: 52, borderRadius: 14, backgroundColor: colors.secondary, alignItems: 'center', justifyContent: 'center' },
-  advanceText: { color: colors.onSecondary, fontSize: 16, fontWeight: '700' },
+  advanceText: { color: colors.onSecondary, fontFamily: bodyFont, fontSize: 16, fontWeight: '700' },
   paid: { minHeight: 52, paddingHorizontal: 14, borderRadius: 14, borderWidth: 2, borderColor: colors.text, justifyContent: 'center' },
-  paidText: { fontSize: 15, fontWeight: '700', color: colors.text },
+  paidText: { fontFamily: bodyFont, fontSize: 15, fontWeight: '700', color: colors.text },
   wa: { flexGrow: 1, flexBasis: 160, minHeight: 48, borderRadius: 14, backgroundColor: tones.success.solid, alignItems: 'center', justifyContent: 'center' },
-  waText: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
+  waText: { color: '#FFFFFF', fontFamily: bodyFont, fontSize: 15, fontWeight: '700' },
   cancel: { minHeight: 44, paddingHorizontal: 8, justifyContent: 'center' },
-  cancelText: { fontSize: 15, fontWeight: '600', color: colors.textDanger, textDecorationLine: 'underline' },
+  cancelText: { fontFamily: bodyFont, fontSize: 15, fontWeight: '600', color: colors.textDanger, textDecorationLine: 'underline' },
 });

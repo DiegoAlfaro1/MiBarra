@@ -2,7 +2,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { formatLempiras } from '../src/logic/dashboard.ts';
 import { SUMMARY } from '../src/mock/data.ts';
-import { colors, typography } from '../src/theme.ts';
+import { bodyFont, colors, typography } from '../src/theme.ts';
 
 const S = SUMMARY;
 
@@ -69,20 +69,20 @@ export default function Summary() {
 const cell = [{ flex: 1.1 }, { flex: 1 }, { flex: 2.2 }, { flex: 1.3 }, { flex: 1 }];
 const styles = StyleSheet.create({
   page: { width: '100%', maxWidth: 1100, alignSelf: 'center', padding: 24, gap: 20 },
-  sub: { fontSize: 15, color: colors.textMuted },
+  sub: { fontFamily: bodyFont, fontSize: 15, color: colors.textMuted },
   kpis: { flexDirection: 'row', flexWrap: 'wrap', gap: 16 },
   kpi: { flexGrow: 1, flexBasis: 220, gap: 6, padding: 22, borderRadius: 20 },
-  kpiLabel: { fontSize: 14, fontWeight: '600' },
-  hint: { fontSize: 14 },
+  kpiLabel: { fontFamily: bodyFont, fontSize: 14, fontWeight: '600' },
+  hint: { fontFamily: bodyFont, fontSize: 14 },
   section: { gap: 12, padding: 22, borderRadius: 20, backgroundColor: colors.surface },
-  h2: { fontSize: 17, fontWeight: '700', color: colors.text },
+  h2: { fontFamily: bodyFont, fontSize: 17, fontWeight: '700', color: colors.text },
   bar: { flexDirection: 'row', height: 20, borderRadius: 10, overflow: 'hidden' },
   legend: { flexDirection: 'row', flexWrap: 'wrap', gap: 20 },
-  legendItem: { fontSize: 15, color: colors.text },
+  legendItem: { fontFamily: bodyFont, fontSize: 15, color: colors.text },
   tableWrap: { backgroundColor: colors.surface, borderRadius: 20 },
-  caption: { paddingHorizontal: 20, paddingTop: 18, paddingBottom: 6, fontSize: 17, fontWeight: '700', color: colors.text },
+  caption: { paddingHorizontal: 20, paddingTop: 18, paddingBottom: 6, fontFamily: bodyFont, fontSize: 17, fontWeight: '700', color: colors.text },
   tr: { flexDirection: 'row' },
   trBody: { borderTopWidth: 1, borderTopColor: colors.surfaceMuted },
-  th: { paddingHorizontal: 20, paddingVertical: 10, fontSize: 13, fontWeight: '600', color: colors.textMuted },
-  td: { paddingHorizontal: 20, paddingVertical: 14, fontSize: 15, color: colors.text },
+  th: { paddingHorizontal: 20, paddingVertical: 10, fontFamily: bodyFont, fontSize: 13, fontWeight: '600', color: colors.textMuted },
+  td: { paddingHorizontal: 20, paddingVertical: 14, fontFamily: bodyFont, fontSize: 15, color: colors.text },
 });

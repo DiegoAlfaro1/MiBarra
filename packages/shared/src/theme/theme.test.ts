@@ -38,8 +38,8 @@ test('default theme uses the design tokens from the README', () => {
   assert.equal(theme.tones.warning.onTint, '#78350F');
   assert.equal(theme.tones.demo.solid, '#1D4ED8');
   assert.equal(theme.radii.pill, 999);
-  assert.equal(typography.h1.fontFamily, 'Bricolage Grotesque');
-  assert.equal(typography.body.fontFamily, 'Inter');
+  assert.equal(typography.h1.fontFamily, 'Fraunces');
+  assert.equal(typography.body.fontFamily, 'DM Sans');
 });
 
 test('dashboard surface uses its own background and larger touch targets', () => {

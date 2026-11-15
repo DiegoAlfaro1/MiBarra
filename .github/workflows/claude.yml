@@ -83,11 +83,11 @@ jobs:
         run: |
           LABELS="$ISSUE_LABELS $PR_LABELS"
           if printf '%s' "$LABELS" | grep -q '"model:opus"'; then
-            MODEL=opus;   TURNS=60
+            MODEL=opus;   TURNS=150
           elif printf '%s' "$LABELS" | grep -q '"model:haiku"'; then
-            MODEL=haiku;  TURNS=20
+            MODEL=haiku;  TURNS=40
           else
-            MODEL=sonnet; TURNS=40
+            MODEL=sonnet; TURNS=90
           fi
           echo "model=$MODEL" >> "$GITHUB_OUTPUT"
           echo "turns=$TURNS" >> "$GITHUB_OUTPUT"

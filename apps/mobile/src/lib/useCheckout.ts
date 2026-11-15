@@ -1,3 +1,4 @@
+import { loadShopMenu, soldOutLines, soldOutMessage } from '@mibarra/shared';
 import { router } from 'expo-router';
 import { useRef, useState } from 'react';
 
@@ -14,6 +15,7 @@ import {
   type PickupSlot,
 } from './checkout';
 import { newCheckoutKey, submitOrder } from './orders';
+import { supabase } from './supabase';
 import { useCartShop } from './useCartShop';
 import type { FieldErrors } from './validation';
 
@@ -28,7 +30,7 @@ export interface CheckoutShop {
 // All checkout state and submit logic, shared by the phone screen and the web layout
 // so the two UIs only differ in presentation.
 export function useCheckout() {
-  const { cart, placeOrder, session } = useAppState();
+  const { cart, dispatch, placeOrder, session } = useAppState();
   const [slotId, setSlotId] = useState<string>(PICKUP_SLOTS[0].id);
   const [payment, setPayment] = useState<PaymentMethod>('counter');
   const [number, setNumber] = useState('4242 4242 4242 4242');
@@ -56,6 +58,21 @@ export function useCheckout() {
     setErrors({});
   };
 
+  // Items can sell out while the customer is shopping: drop them from the cart and say which ones.
+  // Returns true when something was removed. If the menu can't be loaded, the server check in place_order still applies.
+  const dropSoldOut = async (shopId: string): Promise<boolean> => {
+    try {
+      const menu = await loadShopMenu(supabase, shopId);
+      const gone = soldOutLines(cart.lines, menu);
+      if (!gone.length) return false;
+      for (const line of gone) dispatch({ type: 'remove', id: line.id });
+      setSubmitError(soldOutMessage(gone.map((l) => l.name)));
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   const submit = async () => {
     if (submitted.current || !shop) return;
     const found = validateCheckout({ name, phone, slot, payment, card: { number, expiry, cvv } });
@@ -73,8 +90,13 @@ export function useCheckout() {
         setSubmitError('Para pedir en esta cafetería necesitas una cuenta. Crea una o inicia sesión desde tu perfil.');
         return;
       }
-      checkoutKey.current ??= newCheckoutKey();
       setSubmitting(true);
+      if (await dropSoldOut(shop.id)) {
+        submitted.current = false;
+        setSubmitting(false);
+        return;
+      }
+      checkoutKey.current ??= newCheckoutKey();
       try {
         const order = await submitOrder(
           { shopId: shop.id, items: orderItemsFromCart(cart.lines), note: cart.note.trim() || undefined },
@@ -85,6 +107,8 @@ export function useCheckout() {
       } catch (e) {
         submitted.current = false;
         setSubmitting(false);
+        // It sold out between our check and the order: refresh the cart and name the item.
+        if (e instanceof Error && /products are not available/i.test(e.message) && (await dropSoldOut(shop.id))) return;
         setSubmitError(orderErrorMessage(e instanceof Error ? e.message : undefined));
         return;
       }

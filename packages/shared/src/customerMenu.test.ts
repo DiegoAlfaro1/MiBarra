@@ -8,6 +8,8 @@ import {
   itemChoices,
   loadShopMenu,
   menuSections,
+  soldOutLines,
+  soldOutMessage,
   optionChoiceError,
   toggleOption,
   unitPriceWithOptions,
@@ -41,6 +43,31 @@ describe('menu sections', () => {
     });
     assert.deepEqual(sections.map((s) => s.category.name), ['Café', 'Repostería']);
     assert.deepEqual(sections[0]!.items.map((i) => i.name), ['Espresso', 'Latte']);
+  });
+});
+
+describe('sold-out items', () => {
+  it('leaves sold-out items out of the sections', () => {
+    const gone = { ...item('i2', 'c1', 'Latte'), available: false };
+    const sections = menuSections({ categories: [category('c1', 'Café', 1)], items: [item('i1', 'c1', 'Espresso'), gone], options: [] });
+    assert.deepEqual(sections[0]!.items.map((i) => i.id), ['i1']);
+    assert.deepEqual(menuSections({ categories: [category('c1', 'Café', 1)], items: [gone], options: [] }), []);
+  });
+
+  it('finds cart lines whose item is sold out or no longer listed', () => {
+    const menu = { items: [item('i1', 'c1', 'Espresso'), { ...item('i2', 'c1', 'Latte'), available: false }] };
+    const lines = [
+      { productId: 'i1', name: 'Espresso' },
+      { productId: 'i2', name: 'Latte' },
+      { productId: 'i3', name: 'Croissant' },
+    ];
+    assert.deepEqual(soldOutLines(lines, menu).map((l) => l.name), ['Latte', 'Croissant']);
+    assert.deepEqual(soldOutLines([lines[0]!], menu), []);
+  });
+
+  it('words the notice for one or several items', () => {
+    assert.match(soldOutMessage(['Latte']), /Latte se agotó/);
+    assert.match(soldOutMessage(['Latte', 'Croissant']), /Latte, Croissant/);
   });
 });
 

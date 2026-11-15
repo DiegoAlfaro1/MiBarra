@@ -113,6 +113,8 @@ Owners read their shop's entries. Platform admins read all of them.
 
 ## Tests
 
+Storage (#44) has its own rules: see `docs/storage.md`.
+
 `supabase/tests/database/access_control.test.sql` signs in as each role and checks the rules. For example, a
 customer can't read another customer's orders, a barista can't edit prices, staff at shop A can't see shop B, a
 removed barista loses access immediately, and retries don't double count. Run it with local Supabase running:

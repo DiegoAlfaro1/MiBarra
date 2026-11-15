@@ -1,5 +1,6 @@
 import { can, type Permission } from '@mibarra/shared';
 import { Link, usePathname } from 'expo-router';
+import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useAuth } from '../state/AuthState.tsx';
@@ -19,7 +20,12 @@ const NAV: readonly { href: '/' | '/menu' | '/scan' | '/summary' | '/catalog' | 
 /** Dark header with shop name, section nav and the open/pause switch. */
 export function Header() {
   const path = usePathname();
-  const { open, setOpen } = useDashboard();
+  const { open, shopReady, setOpen } = useDashboard();
+  const [switchError, setSwitchError] = useState<string | null>(null);
+  const toggleOpen = async () => {
+    setSwitchError(null);
+    setSwitchError(await setOpen(!open));
+  };
   const { signOut, access } = useAuth();
   return (
     <View style={styles.header}>
@@ -46,14 +52,18 @@ export function Header() {
       </View>
       <Pressable
         accessibilityRole="switch"
-        accessibilityState={{ checked: open }}
         accessibilityLabel="Recibir pedidos"
-        onPress={() => setOpen(!open)}
+        accessibilityState={{ checked: open, disabled: !shopReady }}
+        disabled={!shopReady}
+        onPress={toggleOpen}
         style={[styles.switch, { backgroundColor: open ? tones.success.solid : colors.textMuted }]}
       >
         <View style={styles.knob} />
         <Text style={styles.switchText}>{open ? 'Recibiendo pedidos' : 'Pedidos en pausa'}</Text>
       </Pressable>
+      {switchError ? (
+        <Text accessibilityRole="alert" style={[typography.badge, { color: colors.textInverse, flexBasis: '100%' }]}>{switchError}</Text>
+      ) : null}
       <Pressable accessibilityRole="button" accessibilityLabel="Cerrar sesión" onPress={signOut} style={styles.navItem}>
         <Text style={[styles.navText, { color: colors.textInverse }]}>Cerrar sesión</Text>
       </Pressable>

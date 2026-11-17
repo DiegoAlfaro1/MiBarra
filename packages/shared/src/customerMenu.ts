@@ -40,13 +40,27 @@ export interface ItemChoices {
 const byPriceThenName = (a: ItemOption, b: ItemOption) =>
   a.price_change_cents - b.price_change_cents || a.name.localeCompare(b.name, 'es');
 
-/** The options a customer can choose for one item (sold-out options are left out). */
-export function itemChoices(options: readonly ItemOption[], itemId: string): ItemChoices {
-  const mine = options.filter((o) => o.item_id === itemId && o.available);
+/**
+ * The options a customer can choose for one item (sold-out options are left out unless
+ * `includeSoldOut`, which the dashboard uses to list everything the owner created).
+ */
+export function itemChoices(options: readonly ItemOption[], itemId: string, { includeSoldOut = false } = {}): ItemChoices {
+  const mine = options.filter((o) => o.item_id === itemId && (includeSoldOut || o.available));
   return {
     sizes: mine.filter((o) => o.kind === 'size').sort(byPriceThenName),
     extras: mine.filter((o) => o.kind === 'extra').sort(byPriceThenName),
   };
+}
+
+/**
+ * True when customers cannot order the item: it is marked sold out, or it has sizes and every
+ * one of them is sold out (a size is required, so there is nothing left to pick).
+ * `place_order` enforces the same rule (see `check_order_item_size`).
+ */
+export function isItemSoldOut(item: Pick<MenuItem, 'id' | 'available'>, options: readonly ItemOption[]): boolean {
+  if (!item.available) return true;
+  const sizes = options.filter((o) => o.item_id === item.id && o.kind === 'size');
+  return sizes.length > 0 && sizes.every((s) => !s.available);
 }
 
 /** Starts with the cheapest size and no extras. */

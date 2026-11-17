@@ -5,6 +5,7 @@ import {
   defaultOptionIds,
   describeOptions,
   getMenuItem,
+  isItemSoldOut,
   itemChoices,
   loadShopMenu,
   menuSections,
@@ -44,6 +45,23 @@ describe('menu sections', () => {
   });
 });
 
+describe('sold out items', () => {
+  const sized = item(ITEM, 'c1', 'Latte');
+  it('is orderable while at least one size is on sale', () => {
+    assert.equal(isItemSoldOut(sized, OPTIONS), false);
+  });
+  it('is sold out when the item is off or every size is sold out', () => {
+    assert.equal(isItemSoldOut({ ...sized, available: false }, OPTIONS), true);
+    const noSizes = OPTIONS.map((o) => (o.kind === 'size' ? { ...o, available: false } : o));
+    assert.equal(isItemSoldOut(sized, noSizes), true);
+  });
+  it('ignores extras and items without sizes', () => {
+    const extrasOut = OPTIONS.map((o) => (o.kind === 'extra' ? { ...o, available: false } : o));
+    assert.equal(isItemSoldOut(sized, extrasOut), false);
+    assert.equal(isItemSoldOut(item('plain', 'c1', 'Agua'), OPTIONS), false);
+  });
+});
+
 describe('item options', () => {
   const choices = itemChoices(OPTIONS, ITEM);
 
@@ -51,6 +69,12 @@ describe('item options', () => {
     assert.deepEqual(choices.sizes.map((o) => o.id), ['medium', 'large']);
     assert.deepEqual(choices.extras.map((o) => o.id), ['vanilla']);
     assert.deepEqual(defaultOptionIds(choices), ['medium']);
+  });
+
+  it('lists sold-out options too for the dashboard', () => {
+    const all = itemChoices(OPTIONS, ITEM, { includeSoldOut: true });
+    const shown = all.sizes.length + all.extras.length;
+    assert.equal(shown, OPTIONS.filter((o) => o.item_id === ITEM).length);
   });
 
   it('keeps one size and toggles extras', () => {

@@ -79,6 +79,18 @@ export function parseLempiras(raw: string): number | null {
   return cents <= MENU_LIMITS.maxPriceCents ? cents : null;
 }
 
+/**
+ * Turns a typed option price change into cents: "10" or "+10" adds L 10, "-5" takes off L 5 and an
+ * empty field means no change. Returns null when it is not a price with at most two decimals.
+ */
+export function parsePriceChange(raw: string): number | null {
+  const text = raw.trim().replace(/^L\.?\s*/i, '');
+  if (!text) return 0;
+  const sign = text.startsWith('-') ? -1 : 1;
+  const cents = parseLempiras(text.replace(/^[+-]\s*/, ''));
+  return cents === null ? null : sign * cents || 0;
+}
+
 /** Cents as an editable price field value: 5550 -> "55.50". */
 export function lempirasInput(cents: number): string {
   return (cents / 100).toFixed(2);

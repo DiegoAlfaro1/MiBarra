@@ -1,4 +1,5 @@
 // Pure checkout rules shared by the phone and web checkout screens. Copy is Spanish.
+import type { PickupSlotOption } from '@mibarra/shared';
 import { validateCard, type CardInput, type FieldErrors } from './validation.ts';
 
 export type PaymentMethod = 'counter' | 'card';
@@ -13,10 +14,31 @@ export interface PickupSlot {
   label: string;
   sub: string;
   full?: boolean;
+  /** ISO start of a real slot; absent for "as soon as possible" and sample slots. */
+  start?: string;
 }
 
 export function isSlotFull(slot: PickupSlot): boolean {
   return slot.full === true;
+}
+
+export const ASAP_SLOT: PickupSlot = { id: 'asap', label: 'Lo antes posible', sub: '~10 min' };
+
+/** Shown when a specific time is chosen: the order is held, not started, until that slot. */
+export const SCHEDULED_NOTICE =
+  'Si eliges una hora, la cafetería no empezará a preparar tu pedido hasta ese horario.';
+
+/** "Lo antes posible" first, then the shop's slots (full ones stay visible but disabled). */
+export function slotChoices(shopSlots: readonly PickupSlotOption[], label: (startIso: string) => string): PickupSlot[] {
+  return [
+    ASAP_SLOT,
+    ...shopSlots.map((s) => ({ id: s.start, start: s.start, label: label(s.start), sub: s.full ? 'Lleno' : '', full: s.full })),
+  ];
+}
+
+/** ISO time to send to `place-order`; undefined means prepare right away. */
+export function pickupTimeFor(slot: PickupSlot | undefined): string | undefined {
+  return slot?.start;
 }
 
 export function pickupLabelFor(slot: PickupSlot): string {
@@ -64,6 +86,9 @@ export function orderItemsFromCart(lines: readonly OrderLine[]): OrderLine[] {
 
 // Messages written by `place_order` / `place-order` for users, shown in Spanish.
 const ORDER_ERRORS: [RegExp, string][] = [
+  [/pickup time is full/i, 'Ese horario se llenó. Elige otro o pide lo antes posible.'],
+  [/closed at that pickup time/i, 'La cafetería estará cerrada a esa hora. Elige otro horario.'],
+  [/pickup time must be/i, 'Ese horario ya pasó. Elige otro o pide lo antes posible.'],
   [/shop is closed/i, 'La cafetería está cerrada en este momento. Tu carrito sigue guardado.'],
   [/products are not available|products are sold out/i,'Uno de los productos ya no está disponible. Revisa tu carrito.'],
   [/options are not available|Invalid options/i, 'Una de las opciones ya no está disponible. Revisa tu carrito.'],

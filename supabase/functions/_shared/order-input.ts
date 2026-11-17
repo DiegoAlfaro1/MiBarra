@@ -6,6 +6,8 @@ export interface ValidOrderInput {
   idempotencyKey: string;
   /** Optional note for the shop, trimmed; null when empty. */
   note: string | null;
+  /** ISO timestamp of the chosen pickup slot; null means prepare as soon as possible. */
+  pickupTime: string | null;
 }
 
 export type ValidationResult = { ok: true; value: ValidOrderInput } | { ok: false; error: string };
@@ -22,7 +24,7 @@ export function validateOrderInput(body: unknown): ValidationResult {
   if (typeof body !== 'object' || body === null) {
     return { ok: false, error: 'Invalid request.' };
   }
-  const { shopId, items, idempotencyKey, note } = body as Record<string, unknown>;
+  const { shopId, items, idempotencyKey, note, pickupTime } = body as Record<string, unknown>;
 
   if (!isUuid(shopId)) return { ok: false, error: 'Please choose a shop.' };
   if (!isUuid(idempotencyKey)) return { ok: false, error: 'Missing order reference. Please try again.' };
@@ -50,5 +52,13 @@ export function validateOrderInput(body: unknown): ValidationResult {
   const trimmed = typeof note === 'string' ? note.trim() : '';
   if (trimmed.length > MAX_NOTE) return { ok: false, error: `The note can have at most ${MAX_NOTE} characters.` };
 
-  return { ok: true, value: { shopId, items: parsed, idempotencyKey, note: trimmed || null } };
+  let pickup: string | null = null;
+  if (pickupTime !== undefined && pickupTime !== null) {
+    if (typeof pickupTime !== 'string' || Number.isNaN(Date.parse(pickupTime))) {
+      return { ok: false, error: 'Invalid pickup time.' };
+    }
+    pickup = new Date(pickupTime).toISOString();
+  }
+
+  return { ok: true, value: { shopId, items: parsed, idempotencyKey, note: trimmed || null, pickupTime: pickup } };
 }

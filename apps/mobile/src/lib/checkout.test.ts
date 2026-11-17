@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { isSlotFull, ORDER_RETRY_MESSAGE, orderCode, orderErrorMessage, orderItemsFromCart, pickupLabelFor, validateCheckout, validateContact } from './checkout.ts';
+import { ASAP_SLOT, isSlotFull, pickupTimeFor, slotChoices, ORDER_RETRY_MESSAGE, orderCode, orderErrorMessage, orderItemsFromCart, pickupLabelFor, validateCheckout, validateContact } from './checkout.ts';
 
 const now = new Date(2026, 10, 13);
 const asap = { id: 'asap', label: 'Lo antes posible', sub: '~10 min' };
@@ -75,5 +75,27 @@ describe('placing a real order', () => {
 
   it('builds a short pickup code from the order id', () => {
     assert.equal(orderCode('3f1c2a9e-8b7d-4c6e-9f10-112233445566'), '#3F1C');
+  });
+});
+
+describe('scheduled pickup', () => {
+  const shopSlots = [
+    { start: '2026-11-18T15:20:00Z', taken: 1, capacity: 5, full: false },
+    { start: '2026-11-18T15:30:00Z', taken: 5, capacity: 5, full: true },
+  ];
+  const choices = slotChoices(shopSlots, () => '9:20 a. m.');
+  it('always offers "as soon as possible" first, and keeps full slots visible but blocked', () => {
+    assert.equal(choices[0], ASAP_SLOT);
+    assert.equal(choices.length, 3);
+    assert.equal(isSlotFull(choices[2]!), true);
+    assert.ok(validateCheckout({ ...base, slot: choices[2] }, now).slot);
+  });
+  it('sends a pickup time only for a chosen slot', () => {
+    assert.equal(pickupTimeFor(ASAP_SLOT), undefined);
+    assert.equal(pickupTimeFor(choices[1]), '2026-11-18T15:20:00Z');
+  });
+  it('explains full and closed pickup times', () => {
+    assert.match(orderErrorMessage('That pickup time is full.'), /se llenó/);
+    assert.match(orderErrorMessage('The shop is closed at that pickup time.'), /cerrada a esa hora/);
   });
 });

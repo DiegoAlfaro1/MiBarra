@@ -1,12 +1,14 @@
-import { loadShopMenu, soldOutLines, soldOutMessage } from '@mibarra/shared';
+import { listPickupSlots, loadShopMenu, slotClockLabel, soldOutLines, soldOutMessage, type PickupSlotOption } from '@mibarra/shared';
 import { router } from 'expo-router';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { PICKUP_SLOTS, SHOPS } from '../data/mock';
 import { useAppState } from '../state/AppState';
 import { cartTotalCents } from './cart';
 import {
   orderCode,
+  pickupTimeFor,
+  slotChoices,
   orderErrorMessage,
   orderItemsFromCart,
   pickupLabelFor,
@@ -49,7 +51,27 @@ export function useCheckout() {
   const { shop: cartShop, loading: loadingShop } = useCartShop(cart.shopId);
   const sample = SHOPS.find((s) => s.id === cart.shopId);
   const shop: CheckoutShop | undefined = cartShop ? { ...cartShop, area: sample?.area } : undefined;
-  const slot = (PICKUP_SLOTS as readonly PickupSlot[]).find((s) => s.id === slotId);
+  const live = shop?.live ?? false;
+  const shopId = shop?.id;
+  // Slots are loaded per shop; a result for another shop (or none yet) counts as still loading.
+  const [loaded, setLoaded] = useState<{ shopId: string; slots: PickupSlotOption[]; failed: boolean } | null>(null);
+  useEffect(() => {
+    if (!live || !shopId) return;
+    let cancelled = false;
+    listPickupSlots(supabase, shopId)
+      .then((found) => !cancelled && setLoaded({ shopId, slots: found, failed: false }))
+      .catch(() => !cancelled && setLoaded({ shopId, slots: [], failed: true }));
+    return () => {
+      cancelled = true;
+    };
+  }, [live, shopId]);
+  const ready = loaded?.shopId === shopId ? loaded : null;
+  const shopSlots = ready?.slots ?? [];
+  const slotsLoading = live && !!shopId && !ready;
+  const slotsError = ready?.failed ?? false;
+  const slots: readonly PickupSlot[] = live ? slotChoices(shopSlots, slotClockLabel) : PICKUP_SLOTS;
+  // A slot that disappeared (it filled up or passed) falls back to "as soon as possible".
+  const slot = slots.find((s) => s.id === slotId) ?? slots[0];
   const total = cartTotalCents(cart.lines);
   const pickupLabel = slot ? pickupLabelFor(slot) : '';
 
@@ -99,7 +121,7 @@ export function useCheckout() {
       checkoutKey.current ??= newCheckoutKey();
       try {
         const order = await submitOrder(
-          { shopId: shop.id, items: orderItemsFromCart(cart.lines), note: cart.note.trim() || undefined },
+          { shopId: shop.id, items: orderItemsFromCart(cart.lines), note: cart.note.trim() || undefined, pickupTime: pickupTimeFor(slot) },
           checkoutKey.current,
         );
         code = orderCode(order.id);
@@ -135,8 +157,12 @@ export function useCheckout() {
     pickupLabel,
     loadingShop,
     isEmpty: !cart.lines.length || (!shop && !loadingShop),
-    slotId,
+    slotId: slot?.id ?? slotId,
     setSlotId,
+    slots,
+    slotsLoading,
+    slotsError,
+    scheduled: !!slot?.start,
     payment,
     choosePayment,
     card: { number, expiry, cvv, setNumber, setExpiry, setCvv },

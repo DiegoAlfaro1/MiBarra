@@ -136,6 +136,8 @@ export interface PlaceOrderInput {
   items: OrderItemInput[];
   /** Optional note for the shop (at most 280 characters). */
   note?: string;
+  /** ISO timestamp of a pickup slot from `listPickupSlots`; leave out to prepare as soon as possible. */
+  pickupTime?: string;
 }
 
 /** Links a staff login to a shop with a role. Removing someone sets `active` to false. */

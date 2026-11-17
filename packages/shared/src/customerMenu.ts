@@ -52,6 +52,17 @@ export function itemChoices(options: readonly ItemOption[], itemId: string, { in
   };
 }
 
+/**
+ * True when customers cannot order the item: it is marked sold out, or it has sizes and every
+ * one of them is sold out (a size is required, so there is nothing left to pick).
+ * `place_order` enforces the same rule (see `check_order_item_size`).
+ */
+export function isItemSoldOut(item: Pick<MenuItem, 'id' | 'available'>, options: readonly ItemOption[]): boolean {
+  if (!item.available) return true;
+  const sizes = options.filter((o) => o.item_id === item.id && o.kind === 'size');
+  return sizes.length > 0 && sizes.every((s) => !s.available);
+}
+
 /** Starts with the cheapest size and no extras. */
 export function defaultOptionIds(choices: ItemChoices): string[] {
   return choices.sizes[0] ? [choices.sizes[0].id] : [];

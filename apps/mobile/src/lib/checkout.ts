@@ -65,8 +65,9 @@ export function orderItemsFromCart(lines: readonly OrderLine[]): OrderLine[] {
 // Messages written by `place_order` / `place-order` for users, shown in Spanish.
 const ORDER_ERRORS: [RegExp, string][] = [
   [/shop is closed/i, 'La cafetería está cerrada en este momento. Tu carrito sigue guardado.'],
-  [/products are not available/i, 'Uno de los productos ya no está disponible. Revisa tu carrito.'],
+  [/products are not available|products are sold out/i,'Uno de los productos ya no está disponible. Revisa tu carrito.'],
   [/options are not available|Invalid options/i, 'Una de las opciones ya no está disponible. Revisa tu carrito.'],
+  [/only one size/i, 'Elige un solo tamaño para cada producto de tu carrito.'],
   [/size for each item/i, 'Elige un tamaño para cada producto de tu carrito.'],
   [/sign in/i, 'Inicia sesión para hacer tu pedido.'],
   [/note/i, 'La nota es demasiado larga.'],

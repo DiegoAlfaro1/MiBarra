@@ -2,6 +2,7 @@ import { Feather } from '@expo/vector-icons';
 import {
   defaultOptionIds,
   describeOptions,
+  isItemSoldOut,
   itemChoices,
   optionChoiceError,
   toggleOption,
@@ -44,7 +45,7 @@ export function LiveItem({ itemId, lineId }: { itemId: string; lineId?: string }
       </Screen>
     );
   }
-  if (!loaded.data || !loaded.data.item.available) {
+  if (!loaded.data || isItemSoldOut(loaded.data.item, loaded.data.options)) {
     return (
       <Screen header={header}>
         <EmptyState

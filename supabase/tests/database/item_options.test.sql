@@ -160,13 +160,13 @@ select is((select unit_price_cents from public.order_items oi join public.orders
            where o.idempotency_key = '89000000-0000-4000-8000-000000000001'), 8700,
   'the order line stores the unit price with its options');
 
--- When every size is sold out, the item can still be ordered without one.
+-- When every size is sold out, the item cannot be ordered.
 update public.item_options set available = false
 where item_id = '69000000-0000-4000-8000-00000000000a' and kind = 'size';
 select tests.login('39000000-0000-4000-8000-00000000000e');
-select lives_ok($$ select public.place_order('19000000-0000-4000-8000-00000000000a',
+select throws_ok($$ select public.place_order('19000000-0000-4000-8000-00000000000a',
     '[{"productId":"69000000-0000-4000-8000-00000000000a","quantity":1}]', gen_random_uuid()) $$,
-  'an item whose sizes are all sold out can be ordered without a size');
+  '22023', 'Some products are sold out.', 'an item whose sizes are all sold out cannot be ordered');
 
 select tests.logout();
 select * from finish();

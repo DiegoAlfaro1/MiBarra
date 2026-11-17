@@ -15,6 +15,8 @@ Rules for the stories that follow:
 
 - Money is integer cents. Forms convert to cents before calling these functions.
 - Permissions are enforced by RLS and SQL functions (see `access-control.md`): managers and owners edit the menu, baristas only toggle sold out via `setItemAvailable` / `setOptionAvailable`.
+- The dashboard "Menú" tab (`apps/dashboard/app/menu.tsx`) is the live sold-out screen for every staff role: one switch per item and one per size/extra (`setItemAvailable` / `setOptionAvailable`).
+- An item whose sizes are all sold out cannot be ordered (`isItemSoldOut` in `customerMenu.ts`; the app shows "Agotado hoy" and `check_order_item_size()` rejects the order with "Some products are sold out.").
 - Items with past orders cannot be deleted; `deleteItem` tells the user to mark them sold out instead.
 - The app screens stay in `apps/dashboard`; they call these functions with the `supabase` client from `apps/dashboard/src/lib/supabase.ts`.
 - Item photos can be uploaded from "Editar menú" (Subir foto) or pasted as an http(s) link; either way `photo_url` holds an http(s) link and the database refuses anything else. Logos are still links only.

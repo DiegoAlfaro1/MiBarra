@@ -7,7 +7,8 @@
 --   1. an option name is unique per item and kind (case and outer spaces ignored),
 --   2. names cannot be blank and price changes stay within the menu price limit,
 --   3. an order line must carry exactly one size when its item has sizes on sale, so a
---      customer can never skip the size (and its price change) or pay for two sizes.
+--      customer can never skip the size (and its price change) or pay for two sizes. When every
+--      size is sold out the item cannot be ordered at all.
 
 -- ---------------------------------------------------------------------------
 -- 1 + 2. Option constraints
@@ -46,11 +47,14 @@ begin
   if v_sizes_chosen > 1 then
     raise exception 'Choose only one size for each item.' using errcode = '22023';
   end if;
-  if v_sizes_chosen = 0 and exists (
-    select 1 from public.item_options o
-    where o.item_id = new.item_id and o.kind = 'size' and o.available
-  ) then
-    raise exception 'Choose a size for each item.' using errcode = '22023';
+  if v_sizes_chosen = 0 then
+    if exists (select 1 from public.item_options o where o.item_id = new.item_id and o.kind = 'size' and o.available) then
+      raise exception 'Choose a size for each item.' using errcode = '22023';
+    end if;
+    -- The item has sizes but all are sold out: there is nothing to pick, so it cannot be ordered.
+    if exists (select 1 from public.item_options o where o.item_id = new.item_id and o.kind = 'size') then
+      raise exception 'Some products are sold out.' using errcode = '22023';
+    end if;
   end if;
   return new;
 end;

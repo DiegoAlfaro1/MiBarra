@@ -1,8 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { PICKUP_SLOTS } from '../data/mock';
 import { formatLempiras } from '../lib/format';
-import { isSlotFull, PAYMENTS, type PickupSlot } from '../lib/checkout';
+import { PAYMENTS, SCHEDULED_NOTICE } from '../lib/checkout';
 import type { Checkout } from '../lib/useCheckout';
 import { AppText, Banner, Card, Chip, DemoBadge, Field, t } from './ui';
 
@@ -15,19 +14,35 @@ export function SlotSection({ c }: { c: Checkout }) {
         ¿Cuándo pasas por él?
       </AppText>
       <View style={styles.slots}>
-        {(PICKUP_SLOTS as readonly PickupSlot[]).map((s) => (
+        {c.slots.map((s) => (
           <View key={s.id} style={styles.slot}>
             <Chip
               label={s.label}
-              sub={isSlotFull(s) ? 'Lleno' : s.sub || undefined}
+              sub={s.sub || undefined}
               selected={c.slotId === s.id}
-              disabled={isSlotFull(s)}
               onPress={() => c.setSlotId(s.id)}
               minHeight={58}
             />
           </View>
         ))}
       </View>
+      {c.slotsLoading ? (
+        <AppText variant="caption" color={t.colors.textMuted} accessibilityLiveRegion="polite">
+          Cargando horarios…
+        </AppText>
+      ) : null}
+      {c.slotsError ? (
+        <AppText variant="caption" color={t.colors.textDanger} accessibilityRole="alert">
+          No pudimos cargar los horarios. Puedes pedir lo antes posible.
+        </AppText>
+      ) : null}
+      {c.scheduled ? (
+        <View accessibilityLiveRegion="polite">
+          <Banner tone="warning" icon="info">
+            {SCHEDULED_NOTICE}
+          </Banner>
+        </View>
+      ) : null}
       {c.errors.slot ? (
         <AppText variant="caption" color={t.colors.textDanger} accessibilityRole="alert">
           {c.errors.slot}

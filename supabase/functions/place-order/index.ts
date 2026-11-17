@@ -35,6 +35,7 @@ Deno.serve(async (req) => {
     p_shop_id: input.value.shopId,
     p_items: input.value.items,
     p_idempotency_key: input.value.idempotencyKey,
+    p_pickup_time: input.value.pickupTime,
     p_note: input.value.note,
   });
 

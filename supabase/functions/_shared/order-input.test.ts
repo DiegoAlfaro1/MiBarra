@@ -15,7 +15,7 @@ function errorOf(body: unknown): string | undefined {
 
 test('accepts a valid order and strips unknown fields', () => {
   const result = validateOrderInput({ ...valid, items: [{ productId: PRODUCT, quantity: 2, price: 1 }], extra: 1 });
-  assert.deepEqual(result, { ok: true, value: { ...valid, note: null } });
+  assert.deepEqual(result, { ok: true, value: { ...valid, note: null, pickupTime: null } });
 });
 
 test('rejects non-object bodies', () => {
@@ -44,7 +44,7 @@ test('rejects invalid items', () => {
 test('passes valid option ids through and rejects malformed ones', () => {
   const OPTION = '00000000-0000-4000-8000-0000000000bb';
   const withOptions = { ...valid, items: [{ productId: PRODUCT, quantity: 1, optionIds: [OPTION] }] };
-  assert.deepEqual(validateOrderInput(withOptions), { ok: true, value: { ...withOptions, note: null } });
+  assert.deepEqual(validateOrderInput(withOptions), { ok: true, value: { ...withOptions, note: null, pickupTime: null } });
   assert.match(errorOf({ ...valid, items: [{ productId: PRODUCT, quantity: 1, optionIds: ['x'] }] }) ?? '', /option/);
   assert.match(errorOf({ ...valid, items: [{ productId: PRODUCT, quantity: 1, optionIds: 'x' }] }) ?? '', /option/);
 });
@@ -56,4 +56,13 @@ test('trims the note and rejects long or non-text notes', () => {
   assert.equal(blank.ok && blank.value.note, null);
   assert.match(errorOf({ ...valid, note: 'x'.repeat(281) }) ?? '', /at most 280/);
   assert.equal(errorOf({ ...valid, note: 5 }), 'Invalid note.');
+});
+
+test('pickup time is optional and must be a valid date', () => {
+  const asap = validateOrderInput({ ...valid, pickupTime: null });
+  assert.equal(asap.ok && asap.value.pickupTime, null);
+  const slot = validateOrderInput({ ...valid, pickupTime: '2026-11-18T15:20:00Z' });
+  assert.equal(slot.ok && slot.value.pickupTime, '2026-11-18T15:20:00.000Z');
+  assert.equal(validateOrderInput({ ...valid, pickupTime: 'mañana' }).ok, false);
+  assert.equal(validateOrderInput({ ...valid, pickupTime: 12 }).ok, false);
 });

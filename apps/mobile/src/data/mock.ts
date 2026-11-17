@@ -114,7 +114,7 @@ export const PICKUP_SLOTS = [
   { id: 'asap', label: 'Lo antes posible', sub: '~10 min' },
   { id: '0920', label: '9:20 a. m.', sub: '' },
   { id: '0930', label: '9:30 a. m.', sub: '' },
-  { id: '0940', label: '9:40 a. m.', sub: 'Lleno', full: true },
+  { id: '0940', label: '9:40 a. m.', sub: '' },
   { id: '0950', label: '9:50 a. m.', sub: '' },
   { id: '1000', label: '10:00 a. m.', sub: '' },
 ] as const;

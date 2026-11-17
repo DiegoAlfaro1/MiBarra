@@ -73,15 +73,14 @@ function ItemRow({ item, soldOut, canOrder }: { item: MenuItem; soldOut: boolean
             {item.description}
           </AppText>
         ) : null}
-        {!soldOut ? (
-          <AppText variant="number" color={dim ? t.colors.textMuted : t.colors.text}>
-            {price}
-          </AppText>
-        ) : (
+        <AppText variant="number" color={dim ? t.colors.textMuted : t.colors.text}>
+          {price}
+        </AppText>
+        {soldOut ? (
           <AppText variant="overline" color={t.colors.textDanger}>
             Agotado hoy
           </AppText>
-        )}
+        ) : null}
       </View>
     </>
   );
@@ -91,7 +90,7 @@ function ItemRow({ item, soldOut, canOrder }: { item: MenuItem; soldOut: boolean
       <View
         accessible
         accessibilityState={{ disabled: true }}
-        accessibilityLabel={!soldOut ? `${item.name}, ${price}` : `${item.name}. Agotado hoy`}
+        accessibilityLabel={!soldOut ? `${item.name}, ${price}` : `${item.name}, ${price}. Agotado hoy`}
         style={[styles.row, styles.dim]}
       >
         {body(true)}

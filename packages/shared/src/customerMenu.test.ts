@@ -47,20 +47,21 @@ describe('menu sections', () => {
   });
 });
 
-describe('hiding sold-out items from customers', () => {
+describe('sold-out items in the customer menu', () => {
   const noSizes = OPTIONS.map((o) => (o.kind === 'size' ? { ...o, available: false } : o));
 
-  it('leaves sold-out items out of the sections', () => {
-    const gone = { ...item('i2', 'c1', 'Latte'), available: false };
-    const sections = menuSections({ categories: [category('c1', 'Café', 1)], items: [item('i1', 'c1', 'Espresso'), gone], options: [] });
-    assert.deepEqual(sections[0]!.items.map((i) => i.id), ['i1']);
-    assert.deepEqual(menuSections({ categories: [category('c1', 'Café', 1)], items: [gone], options: [] }), []);
+  it('keeps sold-out items in the sections, after the ones in stock', () => {
+    const gone = { ...item('i0', 'c1', 'Americano'), available: false };
+    const sections = menuSections({ categories: [category('c1', 'Café', 1)], items: [gone, item('i2', 'c1', 'Latte'), item('i1', 'c1', 'Espresso')], options: [] });
+    assert.deepEqual(sections[0]!.items.map((i) => i.id), ['i1', 'i2', 'i0']);
+    assert.equal(menuSections({ categories: [category('c1', 'Café', 1)], items: [gone], options: [] }).length, 1);
   });
 
-  it('also leaves out items whose sizes are all sold out', () => {
-    const items = [item('i1', 'c1', 'Espresso'), item(ITEM, 'c1', 'Latte')];
+  it('treats items whose sizes are all sold out as sold out, listed last', () => {
+    const items = [item(ITEM, 'c1', 'Americano'), item('i1', 'c1', 'Latte')];
     const sections = menuSections({ categories: [category('c1', 'Café', 1)], items, options: noSizes });
-    assert.deepEqual(sections[0]!.items.map((i) => i.id), ['i1']);
+    assert.deepEqual(sections[0]!.items.map((i) => i.id), ['i1', ITEM]);
+    assert.equal(isItemSoldOut(items[0]!, noSizes), true);
   });
 
   it('finds cart lines whose item is sold out or no longer listed', () => {

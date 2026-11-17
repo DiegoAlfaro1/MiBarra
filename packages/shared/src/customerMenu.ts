@@ -18,8 +18,8 @@ export interface MenuSection {
 const byOrderThenName = (a: MenuCategory, b: MenuCategory) => a.sort_order - b.sort_order || a.name.localeCompare(b.name, 'es');
 
 /**
- * Categories in the owner's order, each with its in-stock items by name (see `isItemSoldOut`).
- * Empty categories are left out.
+ * Categories in the owner's order, each with its items by name; sold-out items (see `isItemSoldOut`)
+ * stay in the list but come after the ones in stock, so the screen can mark them. Empty categories are left out.
  */
 export function menuSections(data: MenuData): MenuSection[] {
   return [...data.categories]
@@ -27,8 +27,11 @@ export function menuSections(data: MenuData): MenuSection[] {
     .map((category) => ({
       category,
       items: data.items
-        .filter((item) => item.category_id === category.id && !isItemSoldOut(item, data.options))
-        .sort((a, b) => a.name.localeCompare(b.name, 'es')),
+        .filter((item) => item.category_id === category.id)
+        .sort(
+          (a, b) =>
+            Number(isItemSoldOut(a, data.options)) - Number(isItemSoldOut(b, data.options)) || a.name.localeCompare(b.name, 'es'),
+        ),
     }))
     .filter((section) => section.items.length > 0);
 }

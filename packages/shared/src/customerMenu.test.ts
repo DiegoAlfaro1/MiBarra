@@ -9,6 +9,8 @@ import {
   itemChoices,
   loadShopMenu,
   menuSections,
+  soldOutLines,
+  soldOutMessage,
   optionChoiceError,
   toggleOption,
   unitPriceWithOptions,
@@ -45,7 +47,46 @@ describe('menu sections', () => {
   });
 });
 
-describe('sold out items', () => {
+describe('hiding sold-out items from customers', () => {
+  const noSizes = OPTIONS.map((o) => (o.kind === 'size' ? { ...o, available: false } : o));
+
+  it('leaves sold-out items out of the sections', () => {
+    const gone = { ...item('i2', 'c1', 'Latte'), available: false };
+    const sections = menuSections({ categories: [category('c1', 'Café', 1)], items: [item('i1', 'c1', 'Espresso'), gone], options: [] });
+    assert.deepEqual(sections[0]!.items.map((i) => i.id), ['i1']);
+    assert.deepEqual(menuSections({ categories: [category('c1', 'Café', 1)], items: [gone], options: [] }), []);
+  });
+
+  it('also leaves out items whose sizes are all sold out', () => {
+    const items = [item('i1', 'c1', 'Espresso'), item(ITEM, 'c1', 'Latte')];
+    const sections = menuSections({ categories: [category('c1', 'Café', 1)], items, options: noSizes });
+    assert.deepEqual(sections[0]!.items.map((i) => i.id), ['i1']);
+  });
+
+  it('finds cart lines whose item is sold out or no longer listed', () => {
+    const menu = { items: [item('i1', 'c1', 'Espresso'), { ...item('i2', 'c1', 'Latte'), available: false }], options: [] };
+    const lines = [
+      { productId: 'i1', name: 'Espresso' },
+      { productId: 'i2', name: 'Latte' },
+      { productId: 'i3', name: 'Croissant' },
+    ];
+    assert.deepEqual(soldOutLines(lines, menu).map((l) => l.name), ['Latte', 'Croissant']);
+    assert.deepEqual(soldOutLines([lines[0]!], menu), []);
+  });
+
+  it('finds cart lines whose item has every size sold out', () => {
+    const lines = [{ productId: ITEM, name: 'Latte' }];
+    assert.deepEqual(soldOutLines(lines, { items: [item(ITEM, 'c1', 'Latte')], options: noSizes }).map((l) => l.name), ['Latte']);
+    assert.deepEqual(soldOutLines(lines, { items: [item(ITEM, 'c1', 'Latte')], options: OPTIONS }), []);
+  });
+
+  it('words the notice for one or several items', () => {
+    assert.match(soldOutMessage(['Latte']), /Latte se agotó/);
+    assert.match(soldOutMessage(['Latte', 'Croissant']), /Latte, Croissant/);
+  });
+});
+
+describe('isItemSoldOut', () => {
   const sized = item(ITEM, 'c1', 'Latte');
   it('is orderable while at least one size is on sale', () => {
     assert.equal(isItemSoldOut(sized, OPTIONS), false);

@@ -21,8 +21,8 @@ type Load = { status: 'loading' } | { status: 'error'; message: string } | { sta
 
 /**
  * Sold-out switches for every staff role (baristas included). One tap marks a whole item or one of
- * its sizes/extras as sold out; customers see it right away. An item whose sizes are all sold out
- * cannot be ordered, and is shown as sold out here too.
+ * its sizes/extras as sold out; customers stop seeing it right away. An item whose sizes are all sold
+ * out cannot be ordered, and is shown as sold out here too.
  */
 export default function MenuAvailability() {
   const { access } = useAuth();
@@ -69,7 +69,7 @@ export default function MenuAvailability() {
       <View style={styles.head}>
         <View style={{ flexShrink: 1, gap: 4 }}>
           <Text accessibilityRole="header" style={typography.h1}>¿Qué hay hoy?</Text>
-          <Text style={styles.sub}>Un toque marca un producto como agotado. Los clientes lo ven en gris al instante.</Text>
+          <Text style={styles.sub}>Un toque marca un producto como agotado. Los clientes dejan de verlo y no pueden pedirlo hasta que lo vuelvas a activar.</Text>
         </View>
         {menu ? <Text style={styles.pill} accessibilityLiveRegion="polite">{soldOutCount} agotados</Text> : null}
       </View>

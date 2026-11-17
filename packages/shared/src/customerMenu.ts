@@ -17,14 +17,17 @@ export interface MenuSection {
 
 const byOrderThenName = (a: MenuCategory, b: MenuCategory) => a.sort_order - b.sort_order || a.name.localeCompare(b.name, 'es');
 
-/** Categories in the owner's order, each with its items by name. Empty categories are left out. */
+/**
+ * Categories in the owner's order, each with its in-stock items by name (see `isItemSoldOut`).
+ * Empty categories are left out.
+ */
 export function menuSections(data: MenuData): MenuSection[] {
   return [...data.categories]
     .sort(byOrderThenName)
     .map((category) => ({
       category,
       items: data.items
-        .filter((item) => item.category_id === category.id)
+        .filter((item) => item.category_id === category.id && !isItemSoldOut(item, data.options))
         .sort((a, b) => a.name.localeCompare(b.name, 'es')),
     }))
     .filter((section) => section.items.length > 0);
@@ -104,6 +107,19 @@ export function unitPriceWithOptions(item: Pick<MenuItem, 'price_cents'>, choice
 export function describeOptions(item: Pick<MenuItem, 'description'>, choices: ItemChoices, chosen: readonly string[]): string {
   const names = chosenOptions(choices, chosen).map((o) => o.name);
   return names.length ? names.join(' · ') : (item.description ?? '');
+}
+
+/** Cart lines whose item is no longer in stock (hidden, marked sold out or every size sold out) in the freshly loaded menu. */
+export function soldOutLines<T extends { productId: string; name: string }>(lines: readonly T[], menu: Pick<MenuData, 'items' | 'options'>): T[] {
+  const inStock = new Set(menu.items.filter((i) => !isItemSoldOut(i, menu.options)).map((i) => i.id));
+  return lines.filter((l) => !inStock.has(l.productId));
+}
+
+export function soldOutMessage(names: readonly string[]): string {
+  const list = [...new Set(names)].join(', ');
+  return names.length > 1
+    ? `Estos productos se agotaron y los quitamos de tu carrito: ${list}. Revisa tu pedido antes de continuar.`
+    : `${list} se agotó y lo quitamos de tu carrito. Revisa tu pedido antes de continuar.`;
 }
 
 export class MenuReadError extends Error {

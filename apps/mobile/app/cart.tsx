@@ -1,8 +1,8 @@
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { AppText, BackHeader, Banner, Button, Card, EmptyState, Field, LinkText, Screen, Stepper, t } from '../src/components/ui';
-import { cartTotalCents, lineTotalCents } from '../src/lib/cart';
+import { cartCount, cartTotalCents, lineTotalCents } from '../src/lib/cart';
 import { formatLempiras } from '../src/lib/format';
 import { checkoutRoute } from '../src/lib/access';
 import { useCartShop } from '../src/lib/useCartShop';
@@ -11,6 +11,7 @@ import { useAppState } from '../src/state/AppState';
 export default function CartScreen() {
   const { cart, dispatch, session } = useAppState();
   const { shop, loading } = useCartShop(cart.shopId);
+  const { added } = useLocalSearchParams<{ added?: string }>();
 
   if (cart.lines.length && loading) {
     return (
@@ -38,7 +39,7 @@ export default function CartScreen() {
   const total = cartTotalCents(cart.lines);
   return (
     <Screen
-      header={<BackHeader title="Tu pedido" subtitle={shop.name ? `${shop.name} · Recoger en tienda` : 'Recoger en tienda'} backLabel="Volver al menú" />}
+      header={<BackHeader title={`Tu pedido (${cartCount(cart.lines)})`} subtitle={shop.name ? `${shop.name} · Recoger en tienda` : 'Recoger en tienda'} backLabel="Volver al menú" />}
       footer={
         <>
           <View style={styles.totalRow}>
@@ -49,6 +50,13 @@ export default function CartScreen() {
         </>
       }
     >
+      {added ? (
+        <View accessibilityRole="alert" accessibilityLiveRegion="polite">
+          <Banner tone="success" icon="check-circle">
+            {added}
+          </Banner>
+        </View>
+      ) : null}
       <Card style={styles.lines}>
         {cart.lines.map((line, i) => (
           <View key={line.id} style={[styles.line, i > 0 && styles.divider]}>

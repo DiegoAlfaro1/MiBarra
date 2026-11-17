@@ -80,6 +80,9 @@ const lineKey = (line: CartLine) =>
 export const lineTotalCents = (line: CartLine) => line.unitCents * line.quantity;
 export const cartTotalCents = (lines: readonly CartLine[]) =>
   lines.reduce((sum, line) => sum + lineTotalCents(line), 0);
+/** Confirmation shown on the cart after an item is added, e.g. "2 × Capuchino agregado al carrito". */
+export const addedMessage = (name: string, quantity: number) =>
+  `${quantity} × ${name} ${quantity === 1 ? 'agregado' : 'agregados'} al carrito`;
 export const cartCount = (lines: readonly CartLine[]) => lines.reduce((sum, line) => sum + line.quantity, 0);
 
 export function cartReducer(state: CartState, action: CartAction): CartState {

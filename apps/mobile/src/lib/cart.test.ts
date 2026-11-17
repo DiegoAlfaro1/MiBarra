@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import {
+  addedMessage,
   cartCount,
   cartReducer,
   cartTotalCents,
@@ -110,5 +111,12 @@ describe('clampQty / formatting', () => {
     assert.equal(formatExtra(1500), '+L 15');
     assert.equal(formatExtra(-500), '-L 5');
     assert.throws(() => formatLempiras(1.5), RangeError);
+  });
+});
+
+describe('addedMessage', () => {
+  it('confirms what was added with the right plural', () => {
+    assert.equal(addedMessage('Capuchino', 1), '1 × Capuchino agregado al carrito');
+    assert.equal(addedMessage('Capuchino', 3), '3 × Capuchino agregados al carrito');
   });
 });

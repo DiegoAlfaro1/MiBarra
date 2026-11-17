@@ -16,7 +16,7 @@ import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
 import { MenuPhoto } from '../components/MenuPhoto';
 import { AppText, BackHeader, Banner, Button, Chip, EmptyState, Screen, Stepper, t } from '../components/ui';
-import type { CartLine } from '../lib/cart';
+import { addedMessage, type CartLine } from '../lib/cart';
 import { formatExtra, formatLempiras } from '../lib/format';
 import { useMenuItem } from '../lib/useShops';
 import { useAppState } from '../state/AppState';
@@ -95,7 +95,7 @@ function ItemForm({ detail, lineId, header }: { detail: MenuItemDetail; lineId?:
     };
     dispatch(editing ? { type: 'replace', id: editing.id, line } : { type: 'add', line });
     if (editing) router.back();
-    else router.replace('/cart');
+    else router.replace({ pathname: '/cart', params: { added: addedMessage(item.name, quantity) } });
   };
 
   return (

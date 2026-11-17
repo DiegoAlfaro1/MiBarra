@@ -1,4 +1,4 @@
--- Sold-out items (#46): customers and visitors only see in-stock items, staff see everything and can
+-- Sold-out items (#46, #52): customers and visitors still see sold-out items (the app marks them), staff can
 -- bring an item back, and a sold-out item cannot be ordered. Everything is rolled back.
 begin;
 create extension if not exists pgtap with schema extensions;
@@ -51,16 +51,16 @@ insert into public.menu_items (id, shop_id, category_id, name, price_cents, avai
 insert into public.item_options (item_id, kind, name, price_change_cents) values
   ('69000000-0000-4000-8000-00000000000b', 'size', 'Grande', 1000);
 
--- Visitors and customers only see what is in stock
+-- Visitors and customers see sold-out items too, flagged as unavailable
 select tests.login_anon();
-select is((select count(*)::int from public.menu_items where shop_id = '19000000-0000-4000-8000-00000000000a'), 1,
-  'a visitor only sees in-stock items');
-select is_empty($$ select 1 from public.item_options where item_id = '69000000-0000-4000-8000-00000000000b' $$,
-  'a visitor does not see the options of a sold-out item');
+select is((select count(*)::int from public.menu_items where shop_id = '19000000-0000-4000-8000-00000000000a'), 2,
+  'a visitor sees in-stock and sold-out items');
+select isnt_empty($$ select 1 from public.item_options where item_id = '69000000-0000-4000-8000-00000000000b' $$,
+  'a visitor sees the options of a sold-out item');
 
 select tests.login('39000000-0000-4000-8000-00000000000c');
-select is_empty($$ select 1 from public.menu_items where id = '69000000-0000-4000-8000-00000000000b' $$,
-  'a customer does not see a sold-out item');
+select is((select available from public.menu_items where id = '69000000-0000-4000-8000-00000000000b'), false,
+  'a customer sees a sold-out item marked as not available');
 select throws_ok(
   $$ select public.place_order('19000000-0000-4000-8000-00000000000a',
        '[{"productId":"69000000-0000-4000-8000-00000000000b","quantity":1}]'::jsonb, gen_random_uuid()) $$,
@@ -74,8 +74,8 @@ select is((select available from public.set_item_available('69000000-0000-4000-8
   'staff can mark an item as sold out');
 
 select tests.login('39000000-0000-4000-8000-00000000000c');
-select is_empty($$ select 1 from public.menu_items where id = '69000000-0000-4000-8000-00000000000a' $$,
-  'the customer stops seeing the item right away');
+select is((select available from public.menu_items where id = '69000000-0000-4000-8000-00000000000a'), false,
+  'the customer sees the item as sold out right away');
 select throws_ok(
   $$ select public.set_item_available('69000000-0000-4000-8000-00000000000a', true) $$,
   '22023', 'Menu item not found.', 'a customer cannot bring an item back');

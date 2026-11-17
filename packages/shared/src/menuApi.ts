@@ -31,15 +31,16 @@ const GENERIC_ERROR = 'No pudimos guardar los cambios. Revisa tu conexión e int
 const IN_PAST_ORDERS = 'Este producto aparece en pedidos anteriores. Márcalo como agotado en lugar de borrarlo.';
 const DUPLICATE_CATEGORY = 'Ya tienes una categoría con ese nombre.';
 const CATEGORY_NOT_EMPTY = 'Esta categoría todavía tiene productos. Muévelos a otra categoría o bórralos primero.';
+const DUPLICATE_OPTION = 'Este producto ya tiene una opción con ese nombre.';
 
 function unwrap<T>(result: Validation<T, T>): T {
   if (result.ok) return result.value;
   throw new MenuManagementError('Revisa los campos marcados.', result.errors as FieldErrors<Record<string, unknown>>);
 }
 
-function failure(error: { code?: string; message?: string }, stillUsed = IN_PAST_ORDERS): MenuManagementError {
-  // 23505 = unique violation: only category names are unique (per shop).
-  if (error.code === '23505') return new MenuManagementError(DUPLICATE_CATEGORY, { name: DUPLICATE_CATEGORY });
+function failure(error: { code?: string; message?: string }, stillUsed = IN_PAST_ORDERS, duplicate = DUPLICATE_CATEGORY): MenuManagementError {
+  // 23505 = unique violation: category names (per shop) and option names (per item and kind).
+  if (error.code === '23505') return new MenuManagementError(duplicate, { name: duplicate });
   // 23503 = foreign key violation: the row is still referenced (an item with past orders, a category with items).
   if (error.code === '23503') return new MenuManagementError(stillUsed);
   // 42501 = RLS or a role check refused the change.
@@ -109,14 +110,14 @@ export async function deleteItem(client: MenuClient, itemId: string): Promise<vo
 export async function createOption(client: MenuClient, itemId: string, input: OptionInput): Promise<ItemOption> {
   const value = unwrap(validateOptionInput(input));
   const { data, error } = await client.from('item_options').insert({ ...value, item_id: itemId }).select().single();
-  if (error) throw failure(error);
+  if (error) throw failure(error, IN_PAST_ORDERS, DUPLICATE_OPTION);
   return data as ItemOption;
 }
 
 export async function updateOption(client: MenuClient, optionId: string, input: OptionInput): Promise<ItemOption> {
   const value = unwrap(validateOptionInput(input));
   const { data, error } = await client.from('item_options').update(value).eq('id', optionId).select().single();
-  if (error) throw failure(error);
+  if (error) throw failure(error, IN_PAST_ORDERS, DUPLICATE_OPTION);
   return data as ItemOption;
 }
 

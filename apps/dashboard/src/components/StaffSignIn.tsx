@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { useAuth } from '../state/AuthState.tsx';
-import { colors, typography } from '../theme.ts';
+import { bodyFont, colors, typography } from '../theme.ts';
 
 /** Sign-in for shop staff (barista, manager, owner) and platform admins. */
 export function StaffSignIn() {
@@ -66,9 +66,9 @@ export function StaffSignIn() {
 const styles = StyleSheet.create({
   wrap: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 16, minHeight: 600 },
   card: { width: '100%', maxWidth: 420, backgroundColor: colors.surface, borderRadius: 16, padding: 24, gap: 8 },
-  label: { fontSize: 15, fontWeight: '600', color: colors.text, marginTop: 8 },
-  input: { minHeight: 48, borderWidth: 1, borderColor: colors.textMuted, borderRadius: 12, paddingHorizontal: 12, fontSize: 16, color: colors.text },
-  error: { color: '#B3261E', fontSize: 15, fontWeight: '600', marginTop: 8 },
+  label: { fontFamily: bodyFont, fontSize: 15, fontWeight: '600', color: colors.text, marginTop: 8 },
+  input: { minHeight: 48, borderWidth: 1, borderColor: colors.textMuted, borderRadius: 12, paddingHorizontal: 12, fontFamily: bodyFont, fontSize: 16, color: colors.text },
+  error: { color: '#B3261E', fontFamily: bodyFont, fontSize: 15, fontWeight: '600', marginTop: 8 },
   button: { minHeight: 48, marginTop: 16, borderRadius: 12, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
-  buttonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
+  buttonText: { color: '#FFFFFF', fontFamily: bodyFont, fontSize: 16, fontWeight: '700' },
 });

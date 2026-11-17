@@ -5,12 +5,10 @@ import {
   addStamp,
   advanceOrder,
   cancelOrder,
-  countOutOfStock,
   countSoldOut,
   countUnpaid,
   formatLempiras,
   markPaid,
-  menuGroups,
   redeem,
   toggleSoldOut,
   type DashOrder,
@@ -76,16 +74,4 @@ test('formatLempiras groups thousands and rejects bad numbers', () => {
   assert.equal(formatLempiras(2840, 0), 'L 2,840');
   assert.equal(formatLempiras(60), 'L 60.00');
   assert.throws(() => formatLempiras(Number.NaN), RangeError);
-});
-
-test('menuGroups lists every item, sold out ones too, and skips empty categories', () => {
-  const cat = (id: string, name: string, sort_order: number) => ({ id, shop_id: 's', name, sort_order, created_at: '' });
-  const item = (id: string, category_id: string, name: string, available: boolean) => ({
-    id, shop_id: 's', category_id, name, description: null, price_cents: 100, photo_url: null, available, created_at: '',
-  });
-  const items = [item('2', 'c1', 'Latte', false), item('1', 'c1', 'Espresso', true), item('3', 'c3', 'X', true)];
-  const groups = menuGroups({ categories: [cat('c2', 'Vacía', 2), cat('c1', 'Café', 1)], items });
-  assert.deepEqual(groups.map((g) => g.category.name), ['Café']);
-  assert.deepEqual(groups[0]!.items.map((i) => i.name), ['Espresso', 'Latte']);
-  assert.equal(countOutOfStock(items), 1);
 });

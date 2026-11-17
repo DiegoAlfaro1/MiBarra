@@ -1,8 +1,6 @@
 // Pure state transitions for the dashboard UI. No React, so they are easy to test.
 // The UI currently runs on mock data (see src/mock); these rules mirror the design handoff.
 
-import type { MenuCategory, MenuItem } from '@mibarra/shared';
-
 export const STAMPS_PER_CARD = 8;
 
 export type LiveStatus = 'pending' | 'preparing' | 'ready';
@@ -86,19 +84,6 @@ export function toggleSoldOut(sold: Readonly<Record<string, boolean>>, productId
 export function countSoldOut(sold: Readonly<Record<string, boolean>>): number {
   return Object.values(sold).filter(Boolean).length;
 }
-
-/** Categories in the owner's order with every item (in stock or not) by name, for the availability screen. */
-export function menuGroups(menu: { categories: readonly MenuCategory[]; items: readonly MenuItem[] }): { category: MenuCategory; items: MenuItem[] }[] {
-  return [...menu.categories]
-    .sort((a, b) => a.sort_order - b.sort_order || a.name.localeCompare(b.name, 'es'))
-    .map((category) => ({
-      category,
-      items: menu.items.filter((i) => i.category_id === category.id).sort((a, b) => a.name.localeCompare(b.name, 'es')),
-    }))
-    .filter((g) => g.items.length > 0);
-}
-
-export const countOutOfStock = (items: readonly Pick<MenuItem, 'available'>[]): number => items.filter((i) => !i.available).length;
 
 /** Formats whole lempiras for the UI, e.g. `L 2,840.00`. */
 export function formatLempiras(amount: number, decimals = 2): string {

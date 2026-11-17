@@ -108,7 +108,7 @@ export function useCheckout() {
         submitted.current = false;
         setSubmitting(false);
         // It sold out between our check and the order: refresh the cart and name the item.
-        if (e instanceof Error && /products are not available/i.test(e.message) && (await dropSoldOut(shop.id))) return;
+        if (e instanceof Error && /products are not available|products are sold out/i.test(e.message) && (await dropSoldOut(shop.id))) return;
         setSubmitError(orderErrorMessage(e instanceof Error ? e.message : undefined));
         return;
       }

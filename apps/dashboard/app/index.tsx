@@ -6,7 +6,7 @@ import { CANCEL_REASONS, countUnpaid, ordersWithStatus, type LiveStatus } from '
 import { SUMMARY } from '../src/mock/data.ts';
 import { useDashboard } from '../src/state/DashboardState.tsx';
 import { formatLempiras } from '../src/logic/dashboard.ts';
-import { colors, radii, tones, typography } from '../src/theme.ts';
+import { bodyFont, colors, radii, tones, typography } from '../src/theme.ts';
 
 const COLUMNS: { status: LiveStatus; title: string; dot: string }[] = [
   { status: 'pending', title: 'Nuevos', dot: tones.accent.solid },
@@ -68,7 +68,7 @@ export default function LiveOrders() {
         <View style={styles.scrim}>
           <View accessibilityViewIsModal aria-modal style={styles.dialog} accessibilityLabel="Cancelar pedido">
             <Text accessibilityRole="header" style={typography.h2}>Cancelar pedido de {target?.name}</Text>
-            <Text style={{ color: colors.textMuted, fontSize: 15 }}>El cliente verá el motivo en su app.</Text>
+            <Text style={{ color: colors.textMuted, fontFamily: bodyFont, fontSize: 15 }}>El cliente verá el motivo en su app.</Text>
             {CANCEL_REASONS.map((label, i) => (
               <Pressable key={label} accessibilityRole="button" accessibilityState={{ selected: reason === i }} onPress={() => setReason(i)}
                 style={[styles.reason, reason === i && styles.reasonOn]}>
@@ -93,29 +93,29 @@ export default function LiveOrders() {
 const styles = StyleSheet.create({
   page: { paddingBottom: 32 },
   alert: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingHorizontal: 24, paddingVertical: 14, backgroundColor: colors.primary },
-  alertText: { color: colors.onPrimary, fontSize: 18, fontWeight: '700', flexShrink: 1 },
+  alertText: { color: colors.onPrimary, fontFamily: bodyFont, fontSize: 18, fontWeight: '700', flexShrink: 1 },
   alertBtn: { minHeight: 44, paddingHorizontal: 18, borderRadius: radii.control, borderWidth: 2, borderColor: '#FFFFFF', justifyContent: 'center' },
-  alertBtnText: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
-  paused: { paddingHorizontal: 24, paddingVertical: 14, backgroundColor: '#44403C', color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
+  alertBtnText: { color: '#FFFFFF', fontFamily: bodyFont, fontSize: 15, fontWeight: '700' },
+  paused: { paddingHorizontal: 24, paddingVertical: 14, backgroundColor: '#44403C', color: '#FFFFFF', fontFamily: bodyFont, fontSize: 16, fontWeight: '600' },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, paddingHorizontal: 24, paddingTop: 20 },
-  chip: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: radii.control, backgroundColor: colors.surface, fontSize: 15, color: colors.text, overflow: 'hidden' },
+  chip: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: radii.control, backgroundColor: colors.surface, fontFamily: bodyFont, fontSize: 15, color: colors.text, overflow: 'hidden' },
   bold: { fontWeight: '700' },
   columns: { flexDirection: 'row', flexWrap: 'wrap', gap: 16, padding: 24, alignItems: 'flex-start' },
   column: { flexGrow: 1, flexBasis: 300, gap: 12, padding: 14, borderRadius: 20, backgroundColor: colors.border },
   colHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 6, paddingVertical: 4 },
   colTitle: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  colTitleText: { fontSize: 17, fontWeight: '700', color: colors.text },
+  colTitleText: { fontFamily: bodyFont, fontSize: 17, fontWeight: '700', color: colors.text },
   dot: { width: 12, height: 12, borderRadius: 6 },
-  count: { minWidth: 28, height: 28, paddingHorizontal: 8, borderRadius: 14, backgroundColor: colors.surface, textAlign: 'center', lineHeight: 28, fontSize: 14, fontWeight: '700', overflow: 'hidden', color: colors.text },
-  empty: { padding: 20, textAlign: 'center', fontSize: 15, color: colors.textMuted },
+  count: { minWidth: 28, height: 28, paddingHorizontal: 8, borderRadius: 14, backgroundColor: colors.surface, textAlign: 'center', lineHeight: 28, fontFamily: bodyFont, fontSize: 14, fontWeight: '700', overflow: 'hidden', color: colors.text },
+  empty: { padding: 20, textAlign: 'center', fontFamily: bodyFont, fontSize: 15, color: colors.textMuted },
   scrim: { flex: 1, backgroundColor: 'rgba(28,25,23,0.6)', alignItems: 'center', paddingTop: 120, paddingHorizontal: 16 },
   dialog: { width: '100%', maxWidth: 480, backgroundColor: colors.surface, borderRadius: 24, padding: 24, gap: 14 },
   reason: { minHeight: 52, paddingHorizontal: 16, borderRadius: 14, borderWidth: 2, borderColor: colors.border, backgroundColor: colors.surface, justifyContent: 'center' },
   reasonOn: { backgroundColor: colors.text, borderColor: colors.text },
-  reasonText: { fontSize: 16, fontWeight: '600', color: colors.text },
+  reasonText: { fontFamily: bodyFont, fontSize: 16, fontWeight: '600', color: colors.text },
   dialogBtns: { flexDirection: 'row', gap: 10, marginTop: 6 },
   dBtn: { flex: 1, minHeight: 52, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   dBack: { borderWidth: 2, borderColor: colors.text, backgroundColor: colors.surface },
-  dBackText: { fontSize: 16, fontWeight: '700', color: colors.text },
-  dConfirmText: { fontSize: 16, fontWeight: '700', color: '#FFFFFF' },
+  dBackText: { fontFamily: bodyFont, fontSize: 16, fontWeight: '700', color: colors.text },
+  dConfirmText: { fontFamily: bodyFont, fontSize: 16, fontWeight: '700', color: '#FFFFFF' },
 });

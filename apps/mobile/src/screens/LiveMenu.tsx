@@ -1,4 +1,4 @@
-import { menuSections, type MenuItem } from '@mibarra/shared';
+import { isItemSoldOut, menuSections, type MenuItem } from '@mibarra/shared';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
@@ -52,14 +52,14 @@ export function LiveMenu({ shopId, canOrder }: { shopId: string; canOrder: boole
       </ScrollView>
       <View style={styles.gap}>
         {current.items.map((item) => (
-          <ItemRow key={item.id} item={item} canOrder={canOrder} />
+          <ItemRow key={item.id} item={item} soldOut={isItemSoldOut(item, loaded.data.options)} canOrder={canOrder} />
         ))}
       </View>
     </View>
   );
 }
 
-function ItemRow({ item, canOrder }: { item: MenuItem; canOrder: boolean }) {
+function ItemRow({ item, soldOut, canOrder }: { item: MenuItem; soldOut: boolean; canOrder: boolean }) {
   const price = formatLempiras(item.price_cents);
   const body = (dim: boolean) => (
     <>
@@ -73,7 +73,7 @@ function ItemRow({ item, canOrder }: { item: MenuItem; canOrder: boolean }) {
             {item.description}
           </AppText>
         ) : null}
-        {item.available ? (
+        {!soldOut ? (
           <AppText variant="number" color={dim ? t.colors.textMuted : t.colors.text}>
             {price}
           </AppText>
@@ -86,12 +86,12 @@ function ItemRow({ item, canOrder }: { item: MenuItem; canOrder: boolean }) {
     </>
   );
 
-  if (!item.available || !canOrder) {
+  if (soldOut || !canOrder) {
     return (
       <View
         accessible
         accessibilityState={{ disabled: true }}
-        accessibilityLabel={item.available ? `${item.name}, ${price}` : `${item.name}. Agotado hoy`}
+        accessibilityLabel={!soldOut ? `${item.name}, ${price}` : `${item.name}. Agotado hoy`}
         style={[styles.row, styles.dim]}
       >
         {body(true)}

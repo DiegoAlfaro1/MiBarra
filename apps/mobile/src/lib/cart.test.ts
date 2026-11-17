@@ -108,6 +108,7 @@ describe('clampQty / formatting', () => {
   it('formats lempiras like the designs', () => {
     assert.equal(formatLempiras(13500), 'L 135.00');
     assert.equal(formatExtra(1500), '+L 15');
+    assert.equal(formatExtra(-500), '-L 5');
     assert.throws(() => formatLempiras(1.5), RangeError);
   });
 });

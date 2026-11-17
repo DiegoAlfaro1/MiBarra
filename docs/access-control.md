@@ -41,9 +41,9 @@ can't reopen it.
 | Change order status and mark paid | No | Own shop | Own shop | Own shop | No | RLS + column privilege on `orders.status`, `mark_order_paid()` |
 | Cancel an order after preparation starts, or refund | No | No | Own shop | Own shop | No | `cancel_order()`, `refund_order()` (logged) |
 | Mark items sold out | No | Own shop | Own shop | Own shop | No | `set_item_available()`, `set_option_available()`. Sold-out items are hidden from customers and visitors by RLS on `menu_items`; staff of the shop and platform admins still see them, and `place_order` rejects them |
-| Open or close the shop | No | No | Own shop | Own shop | No | `set_shop_open()` |
+| Open or close the shop | No | No | Own shop | Own shop | No | `set_shop_open()` (refuses to open outside the shop's working hours) |
 | Scan QR codes to stamp or redeem | No | Own shop | Own shop | Own shop | No | `scan_loyalty_card()` |
-| Edit menu and prices | No | No | Own shop | Own shop | Yes | RLS on `menu_categories`, `menu_items`, `item_options` (admin edits are logged). Menu photos are uploaded to `shops/<shop_id>/menu/` in the `assets` bucket, which only owners and managers can write (see `storage.md`) |
+| Edit menu and prices | No | No | Own shop | Own shop | Yes | RLS on `menu_categories`, `menu_items`, `item_options` (admin edits are logged). Size and extra rules are checked by `supabase/tests/database/item_options.test.sql`. Menu photos are uploaded to `shops/<shop_id>/menu/` in the `assets` bucket, which only owners and managers can write (see `storage.md`) |
 | Create offers | No | No | Own shop | Own shop | No | Not built yet: there is no offers table |
 | Change loyalty rules | No | No | No | Own shop | No | `set_loyalty_rule()` (logged) |
 | View sales reports | No | Daily count only | Own shop | Own shop | Yes | `shop_daily_order_count()`, `shop_sales_report()` (admin views are logged) |

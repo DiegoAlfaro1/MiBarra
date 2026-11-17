@@ -1,11 +1,12 @@
 import { can, type Permission } from '@mibarra/shared';
 import { Link, usePathname } from 'expo-router';
+import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useAuth } from '../state/AuthState.tsx';
 import { useDashboard } from '../state/DashboardState.tsx';
 import { SHOP_NAME } from '../mock/data.ts';
-import { colors, theme, tones, typography } from '../theme.ts';
+import { bodyFont, colors, theme, tones, typography } from '../theme.ts';
 
 const NAV: readonly { href: '/' | '/menu' | '/scan' | '/summary' | '/catalog' | '/shop'; label: string; needs?: Permission }[] = [
   { href: '/', label: 'Pedidos' },
@@ -19,7 +20,12 @@ const NAV: readonly { href: '/' | '/menu' | '/scan' | '/summary' | '/catalog' | 
 /** Dark header with shop name, section nav and the open/pause switch. */
 export function Header() {
   const path = usePathname();
-  const { open, setOpen } = useDashboard();
+  const { open, shopReady, setOpen } = useDashboard();
+  const [switchError, setSwitchError] = useState<string | null>(null);
+  const toggleOpen = async () => {
+    setSwitchError(null);
+    setSwitchError(await setOpen(!open));
+  };
   const { signOut, access } = useAuth();
   return (
     <View style={styles.header}>
@@ -46,14 +52,18 @@ export function Header() {
       </View>
       <Pressable
         accessibilityRole="switch"
-        accessibilityState={{ checked: open }}
         accessibilityLabel="Recibir pedidos"
-        onPress={() => setOpen(!open)}
+        accessibilityState={{ checked: open, disabled: !shopReady }}
+        disabled={!shopReady}
+        onPress={toggleOpen}
         style={[styles.switch, { backgroundColor: open ? tones.success.solid : colors.textMuted }]}
       >
         <View style={styles.knob} />
         <Text style={styles.switchText}>{open ? 'Recibiendo pedidos' : 'Pedidos en pausa'}</Text>
       </Pressable>
+      {switchError ? (
+        <Text accessibilityRole="alert" style={[typography.badge, { color: colors.textInverse, flexBasis: '100%' }]}>{switchError}</Text>
+      ) : null}
       <Pressable accessibilityRole="button" accessibilityLabel="Cerrar sesión" onPress={signOut} style={styles.navItem}>
         <Text style={[styles.navText, { color: colors.textInverse }]}>Cerrar sesión</Text>
       </Pressable>
@@ -65,12 +75,12 @@ const styles = StyleSheet.create({
   header: { backgroundColor: colors.surfaceInverse, paddingHorizontal: 24, paddingVertical: 12, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
   brand: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   logo: { width: 40, height: 40, borderRadius: 12, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
-  logoText: { fontSize: 20 },
+  logoText: { fontFamily: bodyFont, fontSize: 20 },
   nav: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   navItem: { minHeight: 48, paddingHorizontal: 18, borderRadius: 12, justifyContent: 'center' },
   navActive: { backgroundColor: colors.surface },
-  navText: { fontSize: 15 },
+  navText: { fontFamily: bodyFont, fontSize: 15 },
   switch: { minHeight: 48, paddingLeft: 6, paddingRight: 16, borderRadius: 24, flexDirection: 'row', alignItems: 'center', gap: 10 },
   knob: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#FFFFFF' },
-  switchText: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
+  switchText: { color: '#FFFFFF', fontFamily: bodyFont, fontSize: 15, fontWeight: '700' },
 });

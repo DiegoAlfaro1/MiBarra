@@ -17,14 +17,17 @@ export interface MenuSection {
 
 const byOrderThenName = (a: MenuCategory, b: MenuCategory) => a.sort_order - b.sort_order || a.name.localeCompare(b.name, 'es');
 
-/** Categories in the owner's order, each with its in-stock items by name. Empty categories are left out. */
+/**
+ * Categories in the owner's order, each with its in-stock items by name (see `isItemSoldOut`).
+ * Empty categories are left out.
+ */
 export function menuSections(data: MenuData): MenuSection[] {
   return [...data.categories]
     .sort(byOrderThenName)
     .map((category) => ({
       category,
       items: data.items
-        .filter((item) => item.category_id === category.id && item.available)
+        .filter((item) => item.category_id === category.id && !isItemSoldOut(item, data.options))
         .sort((a, b) => a.name.localeCompare(b.name, 'es')),
     }))
     .filter((section) => section.items.length > 0);
@@ -40,13 +43,27 @@ export interface ItemChoices {
 const byPriceThenName = (a: ItemOption, b: ItemOption) =>
   a.price_change_cents - b.price_change_cents || a.name.localeCompare(b.name, 'es');
 
-/** The options a customer can choose for one item (sold-out options are left out). */
-export function itemChoices(options: readonly ItemOption[], itemId: string): ItemChoices {
-  const mine = options.filter((o) => o.item_id === itemId && o.available);
+/**
+ * The options a customer can choose for one item (sold-out options are left out unless
+ * `includeSoldOut`, which the dashboard uses to list everything the owner created).
+ */
+export function itemChoices(options: readonly ItemOption[], itemId: string, { includeSoldOut = false } = {}): ItemChoices {
+  const mine = options.filter((o) => o.item_id === itemId && (includeSoldOut || o.available));
   return {
     sizes: mine.filter((o) => o.kind === 'size').sort(byPriceThenName),
     extras: mine.filter((o) => o.kind === 'extra').sort(byPriceThenName),
   };
+}
+
+/**
+ * True when customers cannot order the item: it is marked sold out, or it has sizes and every
+ * one of them is sold out (a size is required, so there is nothing left to pick).
+ * `place_order` enforces the same rule (see `check_order_item_size`).
+ */
+export function isItemSoldOut(item: Pick<MenuItem, 'id' | 'available'>, options: readonly ItemOption[]): boolean {
+  if (!item.available) return true;
+  const sizes = options.filter((o) => o.item_id === item.id && o.kind === 'size');
+  return sizes.length > 0 && sizes.every((s) => !s.available);
 }
 
 /** Starts with the cheapest size and no extras. */
@@ -92,9 +109,9 @@ export function describeOptions(item: Pick<MenuItem, 'description'>, choices: It
   return names.length ? names.join(' · ') : (item.description ?? '');
 }
 
-/** Names of the cart items that are no longer in stock (hidden or marked sold out) in the freshly loaded menu. */
-export function soldOutLines<T extends { productId: string; name: string }>(lines: readonly T[], menu: Pick<MenuData, 'items'>): T[] {
-  const inStock = new Set(menu.items.filter((i) => i.available).map((i) => i.id));
+/** Cart lines whose item is no longer in stock (hidden, marked sold out or every size sold out) in the freshly loaded menu. */
+export function soldOutLines<T extends { productId: string; name: string }>(lines: readonly T[], menu: Pick<MenuData, 'items' | 'options'>): T[] {
+  const inStock = new Set(menu.items.filter((i) => !isItemSoldOut(i, menu.options)).map((i) => i.id));
   return lines.filter((l) => !inStock.has(l.productId));
 }
 

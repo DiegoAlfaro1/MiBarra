@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { formatLempiras } from '../lib/format';
-import { isSlotFull, PAYMENTS, SCHEDULED_NOTICE } from '../lib/checkout';
+import { PAYMENTS, SCHEDULED_NOTICE } from '../lib/checkout';
 import type { Checkout } from '../lib/useCheckout';
 import { AppText, Banner, Card, Chip, DemoBadge, Field, t } from './ui';
 
@@ -18,9 +18,8 @@ export function SlotSection({ c }: { c: Checkout }) {
           <View key={s.id} style={styles.slot}>
             <Chip
               label={s.label}
-              sub={isSlotFull(s) ? 'Lleno' : s.sub || undefined}
+              sub={s.sub || undefined}
               selected={c.slotId === s.id}
-              disabled={isSlotFull(s)}
               onPress={() => c.setSlotId(s.id)}
               minHeight={58}
             />

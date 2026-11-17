@@ -13,13 +13,8 @@ export interface PickupSlot {
   id: string;
   label: string;
   sub: string;
-  full?: boolean;
   /** ISO start of a real slot; absent for "as soon as possible" and sample slots. */
   start?: string;
-}
-
-export function isSlotFull(slot: PickupSlot): boolean {
-  return slot.full === true;
 }
 
 export const ASAP_SLOT: PickupSlot = { id: 'asap', label: 'Lo antes posible', sub: '~10 min' };
@@ -28,11 +23,11 @@ export const ASAP_SLOT: PickupSlot = { id: 'asap', label: 'Lo antes posible', su
 export const SCHEDULED_NOTICE =
   'Si eliges una hora, la cafetería no empezará a preparar tu pedido hasta ese horario.';
 
-/** "Lo antes posible" first, then the shop's slots (full ones stay visible but disabled). */
+/** "Lo antes posible" first, then the shop's slots. */
 export function slotChoices(shopSlots: readonly PickupSlotOption[], label: (startIso: string) => string): PickupSlot[] {
   return [
     ASAP_SLOT,
-    ...shopSlots.map((s) => ({ id: s.start, start: s.start, label: label(s.start), sub: s.full ? 'Lleno' : '', full: s.full })),
+    ...shopSlots.map((s) => ({ id: s.start, start: s.start, label: label(s.start), sub: '' })),
   ];
 }
 
@@ -68,7 +63,7 @@ export interface CheckoutInput extends ContactInput {
 /** Returns every problem that blocks the order; an empty object means it can be placed. */
 export function validateCheckout(input: CheckoutInput, now?: Date): FieldErrors {
   const errors: FieldErrors = { ...validateContact(input) };
-  if (!input.slot || isSlotFull(input.slot)) errors.slot = 'Elige un horario disponible para recoger.';
+  if (!input.slot) errors.slot = 'Elige un horario disponible para recoger.';
   if (input.payment === 'card') Object.assign(errors, validateCard(input.card, now));
   return errors;
 }
@@ -86,7 +81,6 @@ export function orderItemsFromCart(lines: readonly OrderLine[]): OrderLine[] {
 
 // Messages written by `place_order` / `place-order` for users, shown in Spanish.
 const ORDER_ERRORS: [RegExp, string][] = [
-  [/pickup time is full/i, 'Ese horario se llenó. Elige otro o pide lo antes posible.'],
   [/closed at that pickup time/i, 'La cafetería estará cerrada a esa hora. Elige otro horario.'],
   [/pickup time must be/i, 'Ese horario ya pasó. Elige otro o pide lo antes posible.'],
   [/shop is closed/i, 'La cafetería está cerrada en este momento. Tu carrito sigue guardado.'],

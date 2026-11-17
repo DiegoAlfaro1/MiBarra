@@ -1,11 +1,10 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { ASAP_SLOT, isSlotFull, pickupTimeFor, slotChoices, ORDER_RETRY_MESSAGE, orderCode, orderErrorMessage, orderItemsFromCart, pickupLabelFor, validateCheckout, validateContact } from './checkout.ts';
+import { ASAP_SLOT, pickupTimeFor, slotChoices, ORDER_RETRY_MESSAGE, orderCode, orderErrorMessage, orderItemsFromCart, pickupLabelFor, validateCheckout, validateContact } from './checkout.ts';
 
 const now = new Date(2026, 10, 13);
 const asap = { id: 'asap', label: 'Lo antes posible', sub: '~10 min' };
-const full = { id: '0940', label: '9:40 a. m.', sub: 'Lleno', full: true };
 const base = {
   name: 'Diego',
   phone: '9999 9999',
@@ -19,10 +18,6 @@ describe('pickup slots', () => {
     assert.equal(pickupLabelFor(asap), 'en ~10 min');
     assert.equal(pickupLabelFor({ id: '0920', label: '9:20 a. m.', sub: '' }), '9:20 a. m.');
   });
-  it('detects full slots', () => {
-    assert.equal(isSlotFull(full), true);
-    assert.equal(isSlotFull(asap), false);
-  });
 });
 
 describe('validateContact', () => {
@@ -34,8 +29,7 @@ describe('validateContact', () => {
 
 describe('validateCheckout', () => {
   it('accepts counter payment without card data', () => assert.deepEqual(validateCheckout(base, now), {}));
-  it('rejects a full or missing slot', () => {
-    assert.ok(validateCheckout({ ...base, slot: full }, now).slot);
+  it('rejects a missing slot', () => {
     assert.ok(validateCheckout({ ...base, slot: undefined }, now).slot);
   });
   it('validates the card only when paying by card', () => {
@@ -80,22 +74,20 @@ describe('placing a real order', () => {
 
 describe('scheduled pickup', () => {
   const shopSlots = [
-    { start: '2026-11-18T15:20:00Z', taken: 1, capacity: 5, full: false },
-    { start: '2026-11-18T15:30:00Z', taken: 5, capacity: 5, full: true },
+    { start: '2026-11-18T15:20:00Z' },
+    { start: '2026-11-18T15:30:00Z' },
   ];
   const choices = slotChoices(shopSlots, () => '9:20 a. m.');
-  it('always offers "as soon as possible" first, and keeps full slots visible but blocked', () => {
+  it('always offers "as soon as possible" first, and then the shop slots', () => {
     assert.equal(choices[0], ASAP_SLOT);
     assert.equal(choices.length, 3);
-    assert.equal(isSlotFull(choices[2]!), true);
-    assert.ok(validateCheckout({ ...base, slot: choices[2] }, now).slot);
+    assert.deepEqual(validateCheckout({ ...base, slot: choices[2] }, now), {});
   });
   it('sends a pickup time only for a chosen slot', () => {
     assert.equal(pickupTimeFor(ASAP_SLOT), undefined);
     assert.equal(pickupTimeFor(choices[1]), '2026-11-18T15:20:00Z');
   });
-  it('explains full and closed pickup times', () => {
-    assert.match(orderErrorMessage('That pickup time is full.'), /se llenó/);
+  it('explains closed pickup times', () => {
     assert.match(orderErrorMessage('The shop is closed at that pickup time.'), /cerrada a esa hora/);
   });
 });

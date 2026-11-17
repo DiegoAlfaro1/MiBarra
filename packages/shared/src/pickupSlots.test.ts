@@ -5,8 +5,8 @@ import { listPickupSlots, slotClockLabel, slotsFromRows } from './pickupSlots.ts
 
 describe('pickup slots', () => {
   it('maps database rows and handles an empty list', () => {
-    assert.deepEqual(slotsFromRows([{ slot_start: '2026-11-18T15:20:00Z', taken: 5, capacity: 5, is_full: true }]), [
-      { start: '2026-11-18T15:20:00Z', taken: 5, capacity: 5, full: true },
+    assert.deepEqual(slotsFromRows([{ slot_start: '2026-11-18T15:20:00Z' }]), [
+      { start: '2026-11-18T15:20:00Z' },
     ]);
     assert.deepEqual(slotsFromRows(null), []);
   });

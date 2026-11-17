@@ -1,9 +1,9 @@
--- Pickup slots (#55): slots come from the shop's hours and capacity, and place_order enforces them.
+-- Pickup slots (#55): slots come from the shop's hours, and place_order enforces them.
 -- Everything is rolled back.
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(9);
+select plan(8);
 
 grant all on all tables in schema pg_temp to anon, authenticated, service_role;
 grant all on all sequences in schema pg_temp to anon, authenticated, service_role;
@@ -32,8 +32,8 @@ insert into auth.users (id, email, raw_app_meta_data, raw_user_meta_data) values
   ('20000000-0000-4000-8000-000000000002', 'c2@test.local', '{}', '{"display_name":"Luis"}');
 
 -- Open every day around the clock so the tests do not depend on the time they run.
-insert into public.shops (id, name, currency, timezone, is_open, slot_minutes, slot_capacity, hours) values
-  ('10000000-0000-4000-8000-00000000000a', 'Shop A', 'HNL', 'UTC', true, 5, 1,
+insert into public.shops (id, name, currency, timezone, is_open, slot_minutes, hours) values
+  ('10000000-0000-4000-8000-00000000000a', 'Shop A', 'HNL', 'UTC', true, 5,
    '{"mon":{"open":"00:00","close":"23:59"},"tue":{"open":"00:00","close":"23:59"},"wed":{"open":"00:00","close":"23:59"},"thu":{"open":"00:00","close":"23:59"},"fri":{"open":"00:00","close":"23:59"},"sat":{"open":"00:00","close":"23:59"},"sun":{"open":"00:00","close":"23:59"}}');
 
 insert into public.menu_categories (id, shop_id, name) values
@@ -65,23 +65,24 @@ select is(
     '[{"productId":"51000000-0000-4000-8000-00000000000a","quantity":1}]'::jsonb,
     'a0000000-0000-4000-8000-000000000002', (select t from slot_pick))).pickup_time),
   (select t from slot_pick),
-  'an order can take a free slot');
+  'an order can choose a pickup slot');
 
 select is(
   (select (public.place_order('10000000-0000-4000-8000-00000000000a',
     '[{"productId":"51000000-0000-4000-8000-00000000000a","quantity":1}]'::jsonb,
     'a0000000-0000-4000-8000-000000000002', (select t from slot_pick))).idempotency_key),
   'a0000000-0000-4000-8000-000000000002'::uuid,
-  'retrying with the same key returns the order even though the slot is now full');
+  'retrying with the same key returns the original order');
 
 select tests.logout();
 select tests.login('20000000-0000-4000-8000-000000000002');
 
-select throws_ok(
-  $$select public.place_order('10000000-0000-4000-8000-00000000000a',
+select is(
+  (select (public.place_order('10000000-0000-4000-8000-00000000000a',
     '[{"productId":"51000000-0000-4000-8000-00000000000a","quantity":1}]'::jsonb,
-    'b0000000-0000-4000-8000-000000000001', (select t from slot_pick))$$,
-  '22023', 'That pickup time is full.', 'another customer cannot take a full slot');
+    'b0000000-0000-4000-8000-000000000001', (select t from slot_pick))).pickup_time),
+  (select t from slot_pick),
+  'several customers can choose the same slot');
 
 select throws_ok(
   $$select public.place_order('10000000-0000-4000-8000-00000000000a',

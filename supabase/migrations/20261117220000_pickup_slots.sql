@@ -1,12 +1,11 @@
 -- Choosing a pickup time (#55).
---  1. Shops get a slot length and a capacity (orders per slot).
---  2. list_pickup_slots() generates today's slots from the shop's hours and capacity.
---  3. place_order() accepts an optional pickup time and refuses times outside the hours or in a full slot.
+--  1. Shops get a slot length.
+--  2. list_pickup_slots() generates today's slots from the shop's hours.
+--  3. place_order() accepts an optional pickup time and refuses times in the past or outside the hours.
 --     No pickup time means "as soon as possible": the order is prepared right away.
 
 alter table public.shops
-  add column slot_minutes integer not null default 10 check (slot_minutes in (5, 10, 15, 20, 30, 60)),
-  add column slot_capacity integer not null default 5 check (slot_capacity between 1 and 100);
+  add column slot_minutes integer not null default 10 check (slot_minutes in (5, 10, 15, 20, 30, 60));
 
 -- Start of the slot that contains p_at. Slots sit on a fixed grid so every caller agrees on them.
 create function public.pickup_slot_start(p_at timestamptz, p_slot_minutes integer)
@@ -21,10 +20,9 @@ $$;
 grant execute on function public.pickup_slot_start(timestamptz, integer) to anon, authenticated, service_role;
 
 -- Today's pickup slots for a shop (shop-local day), from now until closing.
--- Customers cannot read other people's orders, so the counts are computed here.
 -- A shop that is closed, suspended or has no hours for today has no slots.
 create function public.list_pickup_slots(p_shop_id uuid)
-returns table (slot_start timestamptz, taken integer, capacity integer, is_full boolean)
+returns table (slot_start timestamptz)
 language plpgsql
 stable
 security definer
@@ -53,16 +51,8 @@ begin
   v_first := public.pickup_slot_start(greatest(v_open, now() + interval '10 minutes') + make_interval(mins => v_shop.slot_minutes - 1), v_shop.slot_minutes);
 
   return query
-  select g.s,
-         coalesce(c.n, 0)::integer,
-         v_shop.slot_capacity,
-         coalesce(c.n, 0) >= v_shop.slot_capacity
+  select g.s
   from generate_series(v_first, v_close - make_interval(mins => v_shop.slot_minutes), make_interval(mins => v_shop.slot_minutes)) as g(s)
-  left join lateral (
-    select count(*) as n from public.orders o
-    where o.shop_id = p_shop_id and o.status <> 'cancelled'
-      and o.pickup_time >= g.s and o.pickup_time < g.s + make_interval(mins => v_shop.slot_minutes)
-  ) c on true
   order by g.s;
 end;
 $$;
@@ -86,8 +76,6 @@ declare
   v_customer uuid := (select auth.uid());
   v_order public.orders;
   v_shop public.shops;
-  v_slot timestamptz;
-  v_taken integer;
   v_row record;
   v_item record;
   v_option_count integer;
@@ -131,17 +119,9 @@ begin
     raise exception 'This shop is closed right now.' using errcode = '22023';
   end if;
   if p_pickup_time is not null then
-    -- Lock the shop so two customers cannot both take the last place in a slot.
-    select * into v_shop from public.shops where id = p_shop_id for update;
+    select * into v_shop from public.shops where id = p_shop_id;
     if not public.shop_within_hours(v_shop.hours, v_shop.timezone, p_pickup_time) then
       raise exception 'The shop is closed at that pickup time.' using errcode = '22023';
-    end if;
-    v_slot := public.pickup_slot_start(p_pickup_time, v_shop.slot_minutes);
-    select count(*) into v_taken from public.orders o
-    where o.shop_id = p_shop_id and o.status <> 'cancelled'
-      and o.pickup_time >= v_slot and o.pickup_time < v_slot + make_interval(mins => v_shop.slot_minutes);
-    if v_taken >= v_shop.slot_capacity then
-      raise exception 'That pickup time is full.' using errcode = '22023';
     end if;
   end if;
   if exists (

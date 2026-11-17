@@ -31,6 +31,8 @@ export interface Shop {
   /** Contact phone in E.164, e.g. `+50422223333`. */
   phone: string | null;
   hours: ShopHours;
+  /** IANA timezone the working hours are in, e.g. `America/Tegucigalpa`. */
+  timezone: string;
   is_open: boolean;
   payment_provider: PaymentProvider;
   /** Loyalty rule: a reward every N completed orders. Null means no loyalty program. */

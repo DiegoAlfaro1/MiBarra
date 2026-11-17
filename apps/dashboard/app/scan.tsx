@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { addStamp, isCardFull, redeem, STAMPS_PER_CARD } from '../src/logic/dashboard.ts';
 import { SCANNED_CUSTOMER } from '../src/mock/data.ts';
-import { colors, theme, tones, typography } from '../src/theme.ts';
+import { bodyFont, colors, theme, tones, typography } from '../src/theme.ts';
 
 export default function Scan() {
   // The camera is a placeholder in this UI-only story: "scanned" simulates reading a customer's QR.
@@ -87,27 +87,27 @@ const styles = StyleSheet.create({
   bl: { bottom: 0, left: 0, borderBottomWidth: 5, borderLeftWidth: 5, borderBottomLeftRadius: 12 },
   br: { bottom: 0, right: 0, borderBottomWidth: 5, borderRightWidth: 5, borderBottomRightRadius: 12 },
   line: { position: 'absolute', left: 16, right: 16, top: '50%', height: 3, backgroundColor: colors.primary },
-  camTitle: { color: '#FFFFFF', fontSize: 18, fontWeight: '600', textAlign: 'center' },
-  camSub: { color: '#D6D3D1', fontSize: 14, textAlign: 'center' },
+  camTitle: { color: '#FFFFFF', fontFamily: bodyFont, fontSize: 18, fontWeight: '600', textAlign: 'center' },
+  camSub: { color: '#D6D3D1', fontFamily: bodyFont, fontSize: 14, textAlign: 'center' },
   simulate: { minHeight: 48, paddingHorizontal: 18, borderRadius: 12, borderWidth: 2, borderColor: '#FFFFFF', justifyContent: 'center' },
-  simulateText: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
+  simulateText: { color: '#FFFFFF', fontFamily: bodyFont, fontSize: 15, fontWeight: '700' },
   panel: { flexGrow: 1, flexBasis: 380, gap: 16, padding: 24, borderRadius: 24, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
   waiting: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 10 },
-  waitTitle: { fontSize: 20, fontWeight: '700', color: colors.text },
-  waitText: { fontSize: 15, lineHeight: 22, maxWidth: 300, textAlign: 'center', color: colors.textMuted },
+  waitTitle: { fontFamily: bodyFont, fontSize: 20, fontWeight: '700', color: colors.text },
+  waitText: { fontFamily: bodyFont, fontSize: 15, lineHeight: 22, maxWidth: 300, textAlign: 'center', color: colors.textMuted },
   who: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   avatar: { width: 56, height: 56, borderRadius: 28, backgroundColor: colors.secondary, alignItems: 'center', justifyContent: 'center' },
-  avatarText: { color: '#FFFFFF', fontSize: 22, fontWeight: '700' },
-  meta: { fontSize: 14, color: colors.textMuted },
+  avatarText: { color: '#FFFFFF', fontFamily: bodyFont, fontSize: 22, fontWeight: '700' },
+  meta: { fontFamily: bodyFont, fontSize: 14, color: colors.textMuted },
   card: { gap: 12, padding: 18, borderRadius: 18 },
   cardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
-  cardLabel: { fontSize: 15, fontWeight: '600' },
+  cardLabel: { fontFamily: bodyFont, fontSize: 15, fontWeight: '600' },
   stamps: { flexDirection: 'row', gap: 8 },
   stamp: { flex: 1, aspectRatio: 1, borderRadius: 999 },
   stampEmpty: { borderWidth: 2, borderStyle: 'dashed', borderColor: colors.stampEmpty },
-  flash: { padding: 12, borderRadius: 12, backgroundColor: tones.success.tint, color: tones.success.onTint, fontSize: 15, fontWeight: '700', overflow: 'hidden' },
+  flash: { padding: 12, borderRadius: 12, backgroundColor: tones.success.tint, color: tones.success.onTint, fontFamily: bodyFont, fontSize: 15, fontWeight: '700', overflow: 'hidden' },
   big: { minHeight: 60, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
   bigOff: { backgroundColor: colors.border },
   bigOutline: { backgroundColor: colors.surface, borderWidth: 2, borderColor: colors.border },
-  bigText: { fontSize: 17, fontWeight: '700' },
+  bigText: { fontFamily: bodyFont, fontSize: 17, fontWeight: '700' },
 });

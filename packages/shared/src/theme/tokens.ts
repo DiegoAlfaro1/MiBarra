@@ -60,17 +60,17 @@ export const DEFAULT_ACCENT = palette.rust600;
 /** Font family names. Load them with `@expo-google-fonts/*` or Google Fonts on the web. */
 export const fontFamilies = {
   /** Headings and numbers (weights 600/700). */
-  display: 'Bricolage Grotesque',
+  display: 'Fraunces',
   /** Everything else (weights 400–700). */
-  body: 'Inter',
+  body: 'DM Sans',
   /** Codes such as reward / order codes. */
   mono: 'ui-monospace',
 } as const;
 
 /** Fallback stacks for CSS (web) contexts. */
 export const fontStacks = {
-  display: "'Bricolage Grotesque', sans-serif",
-  body: 'Inter, system-ui, sans-serif',
+  display: "Fraunces, Georgia, serif",
+  body: "'DM Sans', system-ui, sans-serif",
   mono: 'ui-monospace, monospace',
 } as const;
 

@@ -16,7 +16,7 @@ import { Image, StyleSheet, Text, useWindowDimensions, View } from 'react-native
 import { Button, Card, Field, formStyles, Notice, StateView, Toggle } from '../src/components/Form.tsx';
 import { supabase } from '../src/lib/supabase.ts';
 import { useAuth } from '../src/state/AuthState.tsx';
-import { colors, typography } from '../src/theme.ts';
+import { bodyFont, colors, typography } from '../src/theme.ts';
 
 type Load = { status: 'loading' } | { status: 'error'; message: string } | { status: 'ready' };
 
@@ -198,12 +198,12 @@ const styles = StyleSheet.create({
   logoRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
   logoPreview: { width: 88, height: 88, borderRadius: 20, backgroundColor: colors.placeholder, alignItems: 'center', justifyContent: 'center', overflow: 'hidden', alignSelf: 'flex-start' },
   logoImage: { width: 88, height: 88 },
-  logoInitial: { fontSize: 36, fontWeight: '700', color: colors.onPlaceholder },
+  logoInitial: { fontFamily: bodyFont, fontSize: 36, fontWeight: '700', color: colors.onPlaceholder },
   day: { gap: 10, paddingBottom: 14, borderBottomWidth: 1, borderBottomColor: colors.surfaceMuted },
   dayHead: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  dayName: { flex: 1, fontSize: 16, fontWeight: '600', color: colors.text },
-  dayState: { fontSize: 14, fontWeight: '700' },
+  dayName: { flex: 1, fontFamily: bodyFont, fontSize: 16, fontWeight: '600', color: colors.text },
+  dayState: { fontFamily: bodyFont, fontSize: 14, fontWeight: '700' },
   times: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  dayError: { fontSize: 13, fontWeight: '600', color: colors.textDanger },
+  dayError: { fontFamily: bodyFont, fontSize: 13, fontWeight: '600', color: colors.textDanger },
   actions: { flexDirection: 'row', justifyContent: 'flex-end' },
 });

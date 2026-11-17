@@ -15,7 +15,7 @@ import { Notice, StateView, Toggle } from '../src/components/Form.tsx';
 import { supabase } from '../src/lib/supabase.ts';
 import { formatLempiras } from '../src/logic/dashboard.ts';
 import { useAuth } from '../src/state/AuthState.tsx';
-import { colors, tones, typography } from '../src/theme.ts';
+import { bodyFont, colors, tones, typography } from '../src/theme.ts';
 
 type Load = { status: 'loading' } | { status: 'error'; message: string } | { status: 'ready'; menu: MenuData };
 
@@ -138,19 +138,19 @@ function ItemBlock({ item, options, busy, onItem, onOption }: {
 const styles = StyleSheet.create({
   page: { width: '100%', maxWidth: 1000, alignSelf: 'center', padding: 24, gap: 20 },
   head: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-end', gap: 12 },
-  sub: { fontSize: 15, color: colors.textMuted },
-  pill: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: 12, backgroundColor: colors.surface, fontSize: 15, fontWeight: '600', overflow: 'hidden', color: colors.text },
+  sub: { fontFamily: bodyFont, fontSize: 15, color: colors.textMuted },
+  pill: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: 12, backgroundColor: colors.surface, fontFamily: bodyFont, fontSize: 15, fontWeight: '600', overflow: 'hidden', color: colors.text },
   group: { backgroundColor: colors.surface, borderRadius: 20, overflow: 'hidden', borderWidth: 1, borderColor: colors.border },
-  groupTitle: { paddingHorizontal: 20, paddingVertical: 14, fontSize: 16, fontWeight: '700', backgroundColor: '#FAFAF9', color: colors.text, borderBottomWidth: 1, borderBottomColor: colors.border },
+  groupTitle: { paddingHorizontal: 20, paddingVertical: 14, fontFamily: bodyFont, fontSize: 16, fontWeight: '700', backgroundColor: '#FAFAF9', color: colors.text, borderBottomWidth: 1, borderBottomColor: colors.border },
   block: { borderBottomWidth: 1, borderBottomColor: colors.surfaceMuted },
   row: { flexDirection: 'row', alignItems: 'center', gap: 14, minHeight: 72, paddingHorizontal: 20 },
   optionRow: { flexDirection: 'row', alignItems: 'center', gap: 14, minHeight: 56, paddingLeft: 40, paddingRight: 20 },
-  optionName: { flex: 1, fontSize: 15, color: colors.text },
-  name: { fontSize: 17, fontWeight: '600', color: colors.text },
+  optionName: { flex: 1, fontFamily: bodyFont, fontSize: 15, color: colors.text },
+  name: { fontFamily: bodyFont, fontSize: 17, fontWeight: '600', color: colors.text },
   nameOut: { color: colors.textMuted, textDecorationLine: 'line-through' },
-  price: { fontSize: 14, color: colors.textMuted },
-  warn: { fontSize: 13, fontWeight: '600', color: colors.textDanger },
-  state: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6, fontSize: 13, fontWeight: '700', overflow: 'hidden' },
+  price: { fontFamily: bodyFont, fontSize: 14, color: colors.textMuted },
+  warn: { fontFamily: bodyFont, fontSize: 13, fontWeight: '600', color: colors.textDanger },
+  state: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6, fontFamily: bodyFont, fontSize: 13, fontWeight: '700', overflow: 'hidden' },
   stateOk: { backgroundColor: tones.success.tint, color: tones.success.onTint },
   stateOut: { backgroundColor: colors.secondary, color: colors.onSecondary },
 });

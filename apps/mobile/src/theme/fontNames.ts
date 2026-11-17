@@ -2,19 +2,19 @@
 // Native platforms need one family name per weight, so the theme's `fontWeight` is baked in here.
 
 const DISPLAY: Record<string, string> = {
-  '600': 'BricolageGrotesque_600SemiBold',
-  '700': 'BricolageGrotesque_700Bold',
+  '600': 'Fraunces_600SemiBold',
+  '700': 'Fraunces_700Bold',
 };
 
 const BODY: Record<string, string> = {
-  '400': 'Inter_400Regular',
-  '500': 'Inter_500Medium',
-  '600': 'Inter_600SemiBold',
-  '700': 'Inter_700Bold',
+  '400': 'DMSans_400Regular',
+  '500': 'DMSans_500Medium',
+  '600': 'DMSans_600SemiBold',
+  '700': 'DMSans_700Bold',
 };
 
 export function resolveFontFamily(family: string, weight: string): string {
-  if (family === 'Bricolage Grotesque') return DISPLAY[weight] ?? DISPLAY['700']!;
-  if (family === 'Inter') return BODY[weight] ?? BODY['400']!;
+  if (family === 'Fraunces') return DISPLAY[weight] ?? DISPLAY['700']!;
+  if (family === 'DM Sans') return BODY[weight] ?? BODY['400']!;
   return family === 'ui-monospace' ? 'monospace' : family;
 }

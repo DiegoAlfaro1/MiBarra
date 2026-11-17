@@ -77,8 +77,8 @@ describe('passwordStrength', () => {
 
 describe('resolveFontFamily', () => {
   it('maps theme fonts to loaded font names', () => {
-    assert.equal(resolveFontFamily('Bricolage Grotesque', '700'), 'BricolageGrotesque_700Bold');
-    assert.equal(resolveFontFamily('Inter', '500'), 'Inter_500Medium');
+    assert.equal(resolveFontFamily('Fraunces', '700'), 'Fraunces_700Bold');
+    assert.equal(resolveFontFamily('DM Sans', '500'), 'DMSans_500Medium');
     assert.equal(resolveFontFamily('ui-monospace', '700'), 'monospace');
   });
 });

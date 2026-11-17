@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View, type TextInputProps } from 'react-native';
 
-import { colors, tones, typography } from '../theme.ts';
+import { bodyFont, colors, tones, typography } from '../theme.ts';
 
 /** Building blocks shared by the shop and menu management screens. */
 
@@ -131,27 +131,27 @@ export const formStyles = StyleSheet.create({
   page: { width: '100%', maxWidth: 1000, alignSelf: 'center', padding: 24, gap: 20 },
   pageNarrow: { padding: 12, gap: 14 },
   head: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-end', gap: 12 },
-  sub: { fontSize: 15, color: colors.textMuted },
+  sub: { fontFamily: bodyFont, fontSize: 15, color: colors.textMuted },
 });
 
 const styles = StyleSheet.create({
   field: { gap: 6, minWidth: 0 },
-  label: { fontSize: 14, fontWeight: '600', color: colors.text },
-  input: { minHeight: 48, borderRadius: 12, borderWidth: 1, borderColor: colors.borderStrong, backgroundColor: colors.surface, paddingHorizontal: 14, fontSize: 16, color: colors.text },
+  label: { fontFamily: bodyFont, fontSize: 14, fontWeight: '600', color: colors.text },
+  input: { minHeight: 48, borderRadius: 12, borderWidth: 1, borderColor: colors.borderStrong, backgroundColor: colors.surface, paddingHorizontal: 14, fontFamily: bodyFont, fontSize: 16, color: colors.text },
   inputDisabled: { backgroundColor: colors.surfaceMuted, color: colors.textMuted },
   inputError: { borderColor: tones.danger.solid, borderWidth: 2 },
-  error: { fontSize: 13, fontWeight: '600', color: colors.textDanger },
-  hint: { fontSize: 13, color: colors.textMuted },
+  error: { fontFamily: bodyFont, fontSize: 13, fontWeight: '600', color: colors.textDanger },
+  hint: { fontFamily: bodyFont, fontSize: 13, color: colors.textMuted },
   button: { minHeight: 48, paddingHorizontal: 18, borderRadius: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
   buttonOff: { opacity: 0.5 },
-  buttonText: { fontSize: 15, fontWeight: '700' },
+  buttonText: { fontFamily: bodyFont, fontSize: 15, fontWeight: '700' },
   track: { width: 72, height: 44, borderRadius: 22, padding: 4, flexDirection: 'row' },
   knob: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#FFFFFF' },
   notice: { borderWidth: 1, borderRadius: 12, padding: 14 },
   state: { backgroundColor: colors.surface, borderRadius: 20, borderWidth: 1, borderColor: colors.border, padding: 32, alignItems: 'center', gap: 14 },
   card: { backgroundColor: colors.surface, borderRadius: 20, borderWidth: 1, borderColor: colors.border, overflow: 'hidden' },
   cardHead: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 10, paddingHorizontal: 20, paddingVertical: 14, backgroundColor: '#FAFAF9', borderBottomWidth: 1, borderBottomColor: colors.border },
-  cardTitle: { fontSize: 16, fontWeight: '700', color: colors.text },
+  cardTitle: { fontFamily: bodyFont, fontSize: 16, fontWeight: '700', color: colors.text },
   cardBody: { padding: 20, gap: 16 },
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
 });

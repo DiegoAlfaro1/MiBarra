@@ -25,4 +25,4 @@ Rules for the stories that follow:
 - Category names are unique per shop (ignoring case and outer spaces); a duplicate shows "Ya tienes una categoría con ese nombre." on the name field.
 - Customers see the menu in `apps/mobile`: `src/screens/LiveShop.tsx` + `LiveMenu.tsx` (categories as tabs, items with photo and price, sold out and closed states) and `src/screens/LiveItem.tsx` (sizes and extras). Cart lines keep the chosen `optionIds`, and checkout sends them to `place-order`, which prices the order on the server. A suspended shop's menu is hidden by RLS.
 - Screens: `apps/dashboard/app/shop.tsx` ("Tienda", owner) and `apps/dashboard/app/catalog.tsx` ("Editar menú", owner and manager). Both are responsive down to small phone widths.
-- Open/closed and loyalty settings are not wired yet. Their SQL functions exist (`set_shop_open`, `set_loyalty_rule`); add the wrappers to `shopApi.ts` in the story that needs them.
+- The open/closed switch is wired in the dashboard header (`shopOpen.ts`). Loyalty settings are not wired yet; the SQL function exists (`set_loyalty_rule`), so add a wrapper to `shopApi.ts` in the story that needs it.

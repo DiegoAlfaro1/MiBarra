@@ -14,7 +14,7 @@ import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { supabase } from '../lib/supabase.ts';
-import { colors, tones } from '../theme.ts';
+import { bodyFont, colors, tones } from '../theme.ts';
 import { Button, Field, Notice, Toggle } from './Form.tsx';
 
 type Errors = Partial<Record<string, string>>;
@@ -209,14 +209,14 @@ function OptionForm({ itemId, kind, option, onCancel, onSaved }: {
 
 const styles = StyleSheet.create({
   box: { gap: 14, paddingTop: 14, borderTopWidth: 1, borderTopColor: colors.surfaceMuted },
-  title: { fontSize: 16, fontWeight: '700', color: colors.text },
-  label: { fontSize: 14, fontWeight: '600', color: colors.text },
-  hint: { fontSize: 13, color: colors.textMuted, flexShrink: 1 },
+  title: { fontFamily: bodyFont, fontSize: 16, fontWeight: '700', color: colors.text },
+  label: { fontFamily: bodyFont, fontSize: 14, fontWeight: '600', color: colors.text },
+  hint: { fontFamily: bodyFont, fontSize: 13, color: colors.textMuted, flexShrink: 1 },
   muted: { color: colors.textMuted },
   row: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8 },
   actionsSpread: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
   optionRow: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 56, paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: colors.surfaceMuted },
-  optionName: { fontSize: 15, fontWeight: '600', color: colors.text },
+  optionName: { fontFamily: bodyFont, fontSize: 15, fontWeight: '600', color: colors.text },
   form: { gap: 12, padding: 12, borderRadius: 14, borderWidth: 1, borderColor: tones.accent.border, backgroundColor: colors.surface },
-  confirm: { fontSize: 14, fontWeight: '600', color: colors.textDanger },
+  confirm: { fontFamily: bodyFont, fontSize: 14, fontWeight: '600', color: colors.textDanger },
 });

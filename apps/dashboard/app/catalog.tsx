@@ -25,7 +25,7 @@ import { newUploadId, pickImage } from '../src/lib/pickImage.ts';
 import { supabase } from '../src/lib/supabase.ts';
 import { formatLempiras } from '../src/logic/dashboard.ts';
 import { useAuth } from '../src/state/AuthState.tsx';
-import { colors, tones, typography } from '../src/theme.ts';
+import { bodyFont, colors, tones, typography } from '../src/theme.ts';
 
 type Load = { status: 'loading' } | { status: 'error'; message: string } | { status: 'ready'; menu: MenuData };
 type Editing = { kind: 'category'; category?: MenuCategory } | { kind: 'item'; categoryId: string; item?: MenuItem } | null;
@@ -352,24 +352,24 @@ function ItemForm({ shopId, categories, categoryId, item, options = [], onOption
 }
 
 const styles = StyleSheet.create({
-  empty: { fontSize: 15, color: colors.textMuted },
+  empty: { fontFamily: bodyFont, fontSize: 15, color: colors.textMuted },
   itemRow: { flexDirection: 'row', alignItems: 'center', gap: 14, minHeight: 72, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: colors.surfaceMuted },
-  itemName: { fontSize: 17, fontWeight: '600', color: colors.text },
+  itemName: { fontFamily: bodyFont, fontSize: 17, fontWeight: '600', color: colors.text },
   itemOut: { color: colors.textMuted },
-  itemDesc: { fontSize: 14, color: colors.textMuted },
-  itemPrice: { fontSize: 15, fontWeight: '700', color: colors.text },
+  itemDesc: { fontFamily: bodyFont, fontSize: 14, color: colors.textMuted },
+  itemPrice: { fontFamily: bodyFont, fontSize: 15, fontWeight: '700', color: colors.text },
   photo: { borderRadius: 14, backgroundColor: colors.placeholder, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   itemForm: { gap: 14, padding: 16, borderRadius: 16, borderWidth: 2, borderColor: tones.accent.border, backgroundColor: '#FFFDFB' },
-  formTitle: { fontSize: 16, fontWeight: '700', color: colors.text },
+  formTitle: { fontFamily: bodyFont, fontSize: 16, fontWeight: '700', color: colors.text },
   fields: { flexDirection: 'row', flexWrap: 'wrap', gap: 16 },
-  label: { fontSize: 14, fontWeight: '600', color: colors.text },
-  hint: { fontSize: 13, color: colors.textMuted, flexShrink: 1 },
-  error: { fontSize: 13, fontWeight: '600', color: colors.textDanger },
+  label: { fontFamily: bodyFont, fontSize: 14, fontWeight: '600', color: colors.text },
+  hint: { fontFamily: bodyFont, fontSize: 13, color: colors.textMuted, flexShrink: 1 },
+  error: { fontFamily: bodyFont, fontSize: 13, fontWeight: '600', color: colors.textDanger },
   chip: { minHeight: 44, paddingHorizontal: 14, borderRadius: 22, borderWidth: 1, borderColor: colors.borderStrong, justifyContent: 'center', backgroundColor: colors.surface },
   chipOn: { backgroundColor: colors.secondary, borderColor: colors.secondary },
-  chipText: { fontSize: 14, fontWeight: '600', color: colors.text },
+  chipText: { fontFamily: bodyFont, fontSize: 14, fontWeight: '600', color: colors.text },
   availRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   actions: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8 },
   formActions: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
-  confirm: { fontSize: 14, fontWeight: '600', color: colors.textDanger },
+  confirm: { fontFamily: bodyFont, fontSize: 14, fontWeight: '600', color: colors.textDanger },
 });

@@ -8,6 +8,8 @@ export interface CartShop {
   name: string;
   /** True for shops read from Supabase: their orders go to `place-order`. */
   live: boolean;
+  /** Usual minutes the shop takes to prepare an order (live shops only). */
+  prepMinutes?: number;
 }
 
 /** The shop the cart belongs to: a sample shop, or a real one read from Supabase. */
@@ -22,5 +24,5 @@ export function useCartShop(shopId: string | null): { shop: CartShop | null; loa
   if (loaded.status === 'loading') return { shop: null, loading: true };
   // If the shop cannot be read right now, keep the cart usable; place-order checks the shop again.
   if (loaded.status === 'error') return { shop: { id: live, name: '', live: true }, loading: false };
-  return { shop: loaded.data ? { id: loaded.data.id, name: loaded.data.name, live: true } : null, loading: false };
+  return { shop: loaded.data ? { id: loaded.data.id, name: loaded.data.name, live: true, prepMinutes: loaded.data.prep_minutes } : null, loading: false };
 }

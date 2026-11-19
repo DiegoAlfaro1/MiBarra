@@ -15,7 +15,7 @@ const COLUMNS: { status: LiveStatus; title: string; dot: string }[] = [
 ];
 
 export default function LiveOrders() {
-  const { open, alertVisible, dismissAlert, orders, cancel } = useDashboard();
+  const { open, alertVisible, dismissAlert, orders, ordersError, cancel } = useDashboard();
   const [cancelId, setCancelId] = useState<string | null>(null);
   const [reason, setReason] = useState(0);
   const target = orders.find((o) => o.id === cancelId);
@@ -30,6 +30,9 @@ export default function LiveOrders() {
             <Text style={styles.alertBtnText}>Visto</Text>
           </Pressable>
         </View>
+      ) : null}
+      {ordersError ? (
+        <Text accessibilityRole="alert" style={styles.paused}>{ordersError}</Text>
       ) : null}
       {!open ? (
         <Text accessibilityRole="summary" style={styles.paused}>

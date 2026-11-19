@@ -3,6 +3,8 @@ import { test } from 'node:test';
 
 import {
   addStamp,
+  toDashOrders,
+  type ServerOrder,
   advanceOrder,
   cancelOrder,
   countSoldOut,
@@ -75,3 +77,22 @@ test('formatLempiras groups thousands and rejects bad numbers', () => {
   assert.equal(formatLempiras(60), 'L 60.00');
   assert.throws(() => formatLempiras(Number.NaN), RangeError);
 });
+
+{
+  const row = (over: Partial<ServerOrder>): ServerOrder => ({
+    id: '3f1c0000-0000-4000-8000-000000000000', status: 'pending', pickup_time: null, payment_status: 'pending', note: null,
+    created_at: '2026-11-19T09:00:00Z',
+    order_items: [{ quantity: 2, chosen_options: [{ name: 'Avena' }, { name: 'Vainilla' }], menu_items: { name: 'Latte' } }],
+    ...over,
+  });
+  test('shows active orders with their lines and code', () => {
+    const [o] = toDashOrders([row({})], () => '9:20 a. m.');
+    assert.equal(o!.name, 'Pedido 3F1C');
+    assert.equal(o!.pickup, 'lo antes posible');
+    assert.deepEqual(o!.lines, [{ main: '2 × Latte', opts: 'Avena · Vainilla' }]);
+    assert.equal(o!.paid, false);
+  });
+  test('drops completed and cancelled orders', () => {
+    assert.equal(toDashOrders([row({ status: 'completed' }), row({ status: 'cancelled' })], () => '').length, 0);
+  });
+}

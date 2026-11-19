@@ -16,3 +16,4 @@ export * from './shopOpen.ts';
 export * from './pickupSlots.ts';
 export * from './customerMenu.ts';
 export * from './menuPhotos.ts';
+export * from './orderProgress.ts';

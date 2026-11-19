@@ -18,6 +18,10 @@ export interface PlacedOrder {
   pickupLabel: string;
   payment: 'counter' | 'card';
   status: OrderStatus;
+  /** Set for orders placed in a real shop: the id and time the server gave, and the shop's prep time. */
+  orderId?: string;
+  placedAt?: string;
+  prepMinutes?: number;
 }
 
 export type Session = AppSession;

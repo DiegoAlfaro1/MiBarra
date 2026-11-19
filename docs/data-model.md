@@ -83,6 +83,7 @@ erDiagram
         text status
         timestamptz pickup_time
         int total_cents
+        text payment_method
         text payment_status
         text note
         uuid idempotency_key
@@ -115,7 +116,7 @@ erDiagram
 | `menu_items` | Items for sale | `category_id`, `name`, `description`, `price_cents` (HNL), `photo_url` (http(s) link; uploaded photos live in the `assets` bucket under `shops/<shop_id>/menu/`), `available`. `shop_id` is kept too and a composite foreign key guarantees the category belongs to the same shop |
 | `item_options` | Sizes and extras | `item_id`, `kind` (`size`/`extra`), `name` (not blank, unique per item and kind, ignoring case and outer spaces), `price_change_cents` (may be negative, at most L 99,999.99 either way), `available`. When an item has sizes on sale, every order line for it must carry exactly one size (trigger `check_order_item_size()` on `order_items`, run inside `place_order`); extras are any number. If an item has sizes but all are sold out, it cannot be ordered at all |
 | `customers` | App users | `name`, `email` and/or `phone` (at least one), `id` = login id. Created automatically when someone signs up |
-| `orders` | One per order | `shop_id`, `customer_id`, `status` (`pending` → `preparing` → `ready` → `completed`, or `cancelled`), `pickup_time`, `total_cents`, `payment_status` (`pending`, `paid`, `failed`, `refunded`), `note` (max 280), `idempotency_key` |
+| `orders` | One per order | `shop_id`, `customer_id`, `status` (`pending` → `preparing` → `ready` → `completed`, or `cancelled`), `pickup_time`, `total_cents`, `payment_method` (`counter` or `card`; chosen by the customer when ordering, never changed afterwards; `card` is a demo in the MVP), `payment_status` (`pending`, `paid`, `failed`, `refunded`; staff see `pending` as "not paid"), `note` (max 280), `idempotency_key` |
 | `order_items` | Lines in an order | `order_id`, `item_id`, `quantity` (1-99), `chosen_options` (snapshot of name and price change), `unit_price_cents` (price at time of order, options included) |
 | `loyalty_cards` | One per customer per shop | `customer_id`, `shop_id`, `stamps`, `rewards_available`, `qr_code_value` (unguessable, unique). `unique (customer_id, shop_id)` |
 | `shop_members` | Which logins work at which shop | `shop_id`, `user_id`, `role` (`owner`, `manager`, `barista`), `active`, `invited_by`. One row per user per shop. See [access-control.md](access-control.md) |

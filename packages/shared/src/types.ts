@@ -89,6 +89,7 @@ export interface Order {
   status: OrderStatus;
   pickup_time: string | null;
   total_cents: number;
+  payment_method: PaymentMethod;
   payment_status: PaymentStatus;
   note: string | null;
   idempotency_key: string;
@@ -125,6 +126,9 @@ export interface LoyaltyCard {
   updated_at: string;
 }
 
+/** `counter` = pay at the counter (real payment); `card` = demo card flow in the MVP. */
+export type PaymentMethod = 'counter' | 'card';
+
 export interface OrderItemInput {
   productId: string;
   quantity: number;
@@ -138,6 +142,8 @@ export interface PlaceOrderInput {
   note?: string;
   /** ISO timestamp of a pickup slot from `listPickupSlots`; leave out to prepare as soon as possible. */
   pickupTime?: string;
+  /** How the customer will pay; defaults to `counter`. Fixed once the order is placed. */
+  paymentMethod?: PaymentMethod;
 }
 
 /** Links a staff login to a shop with a role. Removing someone sets `active` to false. */

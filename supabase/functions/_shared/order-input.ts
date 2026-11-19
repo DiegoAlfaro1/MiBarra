@@ -1,5 +1,8 @@
 // Pure validation (no Deno APIs) so it can be unit-tested with `node --test`.
 
+export type PaymentMethod = 'counter' | 'card';
+export const PAYMENT_METHODS: readonly PaymentMethod[] = ['counter', 'card'];
+
 export interface ValidOrderInput {
   shopId: string;
   items: { productId: string; quantity: number; optionIds?: string[] }[];
@@ -8,6 +11,8 @@ export interface ValidOrderInput {
   note: string | null;
   /** ISO timestamp of the chosen pickup slot; null means prepare as soon as possible. */
   pickupTime: string | null;
+  /** How the customer will pay; chosen once, when the order is placed. */
+  paymentMethod: PaymentMethod;
 }
 
 export type ValidationResult = { ok: true; value: ValidOrderInput } | { ok: false; error: string };
@@ -24,7 +29,7 @@ export function validateOrderInput(body: unknown): ValidationResult {
   if (typeof body !== 'object' || body === null) {
     return { ok: false, error: 'Invalid request.' };
   }
-  const { shopId, items, idempotencyKey, note, pickupTime } = body as Record<string, unknown>;
+  const { shopId, items, idempotencyKey, note, pickupTime, paymentMethod } = body as Record<string, unknown>;
 
   if (!isUuid(shopId)) return { ok: false, error: 'Please choose a shop.' };
   if (!isUuid(idempotencyKey)) return { ok: false, error: 'Missing order reference. Please try again.' };
@@ -60,5 +65,14 @@ export function validateOrderInput(body: unknown): ValidationResult {
     pickup = new Date(pickupTime).toISOString();
   }
 
-  return { ok: true, value: { shopId, items: parsed, idempotencyKey, note: trimmed || null, pickupTime: pickup } };
+  // Missing means pay at the counter (older clients); anything else must be a known method.
+  const method = paymentMethod ?? 'counter';
+  if (!PAYMENT_METHODS.includes(method as PaymentMethod)) {
+    return { ok: false, error: 'Choose how you want to pay.' };
+  }
+
+  return {
+    ok: true,
+    value: { shopId, items: parsed, idempotencyKey, note: trimmed || null, pickupTime: pickup, paymentMethod: method as PaymentMethod },
+  };
 }

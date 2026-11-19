@@ -37,6 +37,7 @@ Deno.serve(async (req) => {
     p_idempotency_key: input.value.idempotencyKey,
     p_pickup_time: input.value.pickupTime,
     p_note: input.value.note,
+    p_payment_method: input.value.paymentMethod,
   });
 
   if (error) {

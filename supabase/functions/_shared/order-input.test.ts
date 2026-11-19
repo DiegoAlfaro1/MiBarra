@@ -15,7 +15,7 @@ function errorOf(body: unknown): string | undefined {
 
 test('accepts a valid order and strips unknown fields', () => {
   const result = validateOrderInput({ ...valid, items: [{ productId: PRODUCT, quantity: 2, price: 1 }], extra: 1 });
-  assert.deepEqual(result, { ok: true, value: { ...valid, note: null, pickupTime: null } });
+  assert.deepEqual(result, { ok: true, value: { ...valid, note: null, pickupTime: null, paymentMethod: 'counter' } });
 });
 
 test('rejects non-object bodies', () => {
@@ -44,7 +44,7 @@ test('rejects invalid items', () => {
 test('passes valid option ids through and rejects malformed ones', () => {
   const OPTION = '00000000-0000-4000-8000-0000000000bb';
   const withOptions = { ...valid, items: [{ productId: PRODUCT, quantity: 1, optionIds: [OPTION] }] };
-  assert.deepEqual(validateOrderInput(withOptions), { ok: true, value: { ...withOptions, note: null, pickupTime: null } });
+  assert.deepEqual(validateOrderInput(withOptions), { ok: true, value: { ...withOptions, note: null, pickupTime: null, paymentMethod: 'counter' } });
   assert.match(errorOf({ ...valid, items: [{ productId: PRODUCT, quantity: 1, optionIds: ['x'] }] }) ?? '', /option/);
   assert.match(errorOf({ ...valid, items: [{ productId: PRODUCT, quantity: 1, optionIds: 'x' }] }) ?? '', /option/);
 });
@@ -65,4 +65,20 @@ test('pickup time is optional and must be a valid date', () => {
   assert.equal(slot.ok && slot.value.pickupTime, '2026-11-18T15:20:00.000Z');
   assert.equal(validateOrderInput({ ...valid, pickupTime: 'mañana' }).ok, false);
   assert.equal(validateOrderInput({ ...valid, pickupTime: 12 }).ok, false);
+});
+
+test('payment method defaults to counter and accepts counter or card', () => {
+  const method = (body: unknown) => {
+    const result = validateOrderInput(body);
+    return result.ok ? result.value.paymentMethod : result.error;
+  };
+  assert.equal(method(valid), 'counter');
+  assert.equal(method({ ...valid, paymentMethod: 'counter' }), 'counter');
+  assert.equal(method({ ...valid, paymentMethod: 'card' }), 'card');
+});
+
+test('rejects an unknown payment method', () => {
+  assert.equal(errorOf({ ...valid, paymentMethod: 'bitcoin' }), 'Choose how you want to pay.');
+  assert.equal(errorOf({ ...valid, paymentMethod: null }), undefined);
+  assert.equal(errorOf({ ...valid, paymentMethod: 5 }), 'Choose how you want to pay.');
 });

@@ -121,7 +121,7 @@ export function useCheckout() {
       checkoutKey.current ??= newCheckoutKey();
       try {
         const order = await submitOrder(
-          { shopId: shop.id, items: orderItemsFromCart(cart.lines), note: cart.note.trim() || undefined, pickupTime: pickupTimeFor(slot) },
+          { shopId: shop.id, items: orderItemsFromCart(cart.lines), note: cart.note.trim() || undefined, pickupTime: pickupTimeFor(slot), paymentMethod: payment },
           checkoutKey.current,
         );
         code = orderCode(order.id);

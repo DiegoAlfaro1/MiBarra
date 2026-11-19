@@ -1,6 +1,8 @@
 import { EXTRAS, MILKS, SIZES } from '../data/options.ts';
 
 export const MAX_QTY = 9;
+/** Longest note for the shop (the server allows a bit more, so a full note is never rejected). */
+export const MAX_NOTE = 200;
 
 export interface Selection {
   sizeId: string;
@@ -83,7 +85,10 @@ export const cartTotalCents = (lines: readonly CartLine[]) =>
 /** Confirmation shown on the cart after an item is added, e.g. "2 × Capuchino agregado al carrito". */
 export const addedMessage = (name: string, quantity: number) =>
   `${quantity} × ${name} ${quantity === 1 ? 'agregado' : 'agregados'} al carrito`;
+/** Units in the cart: 2 lattes count as 2, so the badge shows how many things the customer is ordering. */
 export const cartCount = (lines: readonly CartLine[]) => lines.reduce((sum, line) => sum + line.quantity, 0);
+/** e.g. "1 producto", "3 productos". */
+export const itemCountLabel = (count: number) => `${count} ${count === 1 ? 'producto' : 'productos'}`;
 
 export function cartReducer(state: CartState, action: CartAction): CartState {
   switch (action.type) {
@@ -98,13 +103,21 @@ export function cartReducer(state: CartState, action: CartAction): CartState {
         : [...base.lines, { ...action.line, quantity: clampQty(action.line.quantity) }];
       return { ...base, shopId: action.line.shopId, lines };
     }
-    case 'replace':
-      return {
-        ...state,
-        lines: state.lines.map((l) =>
-          l.id === action.id ? { ...action.line, id: action.id, quantity: clampQty(action.line.quantity) } : l,
-        ),
-      };
+    case 'replace': {
+      if (!state.lines.some((l) => l.id === action.id)) return state;
+      const edited = { ...action.line, id: action.id, quantity: clampQty(action.line.quantity) };
+      // Editing a line into the same choices as another line merges them, so the cart never lists the same thing twice.
+      const twin = state.lines.find((l) => l.id !== action.id && lineKey(l) === lineKey(edited));
+      if (twin) {
+        return {
+          ...state,
+          lines: state.lines
+            .filter((l) => l.id !== action.id)
+            .map((l) => (l.id === twin.id ? { ...l, quantity: clampQty(l.quantity + edited.quantity) } : l)),
+        };
+      }
+      return { ...state, lines: state.lines.map((l) => (l.id === action.id ? edited : l)) };
+    }
     case 'setQty':
       return {
         ...state,
@@ -115,7 +128,7 @@ export function cartReducer(state: CartState, action: CartAction): CartState {
       return lines.length ? { ...state, lines } : emptyCart;
     }
     case 'setNote':
-      return { ...state, note: action.note.slice(0, 200) };
+      return { ...state, note: action.note.slice(0, MAX_NOTE) };
     case 'clear':
       return emptyCart;
   }

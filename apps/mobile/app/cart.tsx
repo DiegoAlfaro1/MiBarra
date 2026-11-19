@@ -2,7 +2,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { AppText, BackHeader, Banner, Button, Card, EmptyState, Field, LinkText, Screen, Stepper, t } from '../src/components/ui';
-import { cartCount, cartTotalCents, lineTotalCents } from '../src/lib/cart';
+import { cartCount, cartTotalCents, lineTotalCents, MAX_NOTE } from '../src/lib/cart';
 import { formatLempiras } from '../src/lib/format';
 import { checkoutRoute } from '../src/lib/access';
 import { useCartShop } from '../src/lib/useCartShop';
@@ -69,17 +69,22 @@ export default function CartScreen() {
                 {line.selection || line.optionIds?.length ? (
                   <LinkText
                     label="Editar"
+                    accessibilityLabel={`Editar ${line.name}`}
                     onPress={() =>
                       router.push({ pathname: '/item/[productId]', params: { productId: line.productId, lineId: line.id } })
                     }
                   />
                 ) : null}
-                <LinkText label="Quitar" color={t.colors.textDanger} onPress={() => dispatch({ type: 'remove', id: line.id })} />
+                <LinkText
+                  label="Quitar"
+                  accessibilityLabel={`Quitar ${line.name} del pedido`}
+                  color={t.colors.textDanger}
+                  onPress={() => dispatch({ type: 'remove', id: line.id })} />
               </View>
             </View>
             <View style={styles.right}>
               <AppText variant="number">{formatLempiras(lineTotalCents(line))}</AppText>
-              <Stepper value={line.quantity} onChange={(quantity) => dispatch({ type: 'setQty', id: line.id, quantity })} />
+              <Stepper itemName={line.name} value={line.quantity} onChange={(quantity) => dispatch({ type: 'setQty', id: line.id, quantity })} />
             </View>
           </View>
         ))}
@@ -95,8 +100,11 @@ export default function CartScreen() {
         value={cart.note}
         onChangeText={(note) => dispatch({ type: 'setNote', note })}
         multiline
-        maxLength={200}
+        maxLength={MAX_NOTE}
       />
+      <AppText variant="caption" color={t.colors.textMuted} style={styles.counter}>
+        {`${cart.note.length}/${MAX_NOTE}`}
+      </AppText>
 
       <Banner tone="accent" icon="award">
         Este pedido suma 1 sello a tu tarjeta
@@ -113,5 +121,6 @@ const styles = StyleSheet.create({
   divider: { borderTopWidth: 1, borderTopColor: t.colors.border },
   actions: { flexDirection: 'row', gap: 16 },
   right: { alignItems: 'flex-end', gap: 8 },
+  counter: { alignSelf: 'flex-end', marginTop: -8 },
   totalRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
 });

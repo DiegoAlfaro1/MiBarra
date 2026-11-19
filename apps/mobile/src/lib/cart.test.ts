@@ -10,6 +10,7 @@ import {
   defaultSelection,
   describeSelection,
   emptyCart,
+  itemCountLabel,
   unitPriceCents,
   type CartLine,
 } from './cart.ts';
@@ -98,6 +99,51 @@ describe('cartReducer', () => {
     state = cartReducer(state, { type: 'replace', id: 'a', line: line({ id: 'x', unitCents: 9500, quantity: 2 }) });
     assert.equal(state.lines[0]!.id, 'a');
     assert.equal(state.lines[0]!.unitCents, 9500);
+  });
+});
+
+describe('editing and removing cart lines', () => {
+  const two = () => {
+    let state = cartReducer(emptyCart, { type: 'add', line: line({ quantity: 2 }) });
+    return cartReducer(state, {
+      type: 'add',
+      line: line({ id: 'b', selection: { ...defaultSelection(), milkId: 'oat' }, quantity: 3 }),
+    });
+  };
+  it('counts units, not lines, and goes down when a line is removed', () => {
+    let state = two();
+    assert.equal(cartCount(state.lines), 5);
+    state = cartReducer(state, { type: 'remove', id: 'b' });
+    assert.equal(cartCount(state.lines), 2);
+    state = cartReducer(state, { type: 'setQty', id: 'a', quantity: 1 });
+    assert.equal(cartCount(state.lines), 1);
+  });
+  it('merges a line edited into the same choices as another line', () => {
+    let state = two();
+    state = cartReducer(state, { type: 'replace', id: 'b', line: line({ id: 'b', quantity: 3 }) });
+    assert.equal(state.lines.length, 1);
+    assert.equal(state.lines[0]!.id, 'a');
+    assert.equal(cartCount(state.lines), 5);
+  });
+  it('changes size or extras in place without touching other lines', () => {
+    let state = two();
+    const large = { sizeId: 'large', milkId: 'whole', extraIds: ['vanilla'] };
+    state = cartReducer(state, { type: 'replace', id: 'a', line: line({ selection: large, unitCents: 11000, quantity: 2 }) });
+    assert.deepEqual(state.lines.map((l) => l.id), ['a', 'b']);
+    assert.deepEqual(state.lines[0]!.selection, large);
+    assert.equal(cartTotalCents(state.lines), 22000 + 24000);
+  });
+  it('ignores an edit for a line that is no longer in the cart', () => {
+    const state = two();
+    assert.equal(cartReducer(state, { type: 'replace', id: 'gone', line: line({ id: 'gone' }) }), state);
+  });
+  it('keeps the note within the limit', () => {
+    const state = cartReducer(emptyCart, { type: 'setNote', note: 'x'.repeat(250) });
+    assert.equal(state.note.length, 200);
+  });
+  it('labels the count with the right plural', () => {
+    assert.equal(itemCountLabel(1), '1 producto');
+    assert.equal(itemCountLabel(3), '3 productos');
   });
 });
 

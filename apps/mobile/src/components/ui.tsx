@@ -188,9 +188,20 @@ export function Button({
   );
 }
 
-export function LinkText({ label, onPress, color = t.colors.textAccent }: { label: string; onPress: () => void; color?: string }) {
+export function LinkText({
+  label,
+  onPress,
+  color = t.colors.textAccent,
+  accessibilityLabel,
+}: {
+  label: string;
+  onPress: () => void;
+  color?: string;
+  /** Longer label for screen readers, e.g. "Quitar Capuchino del pedido". */
+  accessibilityLabel?: string;
+}) {
   return (
-    <Pressable accessibilityRole="link" accessibilityLabel={label} onPress={onPress} style={styles.linkTarget} hitSlop={6}>
+    <Pressable accessibilityRole="link" accessibilityLabel={accessibilityLabel ?? label} onPress={onPress} style={styles.linkTarget} hitSlop={6}>
       <AppText variant="buttonSm" color={color}>
         {label}
       </AppText>
@@ -293,12 +304,26 @@ export function Chip({ label, selected, onPress, sub, disabled, minHeight = 44 }
   );
 }
 
-export function Stepper({ value, onChange, min = 1, max = 9 }: { value: number; onChange: (n: number) => void; min?: number; max?: number }) {
+export function Stepper({
+  value,
+  onChange,
+  min = 1,
+  max = 9,
+  itemName,
+}: {
+  value: number;
+  onChange: (n: number) => void;
+  min?: number;
+  max?: number;
+  /** Names the item in the button labels when several steppers share a screen (the cart). */
+  itemName?: string;
+}) {
+  const of = itemName ? `, ${itemName}` : '';
   return (
     <View style={styles.stepper}>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Quitar uno"
+        accessibilityLabel={`Quitar uno${of}`}
         disabled={value <= min}
         onPress={() => onChange(value - 1)}
         style={styles.stepperBtn}
@@ -312,7 +337,7 @@ export function Stepper({ value, onChange, min = 1, max = 9 }: { value: number; 
       </AppText>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Agregar uno"
+        accessibilityLabel={`Agregar uno${of}`}
         disabled={value >= max}
         onPress={() => onChange(value + 1)}
         style={styles.stepperBtn}

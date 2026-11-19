@@ -5,7 +5,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { AppText, Badge, Banner, BackHeader, Button, Chip, EmptyState, Screen, StampDots, t } from '../../src/components/ui';
 import { CATEGORIES, CLOSED_SHOP_MENU, PRODUCTS, SHOPS } from '../../src/data/mock';
-import { cartCount, cartTotalCents } from '../../src/lib/cart';
+import { cartCount, cartTotalCents, itemCountLabel } from '../../src/lib/cart';
 import { formatLempiras } from '../../src/lib/format';
 import { useIsWide } from '../../src/lib/useIsWide';
 import { useAppState } from '../../src/state/AppState';
@@ -183,7 +183,7 @@ function MobileShop() {
         <View style={styles.cartBar}>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={`Ver carrito, ${count} productos, ${formatLempiras(cartTotalCents(cart.lines))}`}
+            accessibilityLabel={`Ver carrito, ${itemCountLabel(count)}, ${formatLempiras(cartTotalCents(cart.lines))}`}
             onPress={() => router.push('/cart')}
             style={styles.cartBarBtn}
           >

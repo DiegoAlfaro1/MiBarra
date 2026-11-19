@@ -5,8 +5,8 @@ import { Modal, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react
 
 import { AppText, Button, EmptyState, Stepper, t, textStyle } from '../components/ui';
 import { CATEGORIES, PRODUCTS, type MockProduct, type MockShop } from '../data/mock';
-import { MILKS, SIZES } from '../data/options';
-import { cartTotalCents, defaultSelection, type Selection } from '../lib/cart';
+import { EXTRAS, MILKS, SIZES } from '../data/options';
+import { cartCount, cartTotalCents, defaultSelection, type CartLine, type Selection } from '../lib/cart';
 import { formatExtra, formatLempiras } from '../lib/format';
 import { buildCartLine } from '../lib/menu';
 import { checkoutRoute } from '../lib/access';
@@ -23,9 +23,22 @@ function Pill({ label, on, onPress }: { label: string; on: boolean; onPress: () 
   );
 }
 
-function CustomizeDialog({ product, onClose, onAdd }: { product: MockProduct; onClose: () => void; onAdd: (s: Selection, qty: number) => void }) {
-  const [sel, setSel] = useState<Selection>(defaultSelection());
-  const [qty, setQty] = useState(1);
+function CustomizeDialog({
+  product,
+  editing,
+  onClose,
+  onAdd,
+}: {
+  product: MockProduct;
+  /** The cart line being edited; the dialog starts from its choices and saves over it. */
+  editing?: CartLine;
+  onClose: () => void;
+  onAdd: (s: Selection, qty: number) => void;
+}) {
+  const [sel, setSel] = useState<Selection>(editing?.selection ?? defaultSelection());
+  const [qty, setQty] = useState(editing?.quantity ?? 1);
+  const toggleExtra = (id: string) =>
+    setSel((s) => ({ ...s, extraIds: s.extraIds.includes(id) ? s.extraIds.filter((e) => e !== id) : [...s.extraIds, id] }));
   const unit = buildCartLine(product, 'preview', sel).unitCents;
   return (
     <Modal transparent animationType="fade" onRequestClose={onClose} visible>
@@ -60,9 +73,17 @@ function CustomizeDialog({ product, onClose, onAdd }: { product: MockProduct; on
               ))}
             </View>
           </View>
+          <View style={styles.group}>
+            <AppText variant="bodyStrong">Extras</AppText>
+            <View style={styles.opts}>
+              {EXTRAS.map((e) => (
+                <Pill key={e.id} label={`${e.label} ${formatExtra(e.priceCents)}`} on={sel.extraIds.includes(e.id)} onPress={() => toggleExtra(e.id)} />
+              ))}
+            </View>
+          </View>
           <View style={styles.row}>
             <Stepper value={qty} onChange={setQty} />
-            <Button style={styles.flex} label="Agregar al pedido" right={formatLempiras(unit * qty)} onPress={() => onAdd(sel, qty)} />
+            <Button style={styles.flex} label={editing ? 'Guardar cambios' : 'Agregar al pedido'} right={formatLempiras(unit * qty)} onPress={() => onAdd(sel, qty)} />
           </View>
         </Pressable>
       </Pressable>
@@ -73,7 +94,7 @@ function CustomizeDialog({ product, onClose, onAdd }: { product: MockProduct; on
 export function WebShop({ shop }: { shop: MockShop }) {
   const { cart, dispatch, session } = useAppState();
   const [category, setCategory] = useState<string>(CATEGORIES[0].id);
-  const [active, setActive] = useState<MockProduct | null>(null);
+  const [active, setActive] = useState<{ product: MockProduct; line?: CartLine } | null>(null);
 
   const inCart = cart.shopId === shop.id ? cart : { ...cart, lines: [] };
   const total = cartTotalCents(inCart.lines);
@@ -84,7 +105,15 @@ export function WebShop({ shop }: { shop: MockShop }) {
     dispatch({ type: 'add', line: buildCartLine(product, shop.id, selection, qty) });
     setActive(null);
   };
-  const pick = (product: MockProduct) => (product.customizable ? setActive(product) : add(product, null));
+  const save = (product: MockProduct, line: CartLine, selection: Selection, qty: number) => {
+    dispatch({ type: 'replace', id: line.id, line: buildCartLine(product, shop.id, selection, qty, line.id) });
+    setActive(null);
+  };
+  const pick = (product: MockProduct) => (product.customizable ? setActive({ product }) : add(product, null));
+  const edit = (line: CartLine) => {
+    const product = PRODUCTS.find((p) => p.id === line.productId);
+    if (product && !product.soldOut) setActive({ product, line });
+  };
 
   return (
     <View style={styles.page}>
@@ -179,7 +208,7 @@ export function WebShop({ shop }: { shop: MockShop }) {
 
           <View accessibilityRole="complementary" aria-label="Tu pedido" style={styles.cart}>
             <AppText variant="h2" accessibilityRole="header" aria-level={2}>
-              Tu pedido
+              {inCart.lines.length ? `Tu pedido (${cartCount(inCart.lines)})` : 'Tu pedido'}
             </AppText>
             {inCart.lines.length === 0 ? (
               <AppText variant="body" color={t.colors.textMuted}>
@@ -189,17 +218,29 @@ export function WebShop({ shop }: { shop: MockShop }) {
               inCart.lines.map((line) => (
                 <View key={line.id} style={styles.line}>
                   <View style={styles.flex}>
-                    <AppText variant="bodyStrong">{`${line.quantity} × ${line.name}`}</AppText>
+                    <AppText variant="bodyStrong">{line.name}</AppText>
                     <AppText variant="caption" color={t.colors.textMuted}>
                       {line.optionsLabel}
                     </AppText>
-                    <Pressable accessibilityRole="button" accessibilityLabel={`Quitar ${line.name}`} onPress={() => dispatch({ type: 'remove', id: line.id })} style={styles.remove}>
-                      <AppText variant="label" color={t.colors.textDanger} style={styles.underline}>
-                        Quitar
-                      </AppText>
-                    </Pressable>
+                    <View style={styles.lineActions}>
+                      {line.selection ? (
+                        <Pressable accessibilityRole="button" accessibilityLabel={`Editar ${line.name}`} onPress={() => edit(line)} style={styles.remove}>
+                          <AppText variant="label" style={styles.underline}>
+                            Editar
+                          </AppText>
+                        </Pressable>
+                      ) : null}
+                      <Pressable accessibilityRole="button" accessibilityLabel={`Quitar ${line.name} del pedido`} onPress={() => dispatch({ type: 'remove', id: line.id })} style={styles.remove}>
+                        <AppText variant="label" color={t.colors.textDanger} style={styles.underline}>
+                          Quitar
+                        </AppText>
+                      </Pressable>
+                    </View>
                   </View>
-                  <AppText variant="bodyStrong">{formatLempiras(line.unitCents * line.quantity)}</AppText>
+                  <View style={styles.lineRight}>
+                    <AppText variant="bodyStrong">{formatLempiras(line.unitCents * line.quantity)}</AppText>
+                    <Stepper itemName={line.name} value={line.quantity} onChange={(quantity) => dispatch({ type: 'setQty', id: line.id, quantity })} />
+                  </View>
                 </View>
               ))
             )}
@@ -230,7 +271,15 @@ export function WebShop({ shop }: { shop: MockShop }) {
         </View>
         <WebFooter />
       </ScrollView>
-      {active ? <CustomizeDialog product={active} onClose={() => setActive(null)} onAdd={(s, q) => add(active, s, q)} /> : null}
+      {active ? (
+        <CustomizeDialog
+          key={active.line?.id ?? active.product.id}
+          product={active.product}
+          editing={active.line}
+          onClose={() => setActive(null)}
+          onAdd={(s, q) => (active.line ? save(active.product, active.line, s, q) : add(active.product, s, q))}
+        />
+      ) : null}
     </View>
   );
 }
@@ -259,7 +308,9 @@ const styles = StyleSheet.create({
   plus: { width: 36, height: 36, borderRadius: 18, backgroundColor: t.colors.surfaceInverse, alignItems: 'center', justifyContent: 'center' },
   cart: { flexGrow: 1, flexBasis: 300, maxWidth: 360, gap: 14, padding: 20, backgroundColor: t.colors.surface, borderWidth: 1, borderColor: t.colors.border, borderRadius: 22 },
   line: { flexDirection: 'row', gap: 10, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: t.colors.surfaceMuted },
-  remove: { minHeight: 32, justifyContent: 'center', alignSelf: 'flex-start' },
+  lineActions: { flexDirection: 'row', gap: 14 },
+  lineRight: { alignItems: 'flex-end', gap: 8 },
+  remove: { minHeight: 44, justifyContent: 'center', alignSelf: 'flex-start' },
   underline: { textDecorationLine: 'underline' },
   noteWrap: { gap: 6 },
   note: { minHeight: 60, padding: 10, borderRadius: 12, borderWidth: 1, borderColor: t.colors.borderStrong, color: t.colors.text, textAlignVertical: 'top' },

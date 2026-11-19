@@ -8,14 +8,15 @@ alter table public.orders
   add column payment_method text not null default 'counter'
   check (payment_method in ('counter', 'card'));
 
--- Staff and customers may still only change the order status.
+-- Staff and customers may still only change the order status. Same rules as the access_control
+-- migration (including the cancel checks), plus the new payment_method column.
 create or replace function public.guard_order_update()
 returns trigger
 language plpgsql
 set search_path = ''
 as $$
 begin
-  if (select auth.uid()) is null then
+  if (select auth.uid()) is null or current_user not in ('authenticated', 'anon') then
     return new;
   end if;
   if new.shop_id <> old.shop_id
@@ -29,6 +30,12 @@ begin
      or new.payment_status <> old.payment_status
      or (old.loyalty_awarded_at is not null and new.loyalty_awarded_at is distinct from old.loyalty_awarded_at) then
     raise exception 'Only the order status can be changed.' using errcode = '42501';
+  end if;
+  if new.status <> old.status and old.status = 'cancelled' then
+    raise exception 'A cancelled order can''t be reopened.' using errcode = '42501';
+  end if;
+  if new.status <> old.status and new.status = 'cancelled' then
+    raise exception 'Use cancel_order() to cancel an order.' using errcode = '42501';
   end if;
   return new;
 end;

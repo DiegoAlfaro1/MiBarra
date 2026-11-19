@@ -1,10 +1,10 @@
 import { router } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
-import { AppText, Badge, Card, EmptyState, QrPlaceholder, t } from '../components/ui';
-import { shopHref } from '../components/ShopRow';
-import { MOCK_CUSTOMER_NAME, PAST_ORDERS, SHOPS } from '../data/mock';
-import { pastOrderRow, stampCards, type StampCardTone } from '../lib/account';
+import { PastOrders } from '../components/PastOrders';
+import { AppText, Badge, Card, QrPlaceholder, t } from '../components/ui';
+import { MOCK_CUSTOMER_NAME, SHOPS } from '../data/mock';
+import { stampCards, type StampCardTone } from '../lib/account';
 import { formatLempiras } from '../lib/format';
 import { useAppState, type OrderStatus } from '../state/AppState';
 import { WEB_MAX_WIDTH, WebFooter, WebHeader } from './WebHeader';
@@ -116,11 +116,15 @@ function Stamps() {
 }
 
 function Orders({ activeOrder }: { activeOrder: ReturnType<typeof useAppState>['order'] }) {
-  const rows = PAST_ORDERS.map(pastOrderRow);
-  const empty = !activeOrder && rows.length === 0;
-  if (empty) {
-    return <EmptyState icon="file-text" title="Aún no tienes pedidos" body="Cuando hagas un pedido, lo verás aquí." />;
-  }
+  return (
+    <View style={styles.history}>
+      {activeOrder ? <ActiveOrderTable activeOrder={activeOrder} /> : null}
+      <PastOrders />
+    </View>
+  );
+}
+
+function ActiveOrderTable({ activeOrder }: { activeOrder: NonNullable<ReturnType<typeof useAppState>['order']> }) {
   return (
     <Card style={styles.tableCard}>
       <ScrollView horizontal>
@@ -132,8 +136,7 @@ function Orders({ activeOrder }: { activeOrder: ReturnType<typeof useAppState>['
               </AppText>
             ))}
           </View>
-          {activeOrder ? (
-            <View accessibilityRole="row" style={[styles.tr, styles.trBorder]}>
+          <View accessibilityRole="row" style={[styles.tr, styles.trBorder]}>
               <AppText variant="body" style={COLS[0]}>
                 Hoy
               </AppText>
@@ -155,40 +158,6 @@ function Orders({ activeOrder }: { activeOrder: ReturnType<typeof useAppState>['
                 </AppText>
               </Pressable>
             </View>
-          ) : null}
-          {rows.map((r) => (
-            <View key={r.id} accessibilityRole="row" style={[styles.tr, styles.trBorder]}>
-              <AppText variant="body" style={COLS[0]}>
-                {r.date}
-              </AppText>
-              <AppText variant="bodyStrong" style={COLS[1]}>
-                {r.shop}
-              </AppText>
-              <AppText variant="body" color={t.palette.stone700} style={COLS[2]}>
-                {r.items}
-              </AppText>
-              <AppText variant="bodyStrong" style={COLS[3]}>
-                {formatLempiras(r.totalCents)}
-              </AppText>
-              <View style={COLS[4]}>
-                <Badge label={r.status} tone={r.tone} />
-              </View>
-              <Pressable
-                accessibilityRole="link"
-                accessibilityLabel={`${r.action === 'reorder' ? 'Pedir de nuevo' : 'Ver detalle'}, ${r.shop}, ${r.date}`}
-                onPress={() => {
-                  const shop = SHOPS.find((s) => s.name === r.shop);
-                  if (r.action === 'reorder' && shop) router.push(shopHref(shop));
-                }}
-                disabled={r.action === 'detail'}
-                style={[styles.action, COLS[5]]}
-              >
-                <AppText variant="bodyStrong" color={r.action === 'detail' ? t.colors.textMuted : t.colors.text} style={styles.underline}>
-                  {r.action === 'reorder' ? 'Pedir de nuevo' : 'Ver detalle'}
-                </AppText>
-              </Pressable>
-            </View>
-          ))}
         </View>
       </ScrollView>
     </Card>
@@ -212,6 +181,7 @@ const styles = StyleSheet.create({
   stampCard: { flexGrow: 1, flexBasis: 260, gap: 12, padding: 20, borderRadius: 20, borderWidth: 1 },
   track: { height: 8, borderRadius: 4, overflow: 'hidden' },
   qrCard: { flexGrow: 1, flexBasis: 280, alignItems: 'center', gap: 14, padding: 24, backgroundColor: t.colors.surface, borderWidth: 1, borderColor: t.colors.border, borderRadius: 22 },
+  history: { gap: 16 },
   tableCard: { padding: 0, borderRadius: 22, overflow: 'hidden' },
   table: { minWidth: 760, flexGrow: 1 },
   tr: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingVertical: 14 },

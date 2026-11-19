@@ -51,6 +51,9 @@ export function canCustomerCancel(order: Pick<Order, 'status'>): boolean {
 
 function failure(error: { code?: string; message?: string }, fallback: string): OrderingError {
   if (error.code === '28000') return new OrderingError('Tu sesión expiró. Vuelve a iniciar sesión.');
+  if (error.code === '42501' && /being prepared/i.test(error.message ?? '')) {
+    return new OrderingError('La cafetería ya empezó a preparar tu pedido, así que ya no se puede cancelar.');
+  }
   if (error.code === '42501') return new OrderingError('No tienes permiso para hacer esto con este pedido.');
   if (error.code === '22023') return new OrderingError('No encontramos el pedido o ya no se puede cambiar.');
   return new OrderingError(fallback);

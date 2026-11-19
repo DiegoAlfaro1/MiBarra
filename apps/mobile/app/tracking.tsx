@@ -5,6 +5,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { AppText, BackHeader, Button, Card, EmptyState, Screen, t } from '../src/components/ui';
 import { formatLempiras } from '../src/lib/format';
+import { useCancelOrder } from '../src/lib/useCancelOrder';
 import { useIsWide } from '../src/lib/useIsWide';
 import { useAppState, type OrderStatus } from '../src/state/AppState';
 import { WebTracking } from '../src/web/WebTracking';
@@ -22,6 +23,7 @@ export default function TrackingRoute() {
 function Tracking() {
   const { order, setOrderStatus, session } = useAppState();
   const status = order?.status;
+  const { cancel, cancelling, error: cancelError } = useCancelOrder();
 
   useEffect(() => {
     const delay = status ? DEMO_ADVANCE_MS[status] : undefined;
@@ -117,13 +119,16 @@ function Tracking() {
       {idx === 0 ? (
         <View style={styles.gap}>
           <Button
-            label="Cancelar pedido"
+            label={cancelling ? 'Cancelando…' : 'Cancelar pedido'}
             variant="danger"
-            onPress={() => {
-              setOrderStatus('cancelled');
-              router.replace({ pathname: '/cancelled', params: { by: 'cliente' } });
-            }}
+            disabled={cancelling}
+            onPress={cancel}
           />
+          {cancelError ? (
+            <AppText variant="bodySm" color={t.colors.textDanger} accessibilityRole="alert" style={styles.center}>
+              {cancelError}
+            </AppText>
+          ) : null}
           <AppText variant="caption" color={t.colors.textMuted} style={styles.center}>
             Puedes cancelar hasta que la cafetería empiece a prepararlo.
           </AppText>

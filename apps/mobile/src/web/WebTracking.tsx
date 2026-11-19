@@ -5,6 +5,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { AppText, Button, Card, EmptyState, t } from '../components/ui';
 import { MOCK_CUSTOMER_NAME, SHOPS } from '../data/mock';
 import { formatLempiras } from '../lib/format';
+import { useCancelOrder } from '../lib/useCancelOrder';
 import { TRACKING_STEPS, trackingView } from '../lib/tracking';
 import { useAppState } from '../state/AppState';
 import { WEB_MAX_WIDTH, WebFooter, WebHeader } from './WebHeader';
@@ -15,7 +16,8 @@ const STAMPS_NOW = 6;
 const NEXT_STAMP = '#FDBA74';
 
 export function WebTracking() {
-  const { order, setOrderStatus, session } = useAppState();
+  const { order, session } = useAppState();
+  const { cancel, cancelling, error: cancelError } = useCancelOrder();
   const shop = SHOPS.find((s) => s.id === order?.shopId);
   const view = order ? trackingView(order.status, { shopName: order.shopName, customerName: session?.name ?? MOCK_CUSTOMER_NAME, code: order.code }) : null;
 
@@ -117,17 +119,20 @@ export function WebTracking() {
                 <View style={styles.cancelRow}>
                   <View style={styles.cancelBtn}>
                     <Button
-                      label="Cancelar pedido"
+                      label={cancelling ? 'Cancelando…' : 'Cancelar pedido'}
                       variant="danger"
-                      onPress={() => {
-                        setOrderStatus('cancelled');
-                        router.replace({ pathname: '/cancelled', params: { by: 'cliente' } });
-                      }}
+                      disabled={cancelling}
+                      onPress={cancel}
                     />
                   </View>
                   <AppText variant="caption" color={t.colors.textMuted} style={styles.flex}>
                     Puedes cancelar hasta que la cafetería empiece a prepararlo.
                   </AppText>
+                  {cancelError ? (
+                    <AppText variant="bodySm" color={t.colors.textDanger} accessibilityRole="alert" style={styles.flex}>
+                      {cancelError}
+                    </AppText>
+                  ) : null}
                 </View>
               ) : null}
             </View>

@@ -26,3 +26,9 @@ test('cancelOrder turns permission errors into a readable message', async () => 
   const client = { rpc: async () => ({ data: null, error: { code: '42501' } }) };
   await assert.rejects(cancelOrder(client as never, 'id'), /permiso/);
 });
+
+test('cancelOrder explains that a pedido already in preparation cannot be cancelled', async () => {
+  const message = "This order is already being prepared and can't be cancelled.";
+  const client = { rpc: async () => ({ data: null, error: { code: '42501', message } }) };
+  await assert.rejects(cancelOrder(client as never, 'id'), /ya empezó a preparar/);
+});

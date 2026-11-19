@@ -6,6 +6,7 @@ import { AppText, Button, Card, EmptyState, t } from '../components/ui';
 import { MOCK_CUSTOMER_NAME, SHOPS } from '../data/mock';
 import { formatLempiras } from '../lib/format';
 import { TRACKING_STEPS, trackingView } from '../lib/tracking';
+import { useOrderProgress } from '../lib/useOrderProgress';
 import { useAppState } from '../state/AppState';
 import { WEB_MAX_WIDTH, WebFooter, WebHeader } from './WebHeader';
 
@@ -16,6 +17,7 @@ const NEXT_STAMP = '#FDBA74';
 
 export function WebTracking() {
   const { order, setOrderStatus, session } = useAppState();
+  useOrderProgress();
   const shop = SHOPS.find((s) => s.id === order?.shopId);
   const view = order ? trackingView(order.status, { shopName: order.shopName, customerName: session?.name ?? MOCK_CUSTOMER_NAME, code: order.code }) : null;
 

@@ -1,10 +1,10 @@
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { AppText, BackHeader, Button, Card, EmptyState, Screen, t } from '../src/components/ui';
 import { formatLempiras } from '../src/lib/format';
+import { useOrderProgress } from '../src/lib/useOrderProgress';
 import { useIsWide } from '../src/lib/useIsWide';
 import { useAppState, type OrderStatus } from '../src/state/AppState';
 import { WebTracking } from '../src/web/WebTracking';
@@ -12,23 +12,13 @@ import { WebTracking } from '../src/web/WebTracking';
 const STEPS = ['Recibido', 'Preparando', 'Listo'] as const;
 const ORDER: OrderStatus[] = ['received', 'preparing', 'ready'];
 
-// Demo only: the real status will come from the shop dashboard in realtime (NOT-01).
-const DEMO_ADVANCE_MS: Partial<Record<OrderStatus, number>> = { received: 6000, preparing: 8000 };
-
 export default function TrackingRoute() {
   return useIsWide() ? <WebTracking /> : <Tracking />;
 }
 
 function Tracking() {
   const { order, setOrderStatus, session } = useAppState();
-  const status = order?.status;
-
-  useEffect(() => {
-    const delay = status ? DEMO_ADVANCE_MS[status] : undefined;
-    if (!status || delay === undefined) return;
-    const timer = setTimeout(() => setOrderStatus(ORDER[ORDER.indexOf(status) + 1]!), delay);
-    return () => clearTimeout(timer);
-  }, [status, setOrderStatus]);
+  useOrderProgress();
 
   if (!order || order.status === 'cancelled') {
     return (

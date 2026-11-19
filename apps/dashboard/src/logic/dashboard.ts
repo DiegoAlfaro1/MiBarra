@@ -20,6 +20,41 @@ export interface DashOrder {
   note: string;
 }
 
+/** An order row from the database with its lines (item names come from `menu_items`). */
+export interface ServerOrder {
+  id: string;
+  status: string;
+  pickup_time: string | null;
+  payment_status: string;
+  note: string | null;
+  created_at: string;
+  order_items: { quantity: number; chosen_options: { name: string }[] | null; menu_items: { name: string } | null }[];
+}
+
+/** Short code shown to staff and said by the customer, e.g. `3F1C` (same as the customer app without the `#`). */
+export function shortOrderCode(orderId: string): string {
+  return orderId.replace(/-/g, '').slice(0, 4).toUpperCase();
+}
+
+/** Turns database orders into dashboard cards. Completed and cancelled orders leave the board. */
+export function toDashOrders(rows: readonly ServerOrder[], pickupLabel: (iso: string) => string): DashOrder[] {
+  return rows.flatMap((r) => {
+    if (r.status !== 'pending' && r.status !== 'preparing' && r.status !== 'ready') return [];
+    return [{
+      id: r.id,
+      name: `Pedido ${shortOrderCode(r.id)}`,
+      pickup: r.pickup_time ? pickupLabel(r.pickup_time) : 'lo antes posible',
+      status: r.status,
+      paid: r.payment_status === 'paid',
+      lines: r.order_items.map((i) => ({
+        main: `${i.quantity} × ${i.menu_items?.name ?? 'Producto'}`,
+        opts: (i.chosen_options ?? []).map((o) => o.name).join(' · '),
+      })),
+      note: r.note ?? '',
+    }];
+  });
+}
+
 export const CANCEL_REASONS = [
   'Se agotó un producto',
   'Estamos muy llenos',

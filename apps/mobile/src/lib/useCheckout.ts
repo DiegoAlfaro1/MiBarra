@@ -27,6 +27,7 @@ export interface CheckoutShop {
   /** Neighbourhood, for sample shops. */
   area?: string;
   live: boolean;
+  prepMinutes?: number;
 }
 
 // All checkout state and submit logic, shared by the phone screen and the web layout
@@ -105,6 +106,8 @@ export function useCheckout() {
 
     let code = 'A-1042';
     let totalCents = total;
+    let orderId: string | undefined;
+    let placedAt: string | undefined;
     if (shop.live) {
       // Orders for real shops need a MiBarra account (the guest session has no login).
       if (session?.guest) {
@@ -126,6 +129,8 @@ export function useCheckout() {
         );
         code = orderCode(order.id);
         totalCents = order.total_cents;
+        orderId = order.id;
+        placedAt = order.created_at;
       } catch (e) {
         submitted.current = false;
         setSubmitting(false);
@@ -146,6 +151,9 @@ export function useCheckout() {
       pickupLabel,
       payment,
       status: 'received',
+      orderId,
+      placedAt,
+      prepMinutes: shop.prepMinutes,
     });
     router.replace('/tracking');
   };

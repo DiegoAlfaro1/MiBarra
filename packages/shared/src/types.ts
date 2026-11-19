@@ -34,6 +34,8 @@ export interface Shop {
   /** IANA timezone the working hours are in, e.g. `America/Tegucigalpa`. */
   timezone: string;
   is_open: boolean;
+  /** Usual minutes to prepare an order (1-120, default 5); used to estimate the order status for customers. */
+  prep_minutes: number;
   payment_provider: PaymentProvider;
   /** Loyalty rule: a reward every N completed orders. Null means no loyalty program. */
   loyalty_stamps_required: number | null;

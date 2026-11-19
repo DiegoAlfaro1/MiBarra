@@ -104,6 +104,7 @@ export function useCheckout() {
     submitted.current = true;
 
     let code = 'A-1042';
+    let orderId: string | undefined;
     let totalCents = total;
     if (shop.live) {
       // Orders for real shops need a MiBarra account (the guest session has no login).
@@ -125,6 +126,7 @@ export function useCheckout() {
           checkoutKey.current,
         );
         code = orderCode(order.id);
+        orderId = order.id;
         totalCents = order.total_cents;
       } catch (e) {
         submitted.current = false;
@@ -138,6 +140,7 @@ export function useCheckout() {
     }
 
     placeOrder({
+      orderId,
       code,
       shopId: shop.id,
       shopName: shop.name,

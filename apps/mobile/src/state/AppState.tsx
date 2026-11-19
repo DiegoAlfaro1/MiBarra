@@ -10,6 +10,8 @@ import { cartReducer, emptyCart, type CartAction, type CartLine, type CartState 
 export type OrderStatus = 'received' | 'preparing' | 'ready' | 'cancelled';
 
 export interface PlacedOrder {
+  /** Database id of the order; absent for sample-shop orders, which only exist on this device. */
+  orderId?: string;
   code: string;
   shopId: string;
   shopName: string;
